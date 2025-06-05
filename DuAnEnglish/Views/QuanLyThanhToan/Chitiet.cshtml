@@ -1,0 +1,63 @@
+﻿@model DuAnEnglish.Models.ThanhToan
+
+@{
+    ViewBag.Title = "Chi tiết thanh toán";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="min-h-screen flex justify-center items-center bg-gray-100">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-2xl">
+        <h2 class="text-3xl font-bold text-center text-red-600 mb-8">
+            CHI TIẾT THANH TOÁN
+        </h2>
+
+        @using (Html.BeginForm("ChiTiet", "QuanLyThanhToan", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.IDThanhToan)
+
+            <div class="grid grid-cols-2 gap-y-4 text-sm">
+                <div><strong>Mã Hóa Đơn :</strong></div>
+                <div>@Model.IDThanhToan</div>
+
+                <div><strong>Mã Lớp Học :</strong></div>
+                <div>@Model.IDLopHoc</div>
+
+                <div><strong>Mã Khóa Học :</strong></div>
+                <div>@Model.IDKhoaHoc</div>
+
+                <div><strong>Tên Đăng Nhập :</strong></div>
+                <div>@Model.TenDangNhap</div>
+
+                <div><strong>Số Tiền :</strong></div>
+                <div>@(Model.SoTien.HasValue ? Model.SoTien.Value.ToString("N0") + " VNĐ" : "Không rõ")</div>
+
+                <div><strong>Phương Thức TT :</strong></div>
+                <div>@Model.PhuongThucTT</div>
+
+                <div><strong>Ngày Thanh Toán :</strong></div>
+                <div>
+                    @(Model.NgayThanhToan.HasValue
+                        ? Model.NgayThanhToan.Value.ToString("dd/MM/yyyy HH:mm:ss")
+                        : "Chưa thanh toán")
+                </div>
+
+                <div><strong>Trạng Thái :</strong></div>
+                <div>
+                    @Html.DropDownListFor(model => model.TrangThai, new SelectList(new[] {
+                        "Chờ xác nhận", "Đã thanh toán", "Chưa thanh toán", "Chờ xử lý"
+                    }, Model.TrangThai), new { @class = "border border-gray-300 px-3 py-1 rounded w-full" })
+                </div>
+
+                <div><strong>Ngày Xác Nhận :</strong></div>
+                <div>@(Model.NgayXacNhan.HasValue ? Model.NgayXacNhan.Value.ToString("dd/MM/yyyy") : "Chưa xác nhận")</div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded shadow">
+                    Cập nhật
+                </button>
+            </div>
+        }
+    </div>
+</div>

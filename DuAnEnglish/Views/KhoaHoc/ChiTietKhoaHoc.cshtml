@@ -1,0 +1,62 @@
+﻿@model DuAnEnglish.Models.KhoaHoc
+@{
+    if (Session["Role"] != null && Session["Role"].ToString() == "hocvien")
+    {
+        Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    ViewBag.Title = "Chi tiết khóa học";
+}
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <header class="mb-8 pb-4 border-b-4 border-red-600">
+        <h1 class="text-4xl font-bold text-red-600 tracking-tight">
+            @Model.TenKhoaHoc
+        </h1>
+    </header>
+
+    <div class="flex flex-col md:flex-row gap-8 bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Image Column -->
+        <div class="md:w-1/2 bg-red-50 p-8 flex items-center justify-center">
+            <img src="~/Images/@Model.HinhAnhKH"
+                 class="w-full h-auto object-contain max-h-[500px]"
+                 alt="Hình ảnh khóa học @Model.TenKhoaHoc"
+                 loading="lazy" />
+        </div>
+
+        <!-- Information Column -->
+        <div class="md:w-1/2 p-8 space-y-8">
+            <!-- Course ID -->
+            <div>
+                <span class="text-xs font-semibold uppercase text-red-600 tracking-wide">ID Khóa Học</span>
+                <p class="text-lg font-mono text-gray-700 mt-1">#@Model.IDKhoaHoc</p>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <span class="text-xs font-semibold uppercase text-red-600 tracking-wide">Mô Tả</span>
+                <p class="text-gray-700 leading-relaxed mt-1 whitespace-pre-line">@Model.MoTa</p>
+            </div>
+
+            <!-- Price -->
+            <div>
+                <span class="text-xs font-semibold uppercase text-red-600 tracking-wide">Học Phí</span>
+                <p class="text-2xl font-bold text-gray-900 mt-1">
+                    @String.Format("{0:N0} VNĐ", Model.HocPhi)
+                </p>
+            </div>
+
+            <!-- View Classes Button -->
+            <a href="@Url.Action("DanhSachLopHoc", "LopHoc", new { id = Model.IDKhoaHoc })"
+               class="inline-block w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg
+               transition-all duration-300 transform hover:shadow-lg
+               text-center font-semibold tracking-wide">
+                XEM LỚP HỌC
+            </a>
+        </div>
+    </div>
+</div>

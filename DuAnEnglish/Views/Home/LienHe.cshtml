@@ -1,0 +1,67 @@
+﻿@{
+    ViewBag.Title = "LienHe";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Tiêu đề LIÊN HỆ với thanh ngang đỏ -->
+<div class="flex items-center justify-center my-10">
+    <p class='w-8 sm:w-12 h-[1px] sm:h-[2px] bg-red-700'></p>
+    <span class="text-[#ce3235] font-semibold text-lg tracking-widest mx-4 uppercase">
+        LIÊN HỆ
+    </span>
+    <p class='w-8 sm:w-12 h-[1px] sm:h-[2px] bg-red-700'></p>
+</div>
+
+<!-- Nội dung chính -->
+<div class="flex flex-col md:flex-row justify-center items-start gap-12 px-4 md:px-20 mb-24">
+    <!-- Hình ảnh -->
+    <div class="w-full md:max-w-md">
+        <img src="~/Images/contact_img.png" alt="Contact Image" class="w-full h-auto object-cover rounded-md shadow-md" />
+    </div>
+
+    <!-- Thông tin liên hệ -->
+    <div class="flex flex-col justify-center h-full md:h-[480px] md:justify-center md:items-start gap-4 text-gray-800 max-w-md"
+         data-aos="fade-right"
+         data-aos-delay="100">
+        <!-- Our Store -->
+        <h2 class="text-3xl font-semibold text-[#ce3235]">Our Store</h2>
+        <p class="text-xl text-gray-700 leading-relaxed">
+            123 Đường Trần Hưng Đạo<br />
+            , TX.Điện Bàn, Tỉnh Quảng Nam
+        </p>
+        <p class="text-xl text-gray-700">
+            Tel: (84) 123-456-789<br />
+            Email:
+            <a href="mailto:lienhe@trungtamanhngufivestars.vn"
+               class="text-[#ce3235] hover:underline">lienhe@trungtamanhngufivestars.vn</a>
+        </p>
+
+        <!-- Careers -->
+        <h2 class="text-3xl font-semibold text-[#ce3235] mt-6">Careers at Forever</h2>
+        <p class="text-xl text-gray-700">Lorem ipsum dolor, sit amet adipisicing.</p>
+
+        <!-- Button -->
+        <button class="mt-2 border border-[#ce3235] text-[#ce3235] px-6 py-2 text-2xl hover:bg-[#ce3235] hover:text-white transition duration-300">
+            Explore Jobs
+        </button>
+    </div>
+    <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
+        <!-- Nút chatbot -->
+        <a href="#" class="w-[80px] h-[80px] rounded-full  flex items-center justify-center shadow-lg hover:bg-black-400 transition-all">
+            <i class="fa-brands fa-rocketchat text-black text-3xl"></i>
+        </a>
+        <!-- Nút gọi điện -->
+        <a href="tel:0123456789" class="w-[80px] h-[80px] rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:bg-green-600 transition-all">
+            <i class="fas fa-phone text-white text-3xl"></i>
+        </a>
+
+        <!-- Nút Zalo -->
+        <a href="https://zalo.me/0123456789" target="_blank" class="w-[80px] h-[80px] rounded-full bg-blue-600 flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/1200px-Icon_of_Zalo.svg.png" alt="Zalo" class="w-10 h-10">
+        </a>
+
+        <!-- Nút Messenger -->
+        <a href="https://m.me/your-page" target="_blank" class="w-[80px] h-[80px] rounded-full bg-blue-500 flex items-center justify-center shadow-lg hover:bg-blue-600 transition-all">
+            <i class="fab fa-facebook-messenger text-white text-3xl"></i>
+        </a>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+﻿@model DuAnEnglish.Models.ThongBao
+
+@{
+    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    ViewBag.Title = "Chi Tiết Thông Báo";
+}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-4xl">
+        <div class="text-left mb-6">
+            <a href="@Url.Action("DanhSachThongBao", "XemThongBao")"
+               class="inline-block py-2 px-4 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-400">
+                <i class="fas fa-arrow-left"></i> Trở lại
+            </a>
+        </div>
+
+        <h2 class="text-3xl font-bold text-center text-red-600 mb-6">Chi Tiết Thông Báo</h2>
+
+        <!-- Grid with vertical separators -->
+        <div class="grid grid-cols-3 gap-4 border border-gray-300 rounded-lg p-4">
+            <!-- Tiêu đề -->
+            <div class="font-bold text-red-600 p-2 border-r border-gray-300">Tiêu đề:</div>
+            <div class="col-span-2 p-2 border-b border-gray-300">@Model.TieuDe</div>
+
+            <!-- Nội dung thông báo -->
+            <div class="font-bold text-red-600 p-2 border-r border-gray-300">Nội dung thông báo:</div>
+            <div class="col-span-2 p-2 border-b border-gray-300">@Model.NoiDung</div>
+
+            <!-- Người gửi -->
+            <div class="font-bold text-red-600 p-2 border-r border-gray-300">Người gửi:</div>
+            <div class="col-span-2 p-2 border-b border-gray-300">@ViewBag.TenNguoiGui</div>
+
+            <!-- Ngày -->
+            <div class="font-bold text-red-600 p-2 border-r border-gray-300">Ngày gửi:</div>
+            <div class="col-span-2 p-2">@(Model.NgayGui.HasValue ? Model.NgayGui.Value.ToString("dd/MM/yyyy HH:mm") : "")</div>
+        </div>
+    </div>
+</div>

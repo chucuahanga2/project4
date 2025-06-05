@@ -1,0 +1,127 @@
+﻿@model DuAnEnglish.Models.DiemTOEIC
+@{
+    ViewBag.Title = "Nhập Điểm TOEIC";
+    Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
+    var idHocVien = ViewBag.IDHocVien;
+}
+
+<div class="min-h-screen bg-[#f7f7f7] flex items-center justify-center p-6">
+    <div class="bg-white max-w-5xl w-full p-10 rounded-2xl shadow-xl border border-gray-200">
+        <!-- Mã Học Viên -->
+        <div class="mb-6 flex items-center gap-4">
+            <label class="text-base font-semibold text-gray-800">Mã Học Viên:</label>
+            <input type="text"
+                   name="IDHocVien"
+                   value="@Model.IDHocVien"
+                   readonly
+                   class="w-32 border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-sm" />
+        </div>
+
+        <h2 class="text-2xl font-bold text-[#e5501e] mb-8 text-center uppercase tracking-wider">NHẬP ĐIỂM</h2>
+
+        <form method="post" action="@Url.Action("LuuDiemToeic", "QuanLyDiemSo")" class="space-y-6">
+            <input type="hidden" name="IDHocVien" value="@idHocVien" />
+
+            <div class="grid grid-cols-3 gap-8">
+                <!-- Cột 1: Nghe -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Part 1</label>
+                        <input type="number" name="Part1" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.Part1" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Part 2</label>
+                        <input type="number" name="Part2" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.Part2" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Part 3</label>
+                        <input type="number" name="Part3" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.Part3" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Part 4</label>
+                        <input type="number" name="Part4" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.Part4" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Điểm Nghe</label>
+                        <input type="number" id="diemNghe" name="DiemNghe" readonly class="w-full border rounded-md px-3 py-2 bg-gray-100 text-gray-600" value="@(Model.DiemNghe ?? 0)" />
+                    </div>
+                </div>
+
+                <!-- Cột 2: Đọc -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Part 5</label>
+                        <input type="number" name="Part5" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.Part5" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Part 6</label>
+                        <input type="number" name="Part6" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.Part6" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Part 7</label>
+                        <input type="number" name="Part7" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.Part7" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Điểm Đọc</label>
+                        <input type="number" id="diemDoc" name="DiemDoc" readonly class="w-full border rounded-md px-3 py-2 bg-gray-100 text-gray-600" value="@(Model.DiemDoc ?? 0)" />
+                    </div>
+                </div>
+
+                <!-- Cột 3: Nói, Viết, Tổng -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Điểm Nói</label>
+                        <input type="number" name="DiemNoi" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.DiemNoi" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Điểm Viết</label>
+                        <input type="number" name="DiemViet" class="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" value="@Model.DiemViet" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700">Tổng điểm</label>
+                        <input type="number" id="tongDiem" readonly class="w-full border rounded-md px-3 py-2 bg-gray-100 text-gray-600" value="@(Model.TongDiem ?? 0)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit"
+                        class="w-[130px] bg-[#e5501e] text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors mt-4 mx-auto block">
+                    Cập nhật
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        function tinhTongDiem() {
+            let part1 = parseInt(document.querySelector("[name='Part1']").value) || 0;
+            let part2 = parseInt(document.querySelector("[name='Part2']").value) || 0;
+            let part3 = parseInt(document.querySelector("[name='Part3']").value) || 0;
+            let part4 = parseInt(document.querySelector("[name='Part4']").value) || 0;
+            let part5 = parseInt(document.querySelector("[name='Part5']").value) || 0;
+            let part6 = parseInt(document.querySelector("[name='Part6']").value) || 0;
+            let part7 = parseInt(document.querySelector("[name='Part7']").value) || 0;
+            let diemNoi = parseInt(document.querySelector("[name='DiemNoi']").value) || 0;
+            let diemViet = parseInt(document.querySelector("[name='DiemViet']").value) || 0;
+
+            let diemNghe = (part1 + part2 + part3 + part4) * 5;
+            let diemDoc = (part5 + part6 + part7) * 5;
+            let tong = diemNghe + diemDoc + diemNoi + diemViet;
+
+            document.getElementById("diemNghe").value = diemNghe;
+            document.getElementById("diemDoc").value = diemDoc;
+            document.getElementById("tongDiem").value = tong;
+        }
+
+        document.querySelectorAll("input[type='number']").forEach(input => {
+            input.addEventListener("input", tinhTongDiem);
+        });
+
+        // Gọi lần đầu khi trang load
+        tinhTongDiem();
+    </script>
+}

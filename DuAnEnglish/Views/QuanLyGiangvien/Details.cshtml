@@ -1,0 +1,94 @@
+﻿@model DuAnEnglish.Models.GiangVien
+
+@{
+    ViewBag.Title = "Chi tiết giảng viên";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+<div class="min-h-screen flex justify-center items-center bg-gray-100 py-10">
+    <div class="bg-white w-full max-w-3xl p-8 rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-red-600 mb-8">Chi tiết giảng viên</h2>
+
+        @using (Html.BeginForm("Details", "QuanLyGiangVien", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.IDGiangVien)
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tên giảng viên -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Họ và tên</label>
+                    @Html.TextBoxFor(m => m.TenGV, new
+                    {
+                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
+                    })
+                </div>
+
+                <!-- Ngày sinh -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Ngày sinh</label>
+                    @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new
+                    {
+                        @type = "date",
+                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
+                    })
+                </div>
+
+                <!-- Giới tính -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Giới tính</label>
+                    @Html.DropDownListFor(m => m.GioiTinh,
+                        new SelectList(new List<string> { "Nam", "Nữ", "Khác" }, Model.GioiTinh),
+                        "-- Chọn giới tính --",
+                        new { @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2" })
+                </div>
+
+                <!-- Địa chỉ -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Địa chỉ</label>
+                    @Html.TextBoxFor(m => m.DiaChi, new
+                    {
+                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
+                    })
+                </div>
+
+                <!-- Chuyên môn -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Chuyên môn</label>
+                    @Html.TextBoxFor(m => m.ChuyenMon, new
+                    {
+                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
+                    })
+                </div>
+
+                <!-- Bằng cấp -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700">Bằng cấp</label>
+                    @Html.TextBoxFor(m => m.BangCap, new
+                    {
+                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
+                    })
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-center gap-4">
+                <button type="submit"
+                        class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-lg shadow">
+                    Lưu thay đổi
+                </button>
+            </div>
+        }
+    </div>
+</div>
+<script src="~/Scripts/JSThongBao.js"></script>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+            // Gọi hàm showAlert từ file JSThongBao.js
+            showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

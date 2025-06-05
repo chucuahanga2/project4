@@ -1,0 +1,84 @@
+﻿@model DuAnEnglish.Models.DiemTOEIC
+@{
+    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    ViewBag.Title = "XemDiemTOEIC";
+}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-10">
+    <form class="max-w-5xl w-full p-10 bg-white rounded-lg shadow-lg relative">
+        <a href="@Url.Action("XemLop", "HocTap", new { idHocVien = ViewBag.IDHocVien })"
+           class="absolute top-4 left-4 inline-block py-2 px-4 text-white bg-red-600 hover:bg-red-500 rounded mb-4">
+            Trở về
+        </a>
+
+        <h2 class="text-red-600 text-3xl font-semibold mb-8 text-center mt-12">Điểm Thi TOEIC Cuối Khóa</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-black text-base">
+            <div><strong class="font-semibold">Mã Lớp:</strong> @ViewBag.IDLopHoc</div>
+            <div><strong class="font-semibold">Tên Lớp:</strong> @ViewBag.TenLopHoc</div>
+            <div><strong class="font-semibold">Mã Học Viên:</strong> @ViewBag.IDHocVien</div>
+            <div><strong class="font-semibold">Tên Học Viên:</strong> @ViewBag.TenHocVien</div>
+        </div>
+
+        <div class="mt-8">
+            <table class="w-full text-left text-black border border-gray-300 rounded-lg overflow-hidden" style="background-color: #fef9f4;">
+                <thead>
+                    <tr class="bg-red-600 text-white">
+                        <th class="py-2 px-4 font-semibold border border-gray-300">Kỹ năng</th>
+                        <th class="py-2 px-4 font-semibold border border-gray-300">Số câu đúng / Điểm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Part 1</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.Part1</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Part 2</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.Part2</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Part 3</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.Part3</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Part 4</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.Part4</td>
+                    </tr>
+                    <tr class="bg-gray-100">
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Điểm Nghe</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.DiemNghe</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Part 5</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.Part5</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Part 6</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.Part6</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Part 7</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.Part7</td>
+                    </tr>
+                    <tr class="bg-gray-100">
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Điểm Đọc</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.DiemDoc</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Nói</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.DiemNoi</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 font-semibold border border-gray-300">Viết</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.DiemViet</td>
+                    </tr>
+                    <tr class="bg-red-100 font-semibold">
+                        <td class="py-2 px-4 border border-gray-300">Tổng điểm</td>
+                        <td class="py-2 px-4 border border-gray-300">@Model.TongDiem</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>

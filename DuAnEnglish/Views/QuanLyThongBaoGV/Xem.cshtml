@@ -1,0 +1,90 @@
+﻿@model DuAnEnglish.Models.ThongBao
+@{
+    if (Session["Role"] != null)
+    {
+        var role = Session["Role"].ToString().ToLower();
+        if (role == "admin")
+        {
+            Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+        }
+        else if (role == "giangvien")
+        {
+            Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
+        }
+    }
+}
+
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+<div class="flex justify-center mt-6">
+    @using (Html.BeginForm("Sua", "QuanLyThongBaoGV", FormMethod.Post, new { @class = "w-full max-w-4xl bg-white shadow-lg rounded-lg p-8 space-y-6" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.IDThongBao)
+
+        <!-- Nút trở lại + tiêu đề -->
+        <div class="flex items-center justify-between">
+            <a href="@Url.Action("QuanLyThongBaoGV", "QuanLyThongBaoGV")"
+               class="py-2 px-4 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-500">
+                <i class="fas fa-arrow-left"></i> Trở lại
+            </a>
+            <h2 class="text-2xl font-bold text-gray-800 text-center flex-grow text-center">Chi Tiết Thông Báo</h2>
+        </div>
+
+        <!-- Thông tin tĩnh -->
+        <div>
+            <label class="font-semibold">Mã thông báo:</label>
+            <p class="text-gray-700">@Model.IDThongBao</p>
+        </div>
+
+        <div>
+            <label class="font-semibold">Người gửi:</label>
+            <p class="text-gray-700">@ViewBag.TenNguoiGui</p>
+        </div>
+
+        <div>
+            <label class="font-semibold">Ngày gửi:</label>
+            <p class="text-gray-700">
+                @(Model.NgayGui.HasValue ? Model.NgayGui.Value.ToString("dd/MM/yyyy HH:mm") : "")
+            </p>
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- Tiêu đề -->
+        <div>
+            <label class="block font-semibold mb-1">Tiêu đề:</label>
+            @Html.TextBoxFor(model => model.TieuDe, new
+            {
+                @class = "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            })
+        </div>
+
+        <!-- Nội dung -->
+        <div>
+            <label class="block font-semibold mb-1">Nội dung thông báo:</label>
+            @Html.TextAreaFor(model => model.NoiDung, new
+            {
+                @class = "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500",
+                rows = 5
+            })
+        </div>
+
+        <!-- Nút Sửa -->
+        <div class="text-center">
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+                Sửa
+            </button>
+        </div>
+    }
+</div>
+<script src="~/Scripts/JSThongBao.js"></script>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+            // Gọi hàm showAlert từ file JSThongBao.js
+            showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Navbar -->
+    <header class="bg-[#ce3235] shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="@Url.Action("Index", "Home")" class="flex items-center space-x-2">
+                <h2 class="text-3xl font-bold tracking-wide text-white">FIVESTARS</h2>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="hidden md:flex space-x-6 text-sm font-medium">
+                <a href="@Url.Action("Index", "Home")" class="text-white hover:text-gray-200">TRANG CHỦ</a>
+                <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="text-white hover:text-gray-200">KHÓA HỌC</a>
+                <a href="@Url.Action("ChiaSe", "Home")" class="text-white hover:text-gray-200">CHIA SẺ</a>
+                <a href="@Url.Action("SuKien", "Home")" class="text-white hover:text-gray-200">SỰ KIỆN</a>
+                <a href="@Url.Action("LienHe", "Home")" class="text-white hover:text-gray-200">LIÊN HỆ</a>
+                <a href="@Url.Action("TuyenDung", "Home")" class="text-white hover:text-gray-200">TUYỂN DỤNG</a>
+            </nav>
+
+            <!-- Buttons -->
+            <div class="flex space-x-2">
+                <a href="@Url.Action("DangNhap", "DangNhap")">
+                    <button class="px-4 py-2 bg-white text-[#ce3235] rounded-lg hover:bg-gray-100 transition">
+                        Đăng nhập
+                    </button>
+                </a>
+                <a href="@Url.Action("DangKy", "DangKy")">
+                    <button class="px-4 py-2 bg-white text-[#ce3235] rounded-lg hover:bg-gray-100 transition">
+                        Đăng ký
+                    </button>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8 min-h-[calc(100vh-160px)]">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#ce3235] border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-white">
+            &copy; @DateTime.Now.Year - NHÓM 8 - DTU
+        </div>
+    </footer>
+
+</body>
+</html>

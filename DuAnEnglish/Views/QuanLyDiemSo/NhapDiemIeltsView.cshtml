@@ -1,0 +1,97 @@
+﻿@model DuAnEnglish.Models.DiemIELT
+@{
+    ViewBag.Title = "Nhập Điểm IELTS";
+    Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
+}
+
+<div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div class="bg-white max-w-md w-full mx-auto p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Nhập điểm</h2>
+
+        <!-- Form nhập điểm -->
+        <form method="post" action="@Url.Action("LuuDiemIelts", "QuanLyDiemSo")" class="space-y-4">
+            <!-- Mã Học Viên -->
+            <div class="flex items-center gap-5">
+                <label class="block text-black text-sm font-bold">Mã Học Viên</label>
+                <input type="text"
+                       name="IDHocVien"
+                       value="@Model.IDHocVien"
+                       readonly
+                       class="w-28 border rounded px-3 py-2 bg-gray-100" />
+            </div>
+
+            <!-- Điểm Nghe -->
+            <div>
+                <label class="block text-black text-sm font-bold mb-1">Nghe</label>
+                <input type="number" step="0.1" min="0" max="9"
+                       name="DiemNghe"
+                       value="@(Model.DiemNghe.HasValue ? Model.DiemNghe.ToString() : "")"
+                       class="w-full border rounded px-3 py-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Điểm Nói -->
+            <div>
+                <label class="block text-black text-sm font-bold mb-1">Nói</label>
+                <input type="number" step="0.1" min="0" max="9"
+                       name="DiemNoi"
+                       value="@(Model.DiemNoi.HasValue ? Model.DiemNoi.ToString() : "")"
+                       class="w-full border rounded px-3 py-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Điểm Đọc -->
+            <div>
+                <label class="block text-black text-sm font-bold mb-1">Đọc</label>
+                <input type="number" step="0.1" min="0" max="9"
+                       name="DiemDoc"
+                       value="@(Model.DiemDoc.HasValue ? Model.DiemDoc.ToString() : "")"
+                       class="w-full border rounded px-3 py-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Điểm Viết -->
+            <div>
+                <label class="block text-black text-sm font-bold mb-1">Viết</label>
+                <input type="number" step="0.1" min="0" max="9"
+                       name="DiemViet"
+                       value="@(Model.DiemViet.HasValue ? Model.DiemViet.ToString() : "")"
+                       class="w-full border rounded px-3 py-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Tổng điểm (tính động bằng JS hoặc xử lý server, ở đây tạm hiện giá trị cũ hoặc rỗng) -->
+            <div class="flex items-center gap-5 text-center">
+                <label class="block text-black text-sm font-bold">Tổng điểm</label>
+                <input type="text"
+                       name="TongDiem"
+                       value="@(Model.TongDiem.HasValue ? Model.TongDiem.ToString() : "")"
+                       readonly
+                       class="w-28 rounded px-3 py-2 bg-gray-100" />
+            </div>
+
+            <!-- Nút Cập nhật -->
+            <button type="submit"
+                    class="w-[130px] bg-[#e5501e] text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors mt-4 mx-auto block">
+                Cập nhật
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function tinhTongDiem() {
+        let nghe = parseFloat(document.getElementsByName('DiemNghe')[0].value) || 0;
+        let noi = parseFloat(document.getElementsByName('DiemNoi')[0].value) || 0;
+        let doc = parseFloat(document.getElementsByName('DiemDoc')[0].value) || 0;
+        let viet = parseFloat(document.getElementsByName('DiemViet')[0].value) || 0;
+
+        // Tính điểm trung bình
+        let trungBinh = (nghe + noi + doc + viet) / 4;
+
+        // Làm tròn đến 0.5 hoặc 0.0 (theo quy chuẩn IELTS)
+        let tong = Math.round(trungBinh * 2) / 2;
+
+        document.getElementsByName('TongDiem')[0].value = tong.toFixed(1);
+    }
+
+
+    // Tính tổng điểm lúc đầu khi load trang (nếu có dữ liệu)
+    tinhTongDiem();
+</script>

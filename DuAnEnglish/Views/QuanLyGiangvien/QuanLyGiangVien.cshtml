@@ -1,0 +1,83 @@
+﻿@model List<DuAnEnglish.Models.GiangVien>
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "QuanLyGiangVien";
+}
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+
+<div class="min-h-screen justify-center flex bg-gray-100">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-6xl">
+        <h2 class="text-3xl font-bold text-center text-red-600 mb-6">Quản lý giảng viên</h2>
+
+        <div class="flex justify-end mb-4">
+            <form method="get" asp-action="QuanLyGiangVien" class="flex items-center space-x-2">
+                <input type="text" name="search" value="@Request.QueryString["search"]" placeholder="Tìm kiếm..."
+                       class="border border-gray-300 rounded px-3 py-2 text-sm placeholder-gray-400 w-72" />
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
+                    Tìm kiếm
+                </button>
+            </form>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="text-center text-gray-500 text-lg italic">Hiện chưa có thông báo nào</div>
+        }
+        else
+        {
+            <table class="table-auto w-full border border-gray-300 text-center">
+                <thead class="bg-red-500 text-white">
+                    <tr>
+                        <th class="py-3 px-4 border">Mã giảng viên</th>
+                        <th class="py-3 px-4 border">Tên giảng viên</th>
+                        <th class="py-3 px-4 border">Tên đăng nhập</th>
+                        <th class="py-3 px-4 border">Ngày Sinh</th>
+                        <th class="py-3 px-4 border">Giới Tính</th>
+                        <th class="py-3 px-4 border">Địa chỉ</th>
+                        <th class="py-3 px-4 border">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var gv in Model)
+                    {
+                        <tr class="border-t hover:bg-gray-50">
+                            <td class="py-2 px-4">@gv.IDGiangVien</td>
+                            <td class="py-2 px-4">@gv.TenGV</td>
+                            <td class="py-2 px-4">@gv.IDTenDangNhap</td>
+                            <td class="py-2 px-4">
+                                @(gv.NgaySinh.HasValue ? gv.NgaySinh.Value.ToString("dd/MM/yyyy") : "")
+                            </td>
+                            <td class="py-2 px-4">@gv.GioiTinh</td>
+                            <td class="py-2 px-4">@gv.DiaChi</td>
+
+                            <td class="py-2 px-4 space-x-2">
+                                <a href="@Url.Action("Details", new { id = gv.IDGiangVien })"
+                                   class="inline-block bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded mr-1 shadow">
+                                    Chi tiết
+                                </a>
+                                <a href="@Url.Action("Delete", new { id = gv.IDGiangVien })"
+                                   class="btn-xoa inline-block bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded shadow">
+                                    Xóa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+<script src="~/Scripts/JSThongBao.js"></script>
+<script src="~/Scripts/JSXacNhanXoa.js"></script>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+            // Gọi hàm showAlert từ file JSThongBao.js
+            showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

@@ -1,0 +1,103 @@
+﻿@model List<DuAnEnglish.Models.ThanhToan>
+@{
+    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+}
+@{
+    ViewBag.Title = "Danh Sách Hóa Đơn";
+}
+<meta charset="UTF-8" />
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+<div class="min-h-screen bg-white flex items-center justify-center py-10">
+    <div class="w-full max-w-7xl p-6 bg-white shadow-lg rounded-lg">
+        <!-- Tăng max-w-4xl thành max-w-7xl -->
+        <h2 class="text-3xl text-red-600 font-semibold mb-6">Danh Sách Hóa Đơn</h2>
+
+        @if (Model != null && Model.Any())
+        {
+            <table class="w-full table-auto border-collapse border border-gray-300">
+                <thead>
+                    <tr class="text-left bg-gray-100 text-black">
+                        <th class="px-4 py-2">Mã Hóa Đơn</th>
+                        <th class="px-4 py-2">Mã Lớp</th>
+                        <th class="px-4 py-2">Mã Khóa Học</th>
+                        <th class="px-4 py-2">Số Tiền</th>
+                        <th class="px-4 py-2">Trạng Thái</th>
+                        <th class="px-4 py-2">Thanh Toán</th>
+                        <th class="px-4 py-2">Hóa Đơn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2">@item.IDThanhToan</td>
+                            <td class="px-4 py-2">@item.IDLopHoc</td>
+                            <td class="px-4 py-2">@item.IDKhoaHoc</td>
+                            <td class="px-4 py-2">@(item.SoTien.HasValue ? item.SoTien.Value.ToString("N0") + " VNĐ" : "0 vnđ")</td>
+                            <td class="px-4 py-2">@item.TrangThai</td>
+                            <td class="px-4 py-2">
+                                @if (item.TrangThai == "Chưa thanh toán")
+                                {
+                                    <a href="@Url.Action("HoaDon", "ThanhToan", new { id = item.IDThanhToan })"
+                                       class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-gradient-to-r from-green-400 via-green-500 to-green-600
+                                              bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
+                                              text-white shadow-md">
+                                        Thanh Toán
+                                    </a>
+
+                                }
+                                else if (item.TrangThai == "Chờ xử lý")
+                                {
+                                    <span class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-green-500 text-white shadow-md">
+                                        Đang xử lý
+                                    </span>
+                                }
+                                else if (item.TrangThai == "Đã thanh toán")
+                                {
+                                    <span class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-green-500 text-white shadow-md">
+                                        Đã thanh toán
+                                    </span>
+                                }
+
+                            </td>
+                            <td class="px-4 py-2">
+                                    <a href="@Url.Action("XoaHoaDon", "ThanhToan", new { id = item.IDThanhToan })"
+                                       class="btn-xoa inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-gradient-to-r from-red-600 via-red-500 to-red-600
+                                    bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
+                                    text-white shadow-md">
+                                        Xóa hóa đơn
+                                    </a>
+                               
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-warning bg-yellow-200 text-black p-4 rounded-lg mt-4">
+                Hiện tại chưa có hóa đơn nào để thanh toán.
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/Scripts/JSThongBao.js"></script>
+<script src="~/Scripts/JSXacNhanXoa.js"></script>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+        showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}
+
+@if (TempData["ThongBao"] != null)
+{
+    <script>
+        showAlert('@Html.Raw(TempData["ThongBao"])');
+    </script>
+}

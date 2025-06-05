@@ -1,0 +1,90 @@
+﻿@model IEnumerable<DuAnEnglish.Models.HocVien>
+@{
+    Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Học Viên</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold mb-6 text-red-600">THÊM HỌC VIÊN</h1>
+
+        <!-- Form thêm học viên -->
+        @using (Html.BeginForm("Them", "QuanLyHocVien", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="idLop" value="@ViewBag.IDLopHoc" />
+            <div class="mb-6 flex gap-4 justify-center align-center">
+                <input type="text" name="tuKhoa"
+                       placeholder="Tìm kiếm mã học viên hoặc tên đăng nhập..."
+                       class="w-[550px] px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700">
+                    Tìm kiếm
+                </button>
+            </div>
+        }
+
+
+        <!-- Bảng hiển thị danh sách học viên -->
+        <table class="w-full border-collapse">
+            <thead>
+                <!-- Tiêu đề bảng -->
+            </thead>
+            <tbody>
+                <tr class="bg-gray-50">
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Mã HV</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Tên đăng nhập</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Họ Tên</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Ngày sinh</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Giới tính</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Địa chỉ</th>
+                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b"></th>
+                </tr>
+                @foreach (var hocVien in Model)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <!-- Định dạng dữ liệu từ CSDL -->
+                        <td class="px-4 py-3 border-b">@hocVien.IDHocVien</td>
+                        <td class="px-4 py-3 border-b">@hocVien.IDTenDangNhap</td>
+                        <td class="px-4 py-3 border-b">@hocVien.TenHV</td>
+                        <td class="px-4 py-3 border-b">
+                            @(hocVien.NgaySinh.HasValue ? hocVien.NgaySinh.Value.ToString("dd/MM/yyyy") : "N/A")
+                        </td>
+                        <td class="px-4 py-3 border-b">@hocVien.GioiTinh</td>
+                        <td class="px-4 py-3 border-b">@hocVien.DiaChi</td>
+                        <td class="px-4 py-3 border-b">
+                            @using (Html.BeginForm("ThemVaoLop", "QuanLyHocVien", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="idHocVien" value="@hocVien.IDHocVien" />
+                                <input type="hidden" name="idLopHoc" value="@Convert.ToString(ViewBag.IDLopHoc)" />
+
+                                <button type="submit" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                                    Thêm
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
+<script src="~/Scripts/JSThongBao.js"></script>
+<script src="~/Scripts/JSXacNhanXoa.js"></script>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+        showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

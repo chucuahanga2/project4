@@ -1,0 +1,59 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    ViewBag.Title = "Danh Sách Lớp Học Của Bạn";
+}
+
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+<div class="min-h-screen bg-white flex items-center justify-center py-10">
+    <div class="w-full max-w-4xl p-6 bg-white shadow-lg rounded-lg">
+        @if (Model != null && Model.Count > 0)
+        {
+            <h2 class="text-3xl text-red-600 font-semibold mb-4">Danh Sách Lớp Học Của Bạn</h2>
+            <table class="table-auto w-full border-collapse">
+                <thead>
+                    <tr class="text-left border-b-2">
+                        <th class="px-4 py-2 text-black">Mã Học Viên</th>
+                        <th class="px-4 py-2 text-black">Mã Lớp Học</th>
+                        <th class="px-4 py-2 text-black">Tên Lớp Học</th>
+                        <th class="px-4 py-2 text-black">Mã Phòng Học</th>
+                        <th class="px-4 py-2 text-black">Tên Phòng Học</th>
+                        <th class="px-4 py-2 text-black">Điểm</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lopHoc in Model)
+                    {
+                        <tr class="border-b hover:bg-gray-100">
+                            <td class="px-4 py-2 text-black">@ViewBag.MahocVien</td>
+                            <td class="px-4 py-2 text-black">@lopHoc.IDLopHoc</td>
+                            <td class="px-4 py-2 text-black">@lopHoc.TenLop</td>
+                            <td class="px-4 py-2 text-black">@((lopHoc.PhongHoc != null) ? lopHoc.PhongHoc.IDPhongHoc.ToString() : "Chưa có phòng")</td>
+                            <td class="px-4 py-2 text-black">@((lopHoc.PhongHoc != null) ? lopHoc.PhongHoc.TenPhong : "Không có")</td>
+                            <td class="px-4 py-2 text-black">
+                                <a href="@Url.Action("XemDiem", "HocTap", new { idLopHoc = lopHoc.IDLopHoc, idHocVien = ViewBag.MahocVien })"
+                                   class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-gradient-to-r from-red-600 via-yellow-400 to-red-600
+                                          bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
+                                          text-white shadow-md">
+                                    Xem điểm
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p class="text-black">Bạn chưa đăng ký lớp học nào.</p>
+        }
+    </div>
+</div>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+                showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

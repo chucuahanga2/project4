@@ -1,0 +1,40 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore Web.config nếu chứa key bí mật
+web.config
+
+# Ignore packages (nuget)
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+
+# VS Code settings
+.vscode/
+
+# Ignore publish folder
+**/publish/
+
+# Ignore log files
+*.log
+
+# Ignore temp files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Ignore ReSharper & Rider files
+.idea/
+*.DotSettings.user
+
+# Ignore IIS Express settings
+.vs/

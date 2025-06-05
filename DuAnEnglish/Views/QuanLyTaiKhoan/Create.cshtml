@@ -1,0 +1,48 @@
+﻿@{
+
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white shadow-lg rounded-xl w-full max-w-md p-8">
+
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Thêm tài khoản</h2>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="mb-4">
+                <label for="TenDangNhap" class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
+                <input type="text" id="TenDangNhap" name="TenDangNhap" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            </div>
+
+            <div class="mb-4">
+                <label for="LoaiTK" class="block text-sm font-medium text-gray-700 mb-1">Loại tài khoản</label>
+                @Html.DropDownList("LoaiTK", ViewBag.LoaiTKList as List<SelectListItem>, "-- Chọn loại tài khoản --",
+                    new
+                        {
+                        @class = "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    })
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                Thêm
+            </button>
+        }
+    </div>
+</div>
+
+<script src="~/Scripts/JSThongBao.js"></script>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+            // Gọi hàm showAlert từ file JSThongBao.js
+            showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

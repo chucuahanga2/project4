@@ -1,0 +1,111 @@
+﻿
+@model PagedList.IPagedList<DuAnEnglish.Models.ThongBao>
+@using PagedList.Mvc;
+@{
+    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    ViewBag.Title = "DanhSachThongBao";
+}
+<style>
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding-left: 0;
+        gap: 8px;
+    }
+
+        .pagination .page-item {
+            display: inline-block;
+        }
+
+            .pagination .page-item a,
+            .pagination .page-item span {
+                display: inline-block;
+                padding: 8px 14px;
+                font-size: 14px;
+                font-weight: 500;
+                background-color: white;
+                color: black;
+                border: 1px solid black;
+                border-radius: 8px;
+                text-decoration: none;
+                transition: background-color 0.3s ease;
+            }
+
+                .pagination .page-item a:hover {
+                    background-color: black;
+                    color: white;
+                }
+</style>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-6xl">
+        <h2 class="text-3xl font-bold text-center text-red-600 mb-6">Bảng thông báo</h2>
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="text-center text-gray-500 text-lg italic">Hiện chưa có thông báo nào</div>
+        }
+        else
+        {
+            <table class="table-auto w-full border border-gray-300 text-center">
+                <thead class="bg-red-500 text-white">
+                    <tr>
+                        <th class="py-3 px-4 border">Mã Thông Báo</th>
+                        <th class="py-3 px-4 border">Người Gửi</th>
+                        <th class="py-3 px-4 border">Tiêu Đề</th>
+                        <th class="py-3 px-4 border">Xem Chi Tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tb in Model)
+                    {
+                        string tenNguoiGui;
+
+                        if (tb.IDNguoiGui.ToLower() == "admin")
+                        {
+                            tenNguoiGui = "Giám Đốc Trung Tâm";
+                        }
+                        else
+                        {
+                            var giangVien = tb.TaiKhoan?.GiangViens?.FirstOrDefault();
+                            tenNguoiGui = giangVien != null ? giangVien.TenGV : "Không rõ";
+                        }
+
+                        <tr class="hover:bg-gray-100">
+                            <td class="py-3 px-4 border">@tb.IDThongBao</td>
+                            <td class="py-3 px-4 border">@tenNguoiGui</td>
+                            <td class="py-3 px-4 border">@tb.TieuDe</td>
+                            <td class="py-3 px-4 border">
+                                <a href="@Url.Action("ChiTietThongBao", "XemThongBao", new { id = tb.IDThongBao })"
+                                   class="inline-block py-2 px-4 text-sm font-medium rounded-lg bg-gradient-to-r from-red-600 via-red-500 to-red-600
+                                          bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
+                                          text-white shadow">
+                                    Xem
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="pagination-wrapper">
+                @Html.PagedListPager(Model, page => Url.Action("DanhSachThongBao", new { page }),
+                    new PagedListRenderOptions
+                    {
+                        DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                        DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                        DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                        DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                        MaximumPageNumbersToDisplay = 5,
+                        UlElementClasses = new[] { "pagination" },
+                        LiElementClasses = new[] { "page-item" } // dùng trong CSS bên dưới
+                    })
+            </div>
+        }
+    </div>
+</div>

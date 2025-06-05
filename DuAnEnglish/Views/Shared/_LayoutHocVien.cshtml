@@ -1,0 +1,50 @@
+﻿@{
+    ViewBag.Title = "_LayoutHocVien";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <div class="flex">
+        <!-- Sidebar cố định -->
+        <aside class="fixed top-0 left-0 h-full w-64 bg-[#ce3235] p-6 text-white flex flex-col space-y-6">
+            <!-- Logo -->
+            <a href="@Url.Action("Index", "HomeHocVien")" class="flex items-center space-x-2">
+                <h2 class="text-3xl font-bold tracking-wide text-white">MY STUDENT</h2>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="flex flex-col space-y-4 text-sm font-medium">
+                <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="hover:text-gray-200">XEM CÁC KHÓA HỌC</a>
+                <a href="@Url.Action("ThongTinHocVien", "ThongTinHocVien")" class="hover:text-gray-200">THÔNG TIN CÁ NHÂN</a>
+                <a href="@Url.Action("DanhSachHoaDon", "ThanhToan")" class="hover:text-gray-200">THANH TOÁN</a>
+                <a href="@Url.Action("XemLop", "HocTap")" class="hover:text-gray-200">HỌC TẬP</a>
+                <a href="@Url.Action("DanhSachThongBao", "XemThongBao")" class="hover:text-gray-200">THÔNG BÁO</a>
+                <a href="@Url.Action("Doimatkhau", "DoiMatKhau")" class="hover:text-gray-200">ĐỔI MẬT KHẨU</a>
+            </nav>
+
+            <!-- Logout -->
+            <a href="@Url.Action("DangXuat", "DangNhap")"
+               class="mt-auto text-center bg-white text-red-600 font-semibold py-2 rounded-md transition-colors duration-300 hover:bg-gray-800 hover:text-white">
+                Đăng Xuất
+            </a>
+        </aside>
+
+        <!-- Nội dung trang - đẩy sang phải để không bị sidebar đè lên -->
+        <main class="ml-64 flex-1 p-6">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>

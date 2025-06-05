@@ -1,0 +1,70 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    ViewBag.Title = "Phiếu Hóa Đơn";
+}
+
+
+<div class="flex justify-center items-center min-h-screen bg-gray-100">
+    
+    <div class="w-full max-w-4xl bg-white shadow-lg rounded-lg p-8">
+        <a href="@Url.Action("DanhSachHoaDon", "ThanhToan")" class="inline-block py-2 px-4 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-500 mb-4">
+            <i class="fas fa-arrow-left"></i> Trở lại
+        </a>
+        <h2 class="text-2xl font-bold text-center mb-6">Phiếu Hóa Đơn</h2>
+
+        <table class="table-auto w-full text-left border-collapse">
+            <tbody>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Mã Hóa Đơn:</th>
+                    <td class="px-4 py-2">@ViewBag.IDThanhToan</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Mã Lớp:</th>
+                    <td class="px-4 py-2">@ViewBag.IDLopHoc</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Tên Lớp:</th>
+                    <td class="px-4 py-2">@ViewBag.TenLop</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Mã Khóa Học:</th>
+                    <td class="px-4 py-2">@ViewBag.IDKhoaHoc</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Tên Khóa Học:</th>
+                    <td class="px-4 py-2">@ViewBag.TenKhoaHoc</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Tên Học Viên:</th>
+                    <td class="px-4 py-2">@ViewBag.TenHocVien</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Số Tiền:</th>
+                    <td class="px-4 py-2">@String.Format("{0:N0} VNĐ", ViewBag.SoTien)</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Ngày Thanh Toán:</th>
+                    <td class="px-4 py-2">
+                        @(
+                        ViewBag.NgayThanhToan != null
+                        ? ((DateTime)ViewBag.NgayThanhToan).ToString("dd/MM/yyyy")
+                        : "")
+                    </td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Trạng Thái:</th>
+                    <td class="px-4 py-2">@ViewBag.TrangThai</td>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 font-medium text-gray-700">Ngày Xác Nhận:</th>
+                    <td class="px-4 py-2">
+                        @(
+                        ViewBag.NgayXacNhan != null
+                        ? ((DateTime)ViewBag.NgayXacNhan).ToString("dd/MM/yyyy")
+                        : "Chưa xác nhận")
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

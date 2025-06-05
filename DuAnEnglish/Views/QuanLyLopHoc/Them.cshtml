@@ -1,0 +1,82 @@
+﻿@model DuAnEnglish.Models.LopHoc
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Thêm Lớp Học";
+}
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="max-w-4xl w-full bg-white p-8 rounded shadow">
+        <h2 class="text-2xl font-bold text-center text-red-600 mb-6">Thêm Lớp Học</h2>
+
+        @using (Html.BeginForm())
+        {
+            <div class="grid grid-cols-1 gap-4">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <!-- Mã lớp - Tên lớp -->
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Mã Lớp Học:</label>
+                        @Html.TextBoxFor(m => m.IDLopHoc, new { @class = "flex-1 border rounded px-3 py-2"  })
+                    </div>
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Tên Lớp:</label>
+                        @Html.TextBoxFor(m => m.TenLop, new { @class = "flex-1 border rounded px-3 py-2"})
+                    </div>
+
+                    <!-- Phòng học - Slot -->
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Mã Phòng Học:</label>
+                        @Html.DropDownList("IDPhongHoc", null, "Chọn phòng", new { @class = "flex-1 border rounded px-3 py-2"})
+                    </div>
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Slot:</label>
+                        @Html.TextBoxFor(m => m.Slot, new { @class = "flex-1 border rounded px-3 py-2", type = "number", min = "0"})
+                    </div>
+
+                    <!-- Khóa học - Giờ bắt đầu -->
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Mã Khóa Học:</label>
+                        @Html.DropDownList("IDKhoaHoc", null, "Chọn khóa học", new { @class = "flex-1 border rounded px-3 py-2"})
+                    </div>
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Giờ Học Bắt Đầu:</label>
+                        @Html.TextBoxFor(m => m.GioHocBD, new { @class = "flex-1 border rounded px-3 py-2", type = "time"})
+                    </div>
+
+                    <!-- Giảng viên - Giờ kết thúc -->
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Giảng Viên:</label>
+                        @Html.DropDownList("IDGiangVien", null, "Chọn giảng viên", new { @class = "flex-1 border rounded px-3 py-2" })
+                    </div>
+                    <div class="flex items-center">
+                        <label class="w-40 font-medium">Giờ Học Kết Thúc:</label>
+                        @Html.TextBoxFor(m => m.GioHocKT, new { @class = "flex-1 border rounded px-3 py-2", type = "time"})
+                    </div>
+                </div>
+
+                <!-- Lịch học -->
+                <div class="flex items-center">
+                    <label class="w-40 font-medium">Lịch Học:</label>
+                    @Html.TextBoxFor(m => m.ThuTrongTuan, new { @class = "flex-1 border rounded px-3 py-2", placeholder = "VD: Thứ 2, Thứ 4, Thứ 6"})
+                </div>
+
+                <!-- Nút submit -->
+                <div class="text-center pt-4">
+                    <input type="submit" value="Thêm" class="bg-red-600 text-white font-semibold px-6 py-2 rounded hover:bg-red-500" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+<script src="~/Scripts/JSThongBao.js"></script>
+
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+        showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

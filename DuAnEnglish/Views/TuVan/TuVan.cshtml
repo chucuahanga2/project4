@@ -1,0 +1,81 @@
+﻿@{
+    ViewBag.Title = "Tư Vấn Chatbot";
+    Layout = null;
+    var chatHistory = ViewBag.ChatHistory as List<(string CauHoi, string TraLoi)>;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>@ViewBag.Title</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="bg-gray-200 flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-2xl border border-gray-300 rounded-lg p-4 bg-gray-100 h-[600px] flex flex-col shadow-lg">
+        <div id="chatWindow" class="flex-grow overflow-y-auto p-3 bg-white border border-gray-200 rounded-md">
+            @* Hiển thị toàn bộ lịch sử chat *@
+            @if (chatHistory != null && chatHistory.Any())
+            {
+                foreach (var item in chatHistory)
+                {
+                    <!-- Câu hỏi người dùng -->
+                    <div class="mb-3 flex justify-end items-end space-x-2">
+                        <div class="max-w-[70%] bg-gray-300 text-white px-4 py-2 rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl text-left">
+                            @item.CauHoi
+                        </div>
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300">
+                            <i class="fa-solid fa-user text-blue-700"></i>
+                        </div>
+                    </div>
+
+                    <!-- Trả lời từ bot -->
+                    <div class="mb-3 flex justify-start items-end space-x-2">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300">
+                            <i class="fa-solid fa-robot text-black"></i>
+                        </div>
+                        <div class="max-w-[70%] bg-gray-200 text-black px-4 py-2 rounded-tr-2xl rounded-tl-2xl rounded-br-2xl text-left">
+                            @Html.Raw(item.TraLoi)
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-gray-500">Chưa có cuộc trò chuyện nào. Hãy nhập câu hỏi để bắt đầu!</p>
+            }
+        </div>
+
+        <!-- Form gửi câu hỏi -->
+        @using (Html.BeginForm("TuVan", "TuVan", FormMethod.Post, new { @class = "mt-3 flex" }))
+        {
+            <textarea name="cauHoi"
+                      class="form-control flex-grow resize-none rounded-full px-4 py-2 border border-gray-300 mr-2"
+                      rows="2"
+                      required
+                      placeholder="Nhập nội dung câu hỏi"></textarea>
+
+            <button type="submit" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-full flex items-center justify-center">
+                <i class="fa-regular fa-circle-right text-xl"></i>
+            </button>
+        }
+    </div>
+
+    <!-- Script gởi form khi nhấn Enter -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const textarea = document.querySelector('textarea[name="cauHoi"]');
+            const form = textarea.closest('form');
+
+            textarea.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault(); // Ngăn xuống dòng
+                    form.submit();         // Gửi form
+                }
+            });
+        });
+    </script>
+</body>
+</html>

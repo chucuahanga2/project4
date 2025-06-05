@@ -1,0 +1,106 @@
+﻿@model List<DuAnEnglish.Models.TaiKhoan>
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "QuanLyTaiKhoan";
+}
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+
+<div class="min-h-screen flex  justify-center bg-gray-100">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-6xl">
+        <h2 class="text-3xl font-bold text-center text-red-600 mb-6">Quản lý tài khoản</h2>
+
+
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex justify-center mb-8">
+                <div class="inline-flex rounded-full bg-gray-100 p-1 shadow-inner">
+                    <a href="@Url.Action("QuanLyTaiKhoan", "QuanLyTaiKhoan", new { loaitaikhoan = "all" })"
+                       class="px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-white hover:shadow-md hover:text-[#00aab5] mx-1">
+                        Tất cả tài khoản
+                    </a>
+                    <a href="@Url.Action("QuanLyTaiKhoan", "QuanLyTaiKhoan", new { loaitaikhoan = "admin" })"
+                       class="px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-white hover:shadow-md hover:text-[#00aab5] mx-1">
+                        Admin
+                    </a>
+                    <a href="@Url.Action("QuanLyTaiKhoan", "QuanLyTaiKhoan", new { loaitaikhoan = "giangvien" })"
+                       class="px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-white hover:shadow-md hover:text-[#00aab5] mx-1">
+                        Giảng Viên
+                    </a>
+                    <a href="@Url.Action("QuanLyTaiKhoan", "QuanLyTaiKhoan", new { loaitaikhoan = "hocvien" })"
+                       class="px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-white hover:shadow-md hover:text-[#00aab5] mx-1">
+                        Học viên
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="text-left mb-6">
+            <a href="@Url.Action("Create", "QuanLyTaiKhoan")"
+               class="inline-block py-2 px-4 text-sm font-medium rounded-lg bg-green-500 text-white hover:bg-green-400">
+                + Thêm mới
+            </a>
+        </div>
+        <div class="flex justify-end mb-4">
+            <form method="get" asp-action="QuanLyTaiKhoan" class="flex items-center space-x-2">
+                <input type="text" name="search" value="@Request.QueryString["search"]" placeholder="Tìm kiếm..."
+                       class="border border-gray-300 rounded px-3 py-2 text-sm placeholder-gray-400 w-72" />
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
+                    Tìm kiếm
+                </button>
+            </form>
+        </div>
+        @if (Model == null || !Model.Any())
+        {
+            <div class="text-center text-gray-500 text-lg italic">Chưa có các tài khoản thuộc quyền này</div>
+        }
+        else
+        {
+            <table class="table-auto w-full border border-gray-300 text-center">
+                <thead class="bg-red-500 text-white">
+                    <tr>
+                        <th class="py-3 px-4 border">Tên đăng nhập</th>
+                        <th class="py-3 px-4 border">Loại tài khoản</th>
+                        <th class="py-3 px-4 border">Email</th>
+                        <th class="py-3 px-4 border">Số điện thoại</th>
+                        <th class="py-3 px-4 border">Trạng thái</th>
+                        <th class="py-3 px-4 border">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tk in Model)
+                    {
+                        <tr class="hover:bg-gray-50 border-t">
+                            <td class="py-2 px-4">@tk.TenDangNhap</td>
+                            <td class="py-2 px-4">@tk.LoaiTK</td>
+                            <td class="py-2 px-4">@tk.Email</td>
+                            <td class="py-2 px-4">@tk.SDT</td>
+                            <td class="py-2 px-4">@tk.TrangThai</td>
+                            <td class="py-2 px-4">
+                                <a href="@Url.Action("Details", new { id = tk.TenDangNhap })"
+                                   class="inline-block bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded mr-1 shadow">
+                                    Chi tiết
+                                </a>
+                                <a href="@Url.Action("Delete", new { id = tk.TenDangNhap })"
+                                   class="btn-xoa inline-block bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded shadow">
+                                    Xóa
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<script src="~/Scripts/JSThongBao.js"></script>
+<script src="~/Scripts/JSXacNhanXoa.js"></script>
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+            // Gọi hàm showAlert từ file JSThongBao.js
+            showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

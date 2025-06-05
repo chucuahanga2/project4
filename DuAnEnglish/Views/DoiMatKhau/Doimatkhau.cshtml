@@ -1,0 +1,66 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    ViewBag.Title = "Doimatkhau";
+}
+
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full space-y-8 bg-white text-gray-800 p-10 rounded-2xl shadow-xl">
+        <div>
+            <h2 class="text-center text-3xl font-extrabold text-red-500">ĐỔI MẬT KHẨU</h2>
+        </div>
+
+        @using (Html.BeginForm("Doimatkhau", "DoiMatKhau", FormMethod.Post))
+        {
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-base font-medium text-gray-700">Tên tài khoản</label>
+                    <input type="text" name="TenDangNhap" value="@ViewBag.TenDangNhap" readonly
+                           class="mt-1 block w-full px-4 py-3 bg-gray-100 text-gray-800 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-base" />
+                </div>
+
+                <div>
+                    <label class="block text-base font-medium text-gray-700">Nhập mật khẩu cũ</label>
+                    <input type="password" name="MatKhauCu" placeholder="Nhập mật khẩu cũ" required
+                           class="mt-1 block w-full px-4 py-3 bg-gray-100 text-gray-800 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-base" />
+                </div>
+
+                <div>
+                    <label class="block text-base font-medium text-gray-700">Nhập mật khẩu mới</label>
+                    <input type="password" name="MatKhauMoi" placeholder="Nhập mật khẩu mới" required
+                           class="mt-1 block w-full px-4 py-3 bg-gray-100 text-gray-800 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-base" />
+                </div>
+
+                <div>
+                    <label class="block text-base font-medium text-gray-700">Nhập lại mật khẩu mới</label>
+                    <input type="password" name="XacNhanMatKhauMoi" placeholder="Nhập lại mật khẩu mới" required
+                           class="mt-1 block w-full px-4 py-3 bg-gray-100 text-gray-800 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-base" />
+                </div>
+
+                <div>
+                    <button type="submit"
+                            class="w-full py-3 px-6 text-lg font-semibold rounded-lg bg-gradient-to-r from-red-600 via-yellow-400 to-red-600
+               bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
+               text-white shadow-md">
+                        Đổi mật khẩu
+                    </button>
+
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+<script src="~/Scripts/JSThongBao.js"></script>
+
+@if (ViewBag.ThongBao != null)
+{
+    <script>
+        showAlert('@Html.Raw(ViewBag.ThongBao)');
+    </script>
+}

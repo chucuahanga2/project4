@@ -1,0 +1,501 @@
+﻿@model IEnumerable<DuAnEnglish.Models.KhoaHoc>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trung Tâm Anh Ngữ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/aos@next/dist/aos.css" />
+
+    <style>
+        /* Custom animations */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        /* Hover effects */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            }
+        /* Testimonial quote styling */
+        .testimonial-quote::before {
+            content: "\201C";
+            font-family: 'Font Awesome 5 Free';
+            font-size: 3rem;
+            color: #e2e8f0;
+            position: absolute;
+            left: -10px;
+            top: -20px;
+        }
+
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 14px !important; /* Giảm kích thước mũi tên */
+            font-weight: 600 !important; /* Giảm độ đậm */
+        }
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            width: 40px !important; /* Kích thước nút */
+            height: 40px !important;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+
+    <!-- Hero Section with red gradient -->
+
+    <section class="relative h-[600px] overflow-hidden">
+        <!-- Hình ảnh nền -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://img.freepik.com/premium-photo/3d-map-rendering-england-flag-celebrate-national-shopping-day-independence-day_307791-166.jpg"
+                 alt="Background"
+                 class="w-full h-full object-cover">
+        </div>
+
+        <!-- Nội dung chữ và nút bấm -->
+        <div class="absolute inset-0 flex items-center justify-center z-20">
+            <div class="text-center text-white px-4 max-w-4xl animate-fade-in-up">
+                <h1 class="text-5xl font-bold mb-6 leading-tight">Chào mừng đến với Trung Tâm Anh Ngữ</h1>
+                <p class="text-xl mb-8 opacity-90">Nâng cao kỹ năng tiếng Anh của bạn với các khóa học chất lượng hàng đầu</p>
+                <a href='@Url.Action("KhoaHoc","KhoaHoc")'
+                   class="inline-block bg-[#ce3235] text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    Khám Phá Các Khóa Học
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <!-- Phần ảnh bên trái -->
+                <div class="w-full lg:w-2/3 max-w-5xl mx-auto h-[400px] lg:h-[400px]">
+                    <img src="~/Images/group-kids-studying-school.jpg"
+                         alt="Về FIVESTARS"
+                         class="rounded-lg shadow-xl object-cover w-full h-full hover:scale-105 transition-transform duration-300">
+                </div>
+
+                <!-- Phần nội dung bên phải -->
+                <div class="w-full lg:w-2/3">
+                    <!-- Tiêu đề -->
+                    <div class="text-center lg:text-left mb-8">
+                        <h2 class="text-2xl font-bold text-[#333] mb-2">VỀ CHÚNG TÔI</h2>
+                        <h1 class="text-4xl font-bold text-red-600">FIVESTARS ENGLISH CENTER</h1>
+                    </div>
+
+                    <!-- Nội dung mô tả -->
+                    <p class="text-lg text-gray-700 leading-relaxed mb-8">
+                        FIVESTARS là trung tâm tiếng Anh tại Đà Nẵng, hoạt động với phương châm
+                        <strong class="text-red-600">“mang đến những giờ học chất lượng, vui nhộn”</strong>.
+                        Với sinh viên đang nghiên cứu phương pháp giảng dạy ngoại ngữ hoặc xây dựng
+                        chương trình đào tạo, đây có thể là một ví dụ thực tế lý tưởng để khai thác
+                        trong bài viết học thuật. FIVESTARS luôn chăm sóc học viên tận tình và đảm bảo
+                        đầu ra cho tất cả học viên.
+                    </p>
+
+                    <!-- Thống kê -->
+                    <div class="gap-4 flex items-center justify-between">
+                        <!-- Item 1 -->
+                        <div class="col-span-1 flex items-center justify-center gap-4">
+                            <div class="text-center">
+                                <div class="text-red-600 font-bold text-4xl mb-2">5 NĂM</div>
+                                <div class="text-gray-600">Tận tâm đào tạo</div>
+                            </div>
+                        </div>
+                        <div class="border-l-2 border-red-600 h-12 hidden md:block"></div>
+
+                        <!-- Item 2 -->
+                        <div class="col-span-1 flex items-center justify-center gap-4">
+                            <div class="text-center">
+                                <div class="text-red-600 font-bold text-4xl mb-2">100%</div>
+                                <div class="text-gray-600">Giảng viên chất lượng</div>
+                            </div>
+                        </div>
+                        <div class="border-l-2 border-red-600 h-12 hidden md:block"></div>
+
+                        <!-- Item 3 -->
+                        <div class="col-span-1 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="text-red-600 font-bold text-4xl mb-2">100%</div>
+                                <div class="text-gray-600">Học viên hài lòng</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section with red icons -->
+    <section class="container mx-auto py-20 px-4"
+             data-aos="fade-up"
+             data-aos-duration="800">
+        <div class="text-center mb-16">
+            <p class="text-gray-600 text-2xl max-w-2xl mx-auto leading-relaxed">
+                Trung tâm Anh ngữ với hơn 15 năm kinh nghiệm trong lĩnh vực đào tạo tiếng Anh,
+                cam kết mang đến chất lượng giáo dục tốt nhất cho học viên.
+            </p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <!-- Card Sứ Mệnh -->
+            <div class="bg-white p-8 rounded-xl shadow-md transform transition-all duration-300 hover:scale-105"
+                 data-aos="fade-up"
+                 data-aos-delay="100">
+                <div class="text-[#ce3235] text-4xl mb-4">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Sứ Mệnh</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Trang bị cho thế hệ trẻ vốn tiếng Anh vững chắc trên bước đường hội nhập thế giới.
+                </p>
+            </div>
+
+            <!-- Card Tầm Nhìn -->
+            <div class="bg-white p-8 rounded-xl shadow-md transform transition-all duration-300 hover:scale-105"
+                 data-aos="fade-up"
+                 data-aos-delay="200">
+                <div class="text-[#ce3235] text-4xl mb-4">
+                    <i class="fas fa-binoculars"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Tầm Nhìn</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Trở thành trung tâm Anh ngữ hàng đầu, được phụ huynh và học viên tin tưởng lựa chọn.
+                </p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Courses Section with red icons -->
+    <section class="bg-gradient-to-b from-gray-50 to-white py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-6">Các Khóa Học Nổi Bậc</h2>
+                <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                    Các chương trình đào tạo được thiết kế bài bản theo chuẩn quốc tế
+                </p>
+            </div>
+            <div>
+                <div class="container mx-auto px-4 py-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        @foreach (var item in Model)
+                        {
+                            <div class="group relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                                <a href="@Url.Action("ChiTietKhoaHoc", "KhoaHoc", new { id = item.IDKhoaHoc })"
+                                   class="block overflow-hidden rounded-t-xl">
+                                    <img src="~/Images/@item.HinhAnhKH"
+                                         alt="@item.TenKhoaHoc"
+                                         class="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-300">
+                                </a>
+
+                                <div class="p-6">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-2">@item.TenKhoaHoc</h3>
+                                    <p class="text-gray-600 mb-4 line-clamp-3">
+                                        Khóa học được thiết kế với nội dung cập nhật, phù hợp với nhu cầu đào tạo tiếng Anh hiện đại.
+                                    </p>
+
+                                    <div class="flex items-center justify-between">
+                                        <a href="@Url.Action("ChiTietKhoaHoc", "KhoaHoc", new { id = item.IDKhoaHoc })"
+                                           class="flex items-center text-[#00aab5] font-semibold hover:text-[#008996] transition-colors">
+                                            Xem chi tiết
+                                            <i class="fas fa-chevron-right ml-2 text-sm"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Ribbon badge -->
+                                <div class="absolute top-4 right-4 bg-[#fcaf17] text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
+                                    Hot
+                                </div>
+                            </div>}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section with updated red avatars -->
+    <section class="container mx-auto py-20 px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold mb-6">Học Viên Nói Gì Về Chúng Tôi</h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <!-- Testimonial 1 -->
+            <div class="bg-white p-8 rounded-xl shadow-md relative transform transition-all duration-300"
+                 data-aos="fade-up"
+                 data-aos-delay="100">
+                <div class="testimonial-quote"></div>
+                <p class="text-gray-600 italic mb-6 leading-relaxed">
+                    "Khóa học rất bổ ích, giúp em tự tin hơn trong giao tiếp tiếng Anh."
+                </p>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-[#ce3235] flex items-center justify-center text-white mr-4">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold">Nguyễn Văn A</p>
+                        <p class="text-sm text-gray-500">Học viên IELTS</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonial 2 -->
+            <div class="bg-white p-8 rounded-xl shadow-md relative transform transition-all duration-300"
+                 data-aos="fade-up"
+                 data-aos-delay="200">
+                <div class="testimonial-quote"></div>
+                <p class="text-gray-600 italic mb-6 leading-relaxed">
+                    "Giáo viên nhiệt tình, bài giảng dễ hiểu và thực hành nhiều."
+                </p>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-[#ce3235] flex items-center justify-center text-white mr-4">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold">Trần Thị B</p>
+                        <p class="text-sm text-gray-500">Học viên TOEIC</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- thành tích -->
+    <!-- Container chính -->
+    <div class="swiper teacher-carousel mb-10">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold mb-6">ĐỘI NGŨ GIÁO VIÊN</h2>
+        </div>
+        <div class="swiper-wrapper">
+            <!-- Giảng viên 1 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien1.jpg"
+                         alt="Giảng viên 1"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">8.5 IELTS</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Tô Ngọc Vy</h3>
+                            <p class="text-lg opacity-90">IELTS Academic Manager</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Giảng viên 2 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien2.png"
+                         alt="Giảng viên 2"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">9.0 IELTS Writing</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Trần Phương Linh</h3>
+                            <p class="text-lg opacity-90">Senior IELTS Instructor</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Giảng viên 3 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien3.jpg"
+                         alt="Giảng viên 3"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">TOEIC 990/990</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Nguyễn Hồng Sơn</h3>
+                            <p class="text-lg opacity-90">TOEIC Program Director</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Giảng viên 4 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien4.jpg"
+                         alt="Giảng viên 4"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">CELTA Certified</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Lê Minh Anh</h3>
+                            <p class="text-lg opacity-90">Business English Coordinator</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Giảng viên 5 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien5.jpg"
+                         alt="Giảng viên 5"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">IELTS 8.0 Speaking</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Phạm Đức Huy</h3>
+                            <p class="text-lg opacity-90">Grammar Specialist</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Giảng viên 6 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien6.jpg"
+                         alt="Giảng viên 6"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">TOEFL 118/120</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Vũ Thị Lan</h3>
+                            <p class="text-lg opacity-90">Pronunciation Coach</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Giảng viên 7 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien7.jpg"
+                         alt="Giảng viên 7"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">SAT 1550/1600</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Đỗ Quang Minh</h3>
+                            <p class="text-lg opacity-90">Academic Writing Expert</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!-- Giảng viên 8 -->
+            <div class="swiper-slide">
+                <section class="group relative w-full h-[420px]">
+                    <img src="~/Images/giangvien8.jpg"
+                         alt="Giảng viên 8"
+                         class="w-full h-full object-cover rounded-2xl shadow-lg">
+                    <div class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent rounded-2xl">
+                        <div class="flex items-center gap-3 bg-[#63617b] px-4 py-2 rounded-lg w-fit mx-auto mb-3">
+                            <i class="fa-solid fa-certificate text-white text-lg"></i>
+                            <span class="text-white font-semibold text-xl">TEFL Certified</span>
+                        </div>
+                        <div class="text-center text-white space-y-1">
+                            <h3 class="text-2xl font-bold">Hoàng Thị Mai</h3>
+                            <p class="text-lg opacity-90">Kids English Supervisorr</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <!-- Navigation và Pagination -->
+        <div class="swiper-pagination mt-6"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,    // thời gian (ms)
+            once: true        // chỉ chạy 1 lần
+        });
+    </script>
+
+    <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
+        <!-- Nút chatbot -->
+        <a href="@Url.Action("TuVan", "TuVan")" target="_blank" class="w-[80px] h-[80px] rounded-full  flex items-center justify-center shadow-lg hover:bg-black-400 transition-all">
+            <i class="fa-brands fa-rocketchat text-black text-3xl"></i>
+        </a>
+        <!-- Nút gọi điện -->
+        <a href="tel:0123456789" class="w-[80px] h-[80px] rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:bg-green-600 transition-all">
+            <i class="fas fa-phone text-white text-3xl"></i>
+        </a>
+
+        <!-- Nút Zalo -->
+        <a href="https://zalo.me/0123456789" target="_blank" class="w-[80px] h-[80px] rounded-full bg-blue-600 flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/1200px-Icon_of_Zalo.svg.png" alt="Zalo" class="w-10 h-10">
+        </a>
+
+        <!-- Nút Messenger -->
+        <a href="https://m.me/your-page" target="_blank" class="w-[80px] h-[80px] rounded-full bg-blue-500 flex items-center justify-center shadow-lg hover:bg-blue-600 transition-all">
+            <i class="fab fa-facebook-messenger text-white text-3xl"></i>
+        </a>
+    </div>
+
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        const swiper = new Swiper('.teacher-carousel', {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            loop: true,
+            autoplay: {
+                delay: 2000,
+                disableOnInteraction: false,
+            },
+            breakpoints: {
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 }
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+    </script>
+
+</body>
+</html>

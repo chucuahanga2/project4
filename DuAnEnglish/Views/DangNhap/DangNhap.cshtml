@@ -1,0 +1,116 @@
+﻿@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng Nhập</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+</head>
+<body class="min-h-screen w-full bg-[#F4FFF7] flex items-center justify-center overflow-hidden">
+
+    <!-- Container chia đôi màn hình -->
+    <div class="bg-white w-[90%] max-w-6xl h-[90%] rounded-2xl overflow-hidden shadow-lg flex">
+
+        <!-- Cột bên trái: Form đăng nhập và lời chào -->
+        <div class="w-full lg:w-1/2 flex flex-col p-8 md:p-12">
+
+            <!-- Logo hoặc tiêu đề nhỏ (tuỳ chọn) -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="text-xl font-bold text-green-600">
+                    English FiveStars
+                </div>
+            </div>
+
+            <!-- Lời chào -->
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                Xin chào!
+            </h1>
+            <p class="text-gray-500 mb-6">
+                Vui lòng nhập tên tài khoản và mật khẩu của bạn để đăng nhập vào tài khoản.
+            </p>
+
+            <!-- Form đăng nhập -->
+            @using (Html.BeginForm("DangNhap", "DangNhap", FormMethod.Post))
+            {
+<div class="space-y-4">
+    <!-- Địa chỉ email -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+            Tên đăng nhập
+        </label>
+        <input type="text" name="TenDangNhap"
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg
+                                      focus:outline-none focus:ring-2 focus:ring-green-200"
+               placeholder="Nhập tên đăng nhập" required />
+    </div>
+
+    <!-- Mật khẩu -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+            Mật khẩu
+        </label>
+        <input type="password" name="MatKhau"
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg
+                                      focus:outline-none focus:ring-2 focus:ring-green-200"
+               placeholder="Nhập mật khẩu" required />
+    </div>
+
+    <!-- Nút đăng nhập -->
+    <button type="submit"
+            class="w-full bg-black text-white py-2 px-4 rounded-lg
+                                   hover:bg-gray-800 transition-colors duration-200">
+        Đăng nhập
+    </button>
+</div>            }
+
+            <!-- Các tùy chọn khác -->
+            <div class="mt-6 text-center space-y-2">
+                <form action="@Url.Action("DangKy", "DangKy")" method="get">
+                    <button type="submit"
+                            class="text-sm text-gray-500 underline hover:text-gray-700">
+                        Chưa có tài khoản? Đăng ký ngay
+                    </button>
+                </form>
+
+                <form action="@Url.Action("Index", "Home")" method="get">
+                    <button type="submit"
+                            class="text-sm text-gray-500 underline hover:text-gray-700">
+                        Quay lại trang chủ
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cột bên phải: Hình ảnh minh họa -->
+        <div class="hidden lg:flex w-1/2 relative">
+            <!-- Ảnh nền -->
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
+                 alt="Ảnh nền"
+                 class="w-full h-full object-cover" />
+
+            <!-- Khối thông tin nổi trên ảnh -->
+            <div class="absolute inset-0 bg-black/40 flex items-center justify-center p-8">
+                <div class="bg-white/80 backdrop-blur-sm rounded-lg p-6 max-w-sm text-center">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">
+                        FIVESTARS
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="~/Scripts/JSThongBao.js"></script>
+    @if (ViewBag.ThongBao != null)
+    {
+<script>
+            // Gọi hàm showAlert từ file JSThongBao.js
+            showAlert('@Html.Raw(ViewBag.ThongBao)');
+</script>}
+</body>
+</html>
