@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -37,6 +37,7 @@ namespace DuAnEnglish.Controllers
         }
         // POST: ThongGiangVien
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult ThongTinGiangVien(GiangVien model)
         {
             string tenDangNhap = Session["User"] as string;

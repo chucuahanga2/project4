@@ -14,34 +14,45 @@ namespace DuAnEnglish.Controllers
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
+        // GET: QLBaoCaoThongKe/Index
+        public ActionResult Index(int? thang, int? quy, int? nam)
+        {
+            return RedirectToAction("BaoCaoThongKe", new { thang, quy, nam });
+        }
+
         // GET: QLBaoCaoThongKe/BaoCaoThongKe
         public ActionResult BaoCaoThongKe(int? thang, int? quy, int? nam)
         {
             int currentYear = nam ?? DateTime.Now.Year;
 
-            var query = db.ThanhToans
-                          .Include(t => t.KhoaHoc)
-                          .Where(t => t.TrangThai == "Đã thanh toán" && (t.NgayXacNhan.HasValue || t.NgayThanhToan.HasValue));
+            // Load completed payments and filter in memory to avoid EF6 nullable date coalescing limitations
+            var rawList = db.ThanhToans
+                            .Include(t => t.KhoaHoc)
+                            .Where(t => t.TrangThai == "Đã thanh toán" && (t.NgayXacNhan.HasValue || t.NgayThanhToan.HasValue))
+                            .ToList();
+
+            var filtered = rawList.Where(t =>
+            {
+                var dt = t.NgayXacNhan ?? t.NgayThanhToan;
+                return dt.HasValue && dt.Value.Year == currentYear;
+            });
 
             if (thang.HasValue)
             {
-                query = query.Where(t => (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month == thang.Value &&
-                                         (t.NgayXacNhan ?? t.NgayThanhToan).Value.Year == currentYear);
+                filtered = filtered.Where(t => (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month == thang.Value);
             }
             else if (quy.HasValue)
             {
                 int startMonth = (quy.Value - 1) * 3 + 1;
                 int endMonth = startMonth + 2;
-                query = query.Where(t => (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month >= startMonth &&
-                                         (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month <= endMonth &&
-                                         (t.NgayXacNhan ?? t.NgayThanhToan).Value.Year == currentYear);
-            }
-            else
-            {
-                query = query.Where(t => (t.NgayXacNhan ?? t.NgayThanhToan).Value.Year == currentYear);
+                filtered = filtered.Where(t =>
+                {
+                    int m = (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month;
+                    return m >= startMonth && m <= endMonth;
+                });
             }
 
-            var danhSach = query.OrderByDescending(t => t.NgayXacNhan ?? t.NgayThanhToan).ToList();
+            var danhSach = filtered.OrderByDescending(t => t.NgayXacNhan ?? t.NgayThanhToan).ToList();
             decimal tongTien = danhSach.Sum(t => t.SoTien ?? 0);
 
             ViewBag.SelectedThang = thang;
@@ -50,7 +61,7 @@ namespace DuAnEnglish.Controllers
             ViewBag.TongDoanhThuKy = tongTien;
             ViewBag.TongSoGiaoDich = danhSach.Count;
 
-            return View(danhSach);
+            return View("BaoCaoThongKe", danhSach);
         }
 
         protected override void Dispose(bool disposing)

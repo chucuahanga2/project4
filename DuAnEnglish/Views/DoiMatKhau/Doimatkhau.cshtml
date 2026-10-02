@@ -1,7 +1,15 @@
 ﻿
 @{
-    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
-    ViewBag.Title = "Doimatkhau";
+    string currentRole = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "";
+    if (currentRole == "admin")
+    {
+        Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    }
+    ViewBag.Title = "Đổi Mật Khẩu";
 }
 
 <!-- SweetAlert2 -->

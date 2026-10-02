@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,10 +8,17 @@ using DuAnEnglish.Security;
 
 namespace DuAnEnglish.Controllers
 {
-    [AuthorizeRole("hocvien")]
+    [AuthorizeRole("hocvien", "admin")]
     public class DoiMatKhauController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
+
+        // GET: DoiMatKhau/Index
+        public ActionResult Index()
+        {
+            return Doimatkhau();
+        }
+
         // GET: DoiMatKhau
         public ActionResult Doimatkhau()
         {

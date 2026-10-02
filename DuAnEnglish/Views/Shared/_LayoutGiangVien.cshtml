@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title</title>
+    <title>@(ViewBag.Title ?? "Giảng Viên") - Hệ Thống Khóa Học Trực Tuyến</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -24,6 +24,8 @@
                 <a href="@Url.Action("Index", "HomeGiangVien")" class="hover:text-gray-200"><i class="fas fa-tachometer-alt mr-1"></i> BÀN LÀM VIỆC</a>
                 <a href="@Url.Action("Index", "GiangVienKhoaHoc")" class="hover:text-gray-200"><i class="fas fa-book mr-1"></i> KHÓA HỌC CỦA TÔI</a>
                 <a href="@Url.Action("ThemKhoaHoc", "GiangVienKhoaHoc")" class="hover:text-gray-200"><i class="fas fa-plus-circle mr-1"></i> TẠO KHÓA HỌC MỚI</a>
+                <a href="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")" class="hover:text-gray-200"><i class="fas fa-award mr-1"></i> QUẢN LÝ ĐIỂM SỐ</a>
+                <a href="@Url.Action("QuanLyThongBaoGV", "QuanLyThongBaoGV")" class="hover:text-gray-200"><i class="fas fa-bullhorn mr-1"></i> QUẢN LÝ THÔNG BÁO</a>
                 <a href="@Url.Action("ThongTinGiangVien", "ThongTinGiangVien")" class="hover:text-gray-200"><i class="fas fa-user mr-1"></i> THÔNG TIN CÁ NHÂN</a>
                 <a href="@Url.Action("DoiMatKhauGV", "DoiMatKhauGV")" class="hover:text-gray-200"><i class="fas fa-key mr-1"></i> ĐỔI MẬT KHẨU</a>
             </nav>

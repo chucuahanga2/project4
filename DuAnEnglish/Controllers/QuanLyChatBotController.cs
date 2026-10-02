@@ -14,6 +14,12 @@ namespace DuAnEnglish.Controllers
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
+        // GET: QuanLyChatBot/Index
+        public ActionResult Index()
+        {
+            return RedirectToAction("QuanLyChatBot");
+        }
+
         // GET: QuanLyChatBot
         public ActionResult QuanLyChatBot()
         {
@@ -23,7 +29,7 @@ namespace DuAnEnglish.Controllers
             {
                 ViewBag.ThongBao = TempData["ThongBao"];
             }
-            return View(ds);
+            return View("QuanLyChatBot", ds);
         }
 
 

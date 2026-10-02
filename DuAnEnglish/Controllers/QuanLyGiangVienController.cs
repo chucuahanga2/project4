@@ -14,6 +14,12 @@ namespace DuAnEnglish.Controllers
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
+        // GET: QuanLyGiangVien/Index
+        public ActionResult Index(string search = "")
+        {
+            return RedirectToAction("QuanLyGiangVien", new { search });
+        }
+
         // GET: QuanLyGiangVien
         public ActionResult QuanLyGiangVien(string search = "")
         {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -12,7 +12,14 @@ namespace DuAnEnglish.Controllers
     public class DoiMatKhauGVController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
-        // GET: DoiMatKhau
+
+        // GET: DoiMatKhauGV/Index
+        public ActionResult Index()
+        {
+            return DoiMatKhauGV();
+        }
+
+        // GET: DoiMatKhauGV
         public ActionResult DoiMatKhauGV()
         {
             if (Session["User"] == null)

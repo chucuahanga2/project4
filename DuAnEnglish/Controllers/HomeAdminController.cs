@@ -30,8 +30,6 @@ namespace DuAnEnglish.Controllers
             var topKhoaHoc = db.KhoaHocs
                                .Include(k => k.DanhMucKhoaHoc)
                                .Include(k => k.GiangVien)
-                               .Include(k => k.DangKyKhoaHocs)
-                               .Include(k => k.ThanhToans)
                                .ToList()
                                .Select(k => new KhoaHocThongKeItem
                                {
@@ -40,8 +38,8 @@ namespace DuAnEnglish.Controllers
                                    TenDanhMuc = k.DanhMucKhoaHoc != null ? k.DanhMucKhoaHoc.TenDanhMuc : k.DanhMuc,
                                    TenGiangVien = k.GiangVien != null ? k.GiangVien.TenGV : "Chưa phân công",
                                    HocPhi = k.HocPhi ?? 0,
-                                   SoHocVien = k.DangKyKhoaHocs.Count,
-                                   DoanhThu = k.ThanhToans.Where(t => t.TrangThai == "Đã thanh toán").Sum(t => (decimal?)t.SoTien) ?? 0
+                                   SoHocVien = db.DangKyKhoaHocs.Count(d => d.IDKhoaHoc == k.IDKhoaHoc),
+                                   DoanhThu = db.ThanhToans.Where(t => t.IDKhoaHoc == k.IDKhoaHoc && t.TrangThai == "Đã thanh toán").Sum(t => (decimal?)t.SoTien) ?? 0
                                })
                                .OrderByDescending(k => k.SoHocVien)
                                .Take(5)

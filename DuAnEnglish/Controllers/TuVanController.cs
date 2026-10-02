@@ -26,6 +26,12 @@ namespace DuAnEnglish.Controllers
         private static readonly HttpClient httpClient = new HttpClient();
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
+        // GET: TuVan/Index
+        public ActionResult Index()
+        {
+            return RedirectToAction("TuVan");
+        }
+
         // GET: TuVan
         public ActionResult TuVan()
         {
@@ -39,11 +45,19 @@ namespace DuAnEnglish.Controllers
 
         // Xử lý form gửi câu hỏi
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> TuVan(string cauHoi)
         {
             var chatHistory = Session["ChatHistory"] as List<ChatHistoryItem>;
             if (chatHistory == null) chatHistory = new List<ChatHistoryItem>();
 
+            if (string.IsNullOrWhiteSpace(cauHoi))
+            {
+                ViewBag.ChatHistory = chatHistory;
+                return View();
+            }
+
+            cauHoi = cauHoi.Trim();
             string cauTraLoi = "";
             // Chuẩn hóa câu hỏi người dùng
             string cauHoiLower = cauHoi.ToLower();
@@ -54,8 +68,8 @@ namespace DuAnEnglish.Controllers
                 .AsEnumerable()
                 .Where(nd =>
                 {
-                    var tuKhoaArray = nd.TuKhoa.ToLower().Split(','); // cho phép nhiều từ khóa cách nhau bằng dấu phẩy
-        return tuKhoaArray.Any(kw => cauHoiLower.Contains(kw.Trim()));
+                    var tuKhoaArray = nd.TuKhoa.ToLower().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    return tuKhoaArray.Any(kw => cauHoiLower.Contains(kw.Trim()));
                 })
                 .OrderByDescending(nd => nd.TuKhoa.Length) // Ưu tiên từ khóa dài (cụ thể hơn)
                 .FirstOrDefault();
@@ -70,7 +84,6 @@ namespace DuAnEnglish.Controllers
                 string apiKey = WebConfigurationManager.AppSettings["GeminiApiKey"];
                 cauTraLoi = await GoiGemini(cauHoi, apiKey);
             }
-
 
             // Lưu lịch sử chat
             chatHistory.Add(new ChatHistoryItem { CauHoi = cauHoi, TraLoi = cauTraLoi });
@@ -107,6 +120,11 @@ namespace DuAnEnglish.Controllers
 
         private async Task<string> GoiGemini(string inputText, string apiKey)
         {
+            if (string.IsNullOrWhiteSpace(apiKey) || apiKey.Trim() == "YOUR_API_KEY")
+            {
+                return "Cảm ơn bạn đã đặt câu hỏi! Hệ thống đào tạo TikiCourse hiện có rất nhiều khóa học chất lượng cao về Lập trình Web ASP.NET MVC, C# nâng cao, Cơ sở dữ liệu SQL Server và Ngoại ngữ. Bạn có thể duyệt danh sách khóa học hoặc liên hệ hotline 1900-6035 để nhận tư vấn lộ trình học phù hợp nhất nhé!";
+            }
+
             try
             {
                 string url = string.Format("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={0}", apiKey);
@@ -134,8 +152,7 @@ namespace DuAnEnglish.Controllers
                 var response = await httpClient.PostAsync(url, jsonContent);
                 if (!response.IsSuccessStatusCode)
                 {
-                    string errorDetails = await response.Content.ReadAsStringAsync();
-                    return string.Format("Lỗi gọi Gemini API: {0}", errorDetails);
+                    return "Cảm ơn bạn đã quan tâm đến TikiCourse! Bạn vui lòng xem chi tiết nội dung và học phí khóa học tại mục 'Khóa học' hoặc liên hệ hotline 1900-6035 để được chuyên viên hỗ trợ trực tiếp.";
                 }
 
                 var responseJson = await response.Content.ReadAsStringAsync();

@@ -1,4 +1,4 @@
-﻿@model List<DuAnEnglish.Models.ThanhToan>
+@model List<DuAnEnglish.Models.ThanhToan>
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
     ViewBag.Title = "Báo cáo thống kê doanh thu";
@@ -141,7 +141,7 @@
                                         <i class="fas fa-user-circle mr-1 text-muted"></i> @item.TenDangNhap
                                     </div>
                                     <div class="small text-muted">
-                                        Phương thức: @(string.IsNullOrEmpty(item.PhuongThuc) ? "VNPay Online" : item.PhuongThuc)
+                                        Phương thức: @(string.IsNullOrEmpty(item.PhuongThucTT) ? "VNPay Online" : item.PhuongThucTT)
                                     </div>
                                 </td>
 

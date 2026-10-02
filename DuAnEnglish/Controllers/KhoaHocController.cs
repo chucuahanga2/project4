@@ -12,6 +12,12 @@ namespace DuAnEnglish.Controllers
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
+        // GET: KhoaHoc/Index
+        public ActionResult Index(string danhmuc = "all", string category = null, string search = "", string searchString = null, string gia = "all", string priceFilter = null, string sort = "newest")
+        {
+            return RedirectToAction("KhoaHoc", new { danhmuc, category, search, searchString, gia, priceFilter, sort });
+        }
+
         // GET: KhoaHoc/KhoaHoc
         public ActionResult KhoaHoc(string danhmuc = "all", string category = null, string search = "", string searchString = null, string gia = "all", string priceFilter = null, string sort = "newest")
         {

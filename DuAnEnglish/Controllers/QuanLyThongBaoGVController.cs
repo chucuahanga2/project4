@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -33,6 +33,12 @@ namespace DuAnEnglish.Controllers
         //    }
         //    return View(danhSachThongBao);
         //}
+        // GET: QuanLyThongBaoGV/Index
+        public ActionResult Index(int? page)
+        {
+            return QuanLyThongBaoGV(page);
+        }
+
         public ActionResult QuanLyThongBaoGV(int? page)
         {
             string tenDangNhap = Session["User"] as string;

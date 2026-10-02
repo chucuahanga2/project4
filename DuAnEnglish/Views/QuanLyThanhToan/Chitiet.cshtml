@@ -1,4 +1,4 @@
-﻿@model DuAnEnglish.Models.ThanhToan
+@model DuAnEnglish.Models.ThanhToan
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
     ViewBag.Title = "Chi tiết hóa đơn #" + Model.IDThanhToan;
@@ -46,7 +46,7 @@
                             </tr>
                             <tr>
                                 <td class="text-muted">Phương thức TT:</td>
-                                <td class="font-weight-bold">@(string.IsNullOrEmpty(Model.PhuongThuc) ? "VNPay QR / Thẻ nội địa" : Model.PhuongThuc)</td>
+                                <td class="font-weight-bold">@(string.IsNullOrEmpty(Model.PhuongThucTT) ? "VNPay QR / Thẻ nội địa" : Model.PhuongThucTT)</td>
                             </tr>
                         </table>
                     </div>

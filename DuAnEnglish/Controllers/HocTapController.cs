@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -11,6 +11,12 @@ namespace DuAnEnglish.Controllers
     public class HocTapController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
+
+        // GET: HocTap/Index
+        public ActionResult Index()
+        {
+            return RedirectToAction("KhoaHocCuaToi");
+        }
 
         // GET: HocTap/KhoaHocCuaToi
         public ActionResult KhoaHocCuaToi()

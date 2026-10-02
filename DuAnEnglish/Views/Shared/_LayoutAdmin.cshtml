@@ -1,4 +1,4 @@
-﻿@{
+@{
     string currentCtrl = ViewContext.RouteData.Values["controller"] != null ? ViewContext.RouteData.Values["controller"].ToString() : "";
     string currentAct = ViewContext.RouteData.Values["action"] != null ? ViewContext.RouteData.Values["action"].ToString() : "";
     string adminUser = Session["User"] != null ? Session["User"].ToString() : "Admin";
@@ -7,9 +7,10 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>@(ViewBag.Title ?? "Quản trị") - Hệ thống Khóa học Trực tuyến</title>
+    <title>@Html.Raw(ViewBag.Title ?? "Quản trị") - Hệ thống Khóa học Trực tuyến</title>
 
     <!-- Custom fonts for this template -->
     <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -62,17 +63,19 @@
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
+            @{
+                string userRole = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "admin";
+                string brandUrl = userRole == "giangvien" ? Url.Action("Index", "HomeGiangVien") : Url.Action("Index", "HomeAdmin");
+                string roleSubtitle = userRole == "giangvien" ? "TEACHER" : "ADMIN";
+            }
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="@Url.Action("Index", "HomeAdmin")">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="@brandUrl">
                 <div class="sidebar-brand-icon">
                     <i class="fas fa-graduation-cap fa-2x"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">EDUMASTER <sup>ADMIN</sup></div>
+                <div class="sidebar-brand-text mx-3">EDUMASTER <sup>@roleSubtitle</sup></div>
             </a>
 
-            @{
-                string userRole = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "admin";
-            }
             @if (userRole == "giangvien")
             {
                 <!-- Divider -->
@@ -101,6 +104,44 @@
                     <a class="nav-link" href="@Url.Action("ThemKhoaHoc", "GiangVienKhoaHoc")">
                         <i class="fas fa-fw fa-plus-circle"></i>
                         <span>Tạo Khóa học Mới</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">
+                    Đào tạo & Quản lý
+                </div>
+
+                <li class="nav-item @(currentCtrl == "QuanLyDiemSo" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")">
+                        <i class="fas fa-fw fa-award"></i>
+                        <span>Quản lý Điểm số</span>
+                    </a>
+                </li>
+
+                <li class="nav-item @(currentCtrl == "QuanLyThongBaoGV" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyThongBaoGV", "QuanLyThongBaoGV")">
+                        <i class="fas fa-fw fa-bullhorn"></i>
+                        <span>Quản lý Thông báo</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">
+                    Tài khoản cá nhân
+                </div>
+
+                <li class="nav-item @(currentCtrl == "ThongTinGiangVien" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("ThongTinGiangVien", "ThongTinGiangVien")">
+                        <i class="fas fa-fw fa-user"></i>
+                        <span>Hồ sơ Giảng viên</span>
+                    </a>
+                </li>
+
+                <li class="nav-item @(currentCtrl == "DoiMatKhauGV" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("DoiMatKhauGV", "DoiMatKhauGV")">
+                        <i class="fas fa-fw fa-key"></i>
+                        <span>Đổi Mật Khẩu</span>
                     </a>
                 </li>
             }
@@ -240,7 +281,15 @@
                     </button>
 
                     <h5 class="h6 font-weight-bold text-gray-800 mb-0 d-none d-sm-inline-block">
-                        <i class="fas fa-shield-alt text-primary mr-1"></i> BẢNG ĐIỀU KHIỂN HỆ THỐNG KHÓA HỌC TRỰC TUYẾN
+                        @if (userRole == "giangvien")
+                        {
+                            <span class="text-success"><i class="fas fa-chalkboard-teacher mr-1"></i> CỔNG GIẢNG VIÊN</span>
+                        }
+                        else
+                        {
+                            <span class="text-primary"><i class="fas fa-shield-alt mr-1"></i> BẢNG ĐIỀU KHIỂN QUẢN TRỊ</span>
+                        }
+                        <span class="text-muted font-weight-normal">&bull; Hệ Thống Khóa Học Trực Tuyến</span>
                     </h5>
 
                     <!-- Topbar Navbar -->
@@ -252,20 +301,53 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small font-weight-bold">Xin chào, @adminUser</span>
-                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small font-weight-bold">
+                                    Xin chào, @adminUser
+                                    <span class="badge @(userRole == "giangvien" ? "badge-success" : "badge-primary") ml-1 font-weight-bold">@(userRole.ToUpper())</span>
+                                </span>
+                                <i class="fas fa-user-circle fa-2x @(userRole == "giangvien" ? "text-success" : "text-primary")"></i>
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="@Url.Action("Index", "HomeAdmin")">
-                                    <i class="fas fa-tachometer-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Bảng điều khiển
-                                </a>
-                                <a class="dropdown-item" href="@Url.Action("DoiMatKhau", "DoiMatKhau")">
-                                    <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Đổi mật khẩu
-                                </a>
+                                @if (userRole == "giangvien")
+                                {
+                                    <a class="dropdown-item" href="@Url.Action("Index", "HomeGiangVien")">
+                                        <i class="fas fa-tachometer-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Bàn làm việc
+                                    </a>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "GiangVienKhoaHoc")">
+                                        <i class="fas fa-book fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Khóa học của tôi
+                                    </a>
+                                    <a class="dropdown-item" href="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")">
+                                        <i class="fas fa-award fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Quản lý Điểm số
+                                    </a>
+                                    <a class="dropdown-item" href="@Url.Action("ThongTinGiangVien", "ThongTinGiangVien")">
+                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Hồ sơ cá nhân
+                                    </a>
+                                    <a class="dropdown-item" href="@Url.Action("DoiMatKhauGV", "DoiMatKhauGV")">
+                                        <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Đổi mật khẩu
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="dropdown-item" href="@Url.Action("Index", "HomeAdmin")">
+                                        <i class="fas fa-tachometer-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Bảng điều khiển
+                                    </a>
+                                    <a class="dropdown-item" href="@Url.Action("BaoCaoThongKe", "QLBaoCaoThongKe")">
+                                        <i class="fas fa-chart-line fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Báo cáo doanh thu
+                                    </a>
+                                    <a class="dropdown-item" href="@Url.Action("Doimatkhau", "DoiMatKhau")">
+                                        <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Đổi mật khẩu
+                                    </a>
+                                }
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item text-danger font-weight-bold" href="@Url.Action("DangXuat", "DangNhap")">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i>

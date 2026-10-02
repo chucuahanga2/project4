@@ -1,4 +1,4 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- SCRIPT THIẾT LẬP VÀ KHỞI TẠO CƠ SỞ DỮ LIỆU ĐẦY ĐỦ: WEBSITE CHIA SẺ KHÓA HỌC TRỰC TUYẾN
 -- Tên Database duy nhất: KhoaHocTrucTuyenDB
 -- Hướng tiếp cận: Entity Framework 6 Database First
@@ -578,6 +578,48 @@ BEGIN
         VALUES (@idDangKyMVC, 8.5, N'Hoàn thành xuất sắc toàn bộ bài giảng và thực hành dự án ASP.NET MVC 5 & EF 6.', GETDATE());
         PRINT N'[OK] Đã tạo điểm mẫu cho khóa MVC2026.';
     END
+END
+GO
+
+-- 3.10 Khởi tạo dữ liệu câu hỏi ChatBot tư vấn khóa học trực tuyến
+IF NOT EXISTS (SELECT * FROM ChatBotNoiDung WHERE CauHoiMau LIKE N'%học như thế nào%')
+BEGIN
+    INSERT INTO ChatBotNoiDung (CauHoiMau, TuKhoa, CauTraLoi) VALUES
+    (N'Khóa học trực tuyến học như thế nào?', 
+     N'học như thế nào, cách học, hình thức học, học online, xem video', 
+     N'Bạn chỉ cần đăng ký tài khoản, chọn khóa học và thanh toán (với khóa có phí) hoặc nhấn Bắt đầu học ngay (với khóa miễn phí). Sau đó bạn có thể vào học mọi lúc mọi nơi qua video bài giảng chất lượng cao, tài liệu đính kèm và theo dõi tiến độ học trực quan.'),
+
+    (N'Làm sao để thanh toán khóa học?', 
+     N'thanh toán, vnpay, học phí, mua khóa học, chuyển khoản, đóng tiền, nạp tiền', 
+     N'Hệ thống hỗ trợ thanh toán trực tuyến qua cổng VNPay (hỗ trợ quét mã QR Banking, thẻ ATM nội địa, Internet Banking và thẻ quốc tế). Sau khi giao dịch thành công, khóa học sẽ được tự động kích hoạt ngay lập tức.'),
+
+    (N'Có được học thử trước khi mua không?', 
+     N'học thử, xem thử, miễn phí, trải nghiệm, cho xem thử', 
+     N'Có! Rất nhiều khóa học trên hệ thống mở sẵn các bài giảng đầu tiên cho phép bạn học thử hoàn toàn miễn phí mà không cần trả tiền trước. Bạn hãy nhấn vào nút "Học thử miễn phí" tại chi tiết khóa học nhé!'),
+
+    (N'Hệ thống có những khóa học nào?', 
+     N'danh mục, khóa học, các khóa học, lập trình, tiếng anh, c#, mvc, sql', 
+     N'TikiCourse cung cấp các khóa học đa dạng: Lập trình Web ASP.NET MVC 5 & EF6, Lập trình C#/.NET từ Zero đến Hero, Thiết kế & Tối ưu CSDL SQL Server, Frontend hiện đại HTML5/CSS3/JS, Tiếng Anh giao tiếp và Luyện thi TOEIC/IELTS quốc tế.'),
+
+    (N'Làm thế nào để theo dõi tiến độ học tập?', 
+     N'tiến độ, hoàn thành, đánh dấu, phần trăm, kết quả, xem điểm', 
+     N'Tại mỗi bài học, sau khi xem video và hoàn thành bài thực hành, bạn nhấn nút "Đánh dấu hoàn thành". Hệ thống sẽ tự động cập nhật thanh tiến độ % và điểm đánh giá của giảng viên trong mục "Khóa học của tôi" / "Bảng điểm cá nhân".');
+    PRINT N'[OK] Đã tạo nội dung chatbot tư vấn khóa học trực tuyến.';
+END
+GO
+
+-- 3.11 Khởi tạo Chương học và Bài học cho khóa CS2026
+IF EXISTS (SELECT * FROM KhoaHoc WHERE IDKhoaHoc = 'CS2026')
+   AND NOT EXISTS (SELECT * FROM ChuongHoc WHERE IDKhoaHoc = 'CS2026')
+BEGIN
+    INSERT INTO ChuongHoc (IDKhoaHoc, TenChuong, MoTa, ThuTu)
+    VALUES ('CS2026', N'Chương 1: Cú pháp Cơ bản & Kiểu dữ liệu trong C#', N'Nền tảng cú pháp C#, biến, kiểu dữ liệu nguyên thủy và toán tử', 1);
+    DECLARE @C_CS INT = SCOPE_IDENTITY();
+
+    INSERT INTO BaiHoc (IDChuong, TenBaiHoc, MoTa, NoiDung, VideoUrl, TaiLieuUrl, ThuTu, ThoiLuong, ChoXemThu) VALUES
+    (@C_CS, N'Bài 1: Cài đặt .NET SDK & Viết chương trình Hello World', N'Khởi tạo Console Application đầu tiên với C#.', N'<p>Cài đặt .NET SDK và tạo project bằng lệnh dotnet new console.</p>', N'https://www.youtube.com/embed/dQw4w9WgXcQ', N'/Content/docs/csharp_bai1.pdf', 1, 15, 1),
+    (@C_CS, N'Bài 2: Kiểu dữ liệu nguyên thủy, Ép kiểu & Toán tử', N'Phân biệt Value types và Reference types trong C#.', N'<p>Tìm hiểu int, double, decimal, bool, string và kỹ thuật type casting.</p>', N'https://www.youtube.com/embed/dQw4w9WgXcQ', N'/Content/docs/csharp_bai2.pdf', 2, 20, 0);
+    PRINT N'[OK] Đã tạo chương học và bài học cho khóa CS2026.';
 END
 GO
 

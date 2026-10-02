@@ -9,6 +9,12 @@ namespace DuAnEnglish.Controllers
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
+        // GET: DangNhap/Index
+        public ActionResult Index()
+        {
+            return RedirectToAction("DangNhap");
+        }
+
         // GET: DangNhap/DangNhap
         public ActionResult DangNhap()
         {
