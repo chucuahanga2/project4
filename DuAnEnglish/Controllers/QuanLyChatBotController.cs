@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
+using DuAnEnglish.Security;
 
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("admin")]
     public class QuanLyChatBotController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();

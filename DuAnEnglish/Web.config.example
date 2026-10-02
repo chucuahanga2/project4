@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  BẢN MẪU CẤU HÌNH HỆ THỐNG: WEB.CONFIG.EXAMPLE
+  Hướng dẫn sử dụng:
+  1. Sao chép file này và đổi tên thành 'Web.config' trong cùng thư mục DuAnEnglish.
+  2. Cấu hình chuỗi kết nối SQL Server tại connectionStrings (KhoaHocTrucTuyenDB).
+  3. Cấu hình thông tin tích hợp cổng thanh toán VNPay Sandbox tại appSettings.
+-->
+<configuration>
+  <configSections>
+    <section name="entityFramework" type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+  </configSections>
+  <connectionStrings>
+    <!-- Chuỗi kết nối Entity Framework 6 Database First (Model1.edmx) -->
+    <!-- Thay '127.0.0.1' bằng tên SQL Server của bạn (ví dụ: localhost, ., .\SQLEXPRESS) -->
+    <add name="trungtamtienganhEntities" 
+         connectionString="metadata=res://*/Models.Model1.csdl|res://*/Models.Model1.ssdl|res://*/Models.Model1.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=127.0.0.1;initial catalog=KhoaHocTrucTuyenDB;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework&quot;" 
+         providerName="System.Data.EntityClient" />
+  </connectionStrings>
+  <appSettings>
+    <add key="webpages:Version" value="3.0.0.0" />
+    <add key="webpages:Enabled" value="false" />
+    <add key="ClientValidationEnabled" value="true" />
+    <add key="UnobtrusiveJavaScriptEnabled" value="true" />
+    <!-- Cấu hình Cổng Thanh Toán VNPay Sandbox -->
+    <add key="Vnp_Url" value="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html" />
+    <add key="Vnp_TmnCode" value="2QXUI4J4" />
+    <add key="Vnp_HashSecret" value="RAOICV25ENA20VTXBWD7KEUMFSOYSRS5" />
+    <add key="Vnp_ReturnUrl" value="http://localhost:52000/ThanhToan/ReturnVnpay" />
+  </appSettings>
+  <system.web>
+    <globalization fileEncoding="utf-8" requestEncoding="utf-8" responseEncoding="utf-8" culture="vi-VN" uiCulture="vi-VN" />
+    <compilation debug="true" targetFramework="4.7.2" />
+    <httpRuntime targetFramework="4.7.2" maxRequestLength="1048576" />
+    <sessionState mode="InProc" timeout="120" />
+  </system.web>
+  <system.webServer>
+    <modules runAllManagedModulesForAllRequests="true" />
+    <security>
+      <requestFiltering>
+        <requestLimits maxAllowedContentLength="1073741824" />
+      </requestFiltering>
+    </security>
+  </system.webServer>
+  <runtime>
+    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Helpers" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-3.0.0.0" newVersion="3.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.WebPages" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-3.0.0.0" newVersion="3.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Mvc" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-5.2.7.0" newVersion="5.2.7.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.0.0" newVersion="13.0.0.0" />
+      </dependentAssembly>
+    </assemblyBinding>
+  </runtime>
+  <entityFramework>
+    <defaultConnectionFactory type="System.Data.Entity.Infrastructure.SqlConnectionFactory, EntityFramework" />
+    <providers>
+      <provider invariantName="System.Data.SqlClient" type="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer" />
+    </providers>
+  </entityFramework>
+</configuration>

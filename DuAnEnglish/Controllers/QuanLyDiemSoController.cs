@@ -4,8 +4,11 @@ using System.Linq;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
 using DuAnEnglish.ViewModels;
+using DuAnEnglish.Security;
+
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("giangvien", "admin")]
     public class QuanLyDiemSoController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();

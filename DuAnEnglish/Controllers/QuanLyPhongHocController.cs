@@ -1,11 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
+using DuAnEnglish.Security;
+
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("admin")]
     public class QuanLyPhongHocController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();

@@ -241,9 +241,58 @@ try {
     Report-Result "20. Chan Mat Khau Sai" $false $_.Exception.Message
 }
 
+# 13. Test Legacy Controller Authorization: Guest blocked from QuanLyChatBot & QuanLyLopHoc
+try {
+    $resChatBotGuest = $guest.Client.GetAsync("$baseUrl/QuanLyChatBot/QuanLyChatBot").Result
+    $status = [int]$resChatBotGuest.StatusCode
+    Report-Result "21. Chan Guest vao QuanLyChatBot" ($status -eq 302) "Guest blocked from ChatBot admin (Redirect $status)"
+} catch {
+    Report-Result "21. Chan Guest vao QuanLyChatBot" $false $_.Exception.Message
+}
+
+try {
+    $resLopHocGuest = $guest.Client.GetAsync("$baseUrl/QuanLyLopHoc/QuanLyLopHoc").Result
+    $status = [int]$resLopHocGuest.StatusCode
+    Report-Result "22. Chan Guest vao QuanLyLopHoc" ($status -eq 302) "Guest blocked from Class management (Redirect $status)"
+} catch {
+    Report-Result "22. Chan Guest vao QuanLyLopHoc" $false $_.Exception.Message
+}
+
+# 14. Test Student blocked from legacy admin controllers
+try {
+    $resStudentChatBot = $student.Client.GetAsync("$baseUrl/QuanLyChatBot/QuanLyChatBot").Result
+    $status = [int]$resStudentChatBot.StatusCode
+    Report-Result "23. Chan Hoc Vien vao QuanLyChatBot" ($status -eq 302) "Student blocked from ChatBot admin (Redirect $status)"
+} catch {
+    Report-Result "23. Chan Hoc Vien vao QuanLyChatBot" $false $_.Exception.Message
+}
+
+try {
+    $resStudentLopHoc = $student.Client.GetAsync("$baseUrl/QuanLyLopHoc/QuanLyLopHoc").Result
+    $status = [int]$resStudentLopHoc.StatusCode
+    Report-Result "24. Chan Hoc Vien vao QuanLyLopHoc" ($status -eq 302) "Student blocked from Class management (Redirect $status)"
+} catch {
+    Report-Result "24. Chan Hoc Vien vao QuanLyLopHoc" $false $_.Exception.Message
+}
+
+# 15. Test PBKDF2 Password Format Verification
+try {
+    $cs = "server=127.0.0.1;database=KhoaHocTrucTuyenDB;integrated security=true;"
+    $conn = New-Object System.Data.SqlClient.SqlConnection($cs)
+    $conn.Open()
+    $cmd = $conn.CreateCommand()
+    $cmd.CommandText = "SELECT MatKhau FROM TaiKhoan WHERE TenDangNhap = 'admin'"
+    $storedHash = [string]$cmd.ExecuteScalar()
+    $conn.Close()
+    $isPbkdf2 = $storedHash.StartsWith("PBKDF2$")
+    Report-Result "25. Password PBKDF2 Migration" $isPbkdf2 "Stored hash is PBKDF2 with salt: $storedHash"
+} catch {
+    Report-Result "25. Password PBKDF2 Migration" $false $_.Exception.Message
+}
+
 Write-Host "========================================================================" -ForegroundColor Cyan
 if ($allPassed) {
-    Write-Host "ALL 20 END-TO-END TESTS PASSED PERFECTLY! SYSTEM IS 100% OPERATIONAL." -ForegroundColor Green
+    Write-Host "ALL 25 END-TO-END TESTS PASSED PERFECTLY! SYSTEM IS 100% OPERATIONAL." -ForegroundColor Green
 } else {
     Write-Host "SOME TESTS FAILED." -ForegroundColor Red
 }

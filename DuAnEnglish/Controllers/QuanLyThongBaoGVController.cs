@@ -5,8 +5,11 @@ using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
 using PagedList;
+using DuAnEnglish.Security;
+
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("giangvien")]
     public class QuanLyThongBaoGVController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();

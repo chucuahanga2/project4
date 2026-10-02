@@ -83,7 +83,7 @@ namespace DuAnEnglish.Controllers
                 return RedirectToAction("DangNhap", "DangNhap");
             }
 
-            var hoaDon = db.ThanhToans.FirstOrDefault(h => h.IDThanhToan == id && h.TrangThai == "Chưa thanh toán");
+            var hoaDon = db.ThanhToans.FirstOrDefault(h => h.IDThanhToan == id && (h.TrangThai == "Chưa thanh toán" || h.TrangThai == "Thanh toán thất bại"));
             if (hoaDon == null)
             {
                 TempData["ThongBao"] = "Hóa đơn không tồn tại hoặc đã được xử lý.";
@@ -201,18 +201,15 @@ namespace DuAnEnglish.Controllers
             string transactionNo = Request.QueryString["vnp_TransactionNo"];
             string vnp_Amount = Request.QueryString["vnp_Amount"];
 
-            // Kiểm tra số tiền phản hồi từ VNPay
+            // Kiểm tra số tiền phản hồi từ VNPay bắt buộc phải đúng định dạng và khớp chính xác 100% với hóa đơn
             long vnpAmountLong;
-            if (long.TryParse(vnp_Amount, out vnpAmountLong))
+            long expectedAmount = (long)((hoaDon.SoTien ?? 0) * 100);
+            if (!long.TryParse(vnp_Amount, out vnpAmountLong) || vnpAmountLong != expectedAmount)
             {
-                long expectedAmount = (long)((hoaDon.SoTien ?? 0) * 100);
-                if (vnpAmountLong != expectedAmount)
-                {
-                    hoaDon.TrangThai = "Thanh toán thất bại";
-                    db.SaveChanges();
-                    TempData["ThongBao"] = "Số tiền thanh toán từ cổng VNPay không khớp với hóa đơn.";
-                    return RedirectToAction("DanhSachHoaDon");
-                }
+                hoaDon.TrangThai = "Thanh toán thất bại";
+                db.SaveChanges();
+                TempData["ThongBao"] = "Số tiền thanh toán từ cổng VNPay không hợp lệ hoặc không khớp với hóa đơn.";
+                return RedirectToAction("DanhSachHoaDon");
             }
 
             // 1. Lưu log giao dịch VNPAY (chống ghi đè trùng mã giao dịch)

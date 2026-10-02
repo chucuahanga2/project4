@@ -1,8 +1,8 @@
 -- ==============================================================================
 -- SCRIPT CẬP NHẬT CƠ SỞ DỮ LIỆU: XÂY DỰNG WEBSITE CHIA SẺ KHÓA HỌC TRỰC TUYẾN
--- Database: trungtamtienganh
+-- Database: KhoaHocTrucTuyenDB
 -- ==============================================================================
-USE trungtamtienganh;
+USE KhoaHocTrucTuyenDB;
 GO
 
 -- 1. TẠO BẢNG DanhMucKhoaHoc

@@ -355,6 +355,19 @@
     <Content Include="Views\QuanLyDiemSo\NhapDiemToeicView.cshtml" />
     <Content Include="Views\TuVan\Index.cshtml" />
     <Content Include="Views\TuVan\TuVan.cshtml" />
+    <Content Include="Views\GiangVienKhoaHoc\ChiTietNoiDung.cshtml" />
+    <Content Include="Views\GiangVienKhoaHoc\DanhSachHocVien.cshtml" />
+    <Content Include="Views\GiangVienKhoaHoc\Index.cshtml" />
+    <Content Include="Views\GiangVienKhoaHoc\SuaKhoaHoc.cshtml" />
+    <Content Include="Views\GiangVienKhoaHoc\ThemKhoaHoc.cshtml" />
+    <Content Include="Views\HocTap\KhoaHocCuaToi.cshtml" />
+    <Content Include="Views\HocTap\ThongTinCaNhan.cshtml" />
+    <Content Include="Views\HocTap\VaoHoc.cshtml" />
+    <Content Include="Views\QuanLyDanhMuc\Create.cshtml" />
+    <Content Include="Views\QuanLyDanhMuc\Edit.cshtml" />
+    <Content Include="Views\QuanLyDanhMuc\Index.cshtml" />
+    <Content Include="Views\QuanLyHocVien\ChiTiet.cshtml" />
+    <None Include="Web.config.example" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

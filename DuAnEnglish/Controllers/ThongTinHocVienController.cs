@@ -5,9 +5,11 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
+using DuAnEnglish.Security;
 
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("hocvien")]
     public class ThongTinHocVienController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();

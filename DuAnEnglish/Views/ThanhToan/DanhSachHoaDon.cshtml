@@ -70,6 +70,12 @@
                                         <i class="fas fa-check-circle mr-1"></i> Đã thanh toán
                                     </span>
                                 }
+                                else if (item.TrangThai == "Thanh toán thất bại")
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-[#ff424e] border border-rose-200">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Thanh toán thất bại
+                                    </span>
+                                }
                                 else
                                 {
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
@@ -90,7 +96,14 @@
                                     <div class="flex items-center justify-center gap-1.5">
                                         <a href="@Url.Action("HoaDon", "ThanhToan", new { id = item.IDThanhToan })" 
                                            class="px-3 py-1.5 rounded-lg bg-[#ff424e] hover:bg-red-600 text-white font-bold transition shadow-sm inline-block">
-                                            Thanh toán
+                                            @if (item.TrangThai == "Thanh toán thất bại")
+                                            {
+                                                <i class="fas fa-redo mr-1"></i> @:Thanh toán lại
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-credit-card mr-1"></i> @:Thanh toán
+                                            }
                                         </a>
                                         <form method="post" action="@Url.Action("XoaHoaDon", "ThanhToan", new { id = item.IDThanhToan })" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy hóa đơn này?');">
                                             @Html.AntiForgeryToken()

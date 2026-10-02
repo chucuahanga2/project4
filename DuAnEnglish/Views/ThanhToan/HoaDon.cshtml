@@ -58,12 +58,24 @@
             </div>
 
             <!-- Notes -->
-            <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed flex items-start gap-2.5">
-                <i class="fas fa-shield-alt text-amber-500 text-sm mt-0.5"></i>
-                <div>
-                    Sau khi bấm nút <strong>"Tiến Hành Thanh Toán VNPay"</strong>, bạn sẽ được chuyển hướng sang cổng thanh toán bảo mật VNPay Sandbox để hoàn tất giao dịch. Khóa học sẽ tự động được kích hoạt ngay lập tức khi thanh toán thành công!
+            @if (Model.TrangThai == "Thanh toán thất bại")
+            {
+                <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs leading-relaxed flex items-start gap-2.5">
+                    <i class="fas fa-exclamation-triangle text-[#ff424e] text-sm mt-0.5"></i>
+                    <div>
+                        <strong>Giao dịch trước đó không thành công:</strong> Lần thanh toán trước của bạn đã bị hủy hoặc gặp sự cố. Bạn hoàn toàn có thể bấm <strong>"Thanh toán lại qua VNPay"</strong> bên dưới để hoàn tất kích hoạt khóa học mà không cần đăng ký lại từ đầu!
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed flex items-start gap-2.5">
+                    <i class="fas fa-shield-alt text-amber-500 text-sm mt-0.5"></i>
+                    <div>
+                        Sau khi bấm nút <strong>"Tiến Hành Thanh Toán VNPay"</strong>, bạn sẽ được chuyển hướng sang cổng thanh toán bảo mật VNPay Sandbox để hoàn tất giao dịch. Khóa học sẽ tự động được kích hoạt ngay lập tức khi thanh toán thành công!
+                    </div>
+                </div>
+            }
 
             <!-- Actions -->
             <div class="pt-2 flex flex-col sm:flex-row gap-3">
@@ -75,7 +87,7 @@
                     @Html.AntiForgeryToken()
                     <button type="submit" 
                             class="w-full py-2.5 rounded-lg bg-[#ff424e] hover:bg-red-600 text-center font-bold text-xs text-white shadow transition flex items-center justify-center gap-2">
-                        <i class="fas fa-lock"></i> Tiến Hành Thanh Toán VNPay
+                        <i class="fas fa-lock"></i> @(Model.TrangThai == "Thanh toán thất bại" ? "Thanh toán lại qua VNPay" : "Tiến Hành Thanh Toán VNPay")
                     </button>
                 </form>
             </div>
