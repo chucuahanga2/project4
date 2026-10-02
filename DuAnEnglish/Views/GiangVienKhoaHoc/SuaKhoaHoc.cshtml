@@ -1,0 +1,110 @@
+@model DuAnEnglish.Models.KhoaHoc
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Chỉnh sửa khóa học: " + Model.TenKhoaHoc;
+    string imgUrl = !string.IsNullOrEmpty(Model.HinhAnhKH) ? Url.Content("~/Images/" + Model.HinhAnhKH) : Url.Content("~/Images/default_course.png");
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">CHỈNH SỬA KHÓA HỌC</h1>
+            <div>
+                <a href="@Url.Action("ChiTietNoiDung", new { id = Model.IDKhoaHoc })" class="btn btn-info btn-sm shadow-sm mr-2">
+                    <i class="fas fa-list-ol mr-1"></i> Soạn Giáo Trình
+                </a>
+                <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm shadow-sm">
+                    <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Quay lại
+                </a>
+            </div>
+        </div>
+
+        @if (ViewBag.ThongBao != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle mr-2"></i> @ViewBag.ThongBao
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <!-- Card Form (SB Admin 2 format) -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-edit mr-1"></i> Cập Nhật Thông Tin: @Model.TenKhoaHoc
+                </h6>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("SuaKhoaHoc", "GiangVienKhoaHoc", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.IDKhoaHoc)
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Mã khóa học</label>
+                            <input type="text" value="@Model.IDKhoaHoc" class="form-control bg-light font-weight-bold" readonly />
+                        </div>
+
+                        <div class="form-group col-md-8">
+                            <label class="font-weight-bold text-gray-700">Tên khóa học <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.TenKhoaHoc, new { @class = "form-control", required = "required" })
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Danh mục <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(m => m.IDDanhMuc, ViewBag.DanhSachDanhMuc as SelectList, new { @class = "form-control" })
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Học phí (VNĐ)</label>
+                            @Html.TextBoxFor(m => m.HocPhi, new { @class = "form-control", @type = "number", min = "0", step = "1000" })
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Trạng thái hiển thị</label>
+                            @Html.DropDownListFor(m => m.TrangThai, 
+                                new SelectList(new[] { "Hiển thị", "Ẩn" }, Model.TrangThai), 
+                                new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Hình ảnh Thumbnail hiện tại</label>
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="@imgUrl" class="rounded shadow-sm mr-3 border" style="width: 120px; height: 75px; object-fit: cover;" onerror="this.src='/Images/TI_CoBan.jpg';" />
+                            <div>
+                                <input type="file" name="HinhAnhFile" class="form-control-file border p-2 rounded" accept="image/*" />
+                                <small class="form-text text-muted">Chọn ảnh mới nếu muốn thay đổi ảnh đại diện</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Mô tả tóm tắt</label>
+                        @Html.TextAreaFor(m => m.MoTa, new { @class = "form-control", rows = 3 })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Nội dung chi tiết giới thiệu</label>
+                        @Html.TextAreaFor(m => m.NoiDung, new { @class = "form-control", rows = 5 })
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="text-right">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary px-4 mr-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4 font-weight-bold">
+                            <i class="fas fa-save mr-1"></i> Lưu Cập Nhật
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

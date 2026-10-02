@@ -1,201 +1,213 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
+using DuAnEnglish.Security;
 
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("admin")]
     public class QuanLyKhoaHocController : Controller
     {
-        // Giả sử bạn có DbContext tên là 'EnglishDbContext'
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
         // GET: QuanLyKhoaHoc
-        // Tham số danhMuc để lọc khóa học (all, TOEIC, IELTS)
         public ActionResult QuanLyKhoaHoc(string danhmuc = "all", string search = "")
         {
-            List<KhoaHoc> danhSachKhoaHoc;
+            var query = db.KhoaHocs
+                          .Include(k => k.DanhMucKhoaHoc)
+                          .Include(k => k.GiangVien)
+                          .Include(k => k.DangKyKhoaHocs)
+                          .AsQueryable();
 
-            if (string.Equals(danhmuc, "all", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(danhmuc) && danhmuc != "all")
             {
-                danhSachKhoaHoc = db.KhoaHocs.ToList();
-            }
-            else
-            {
-                danhSachKhoaHoc = db.KhoaHocs
-                    .Where(kh => kh.DanhMuc != null && kh.DanhMuc.Equals(danhmuc, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                int idDm;
+                if (int.TryParse(danhmuc, out idDm))
+                {
+                    query = query.Where(k => k.IDDanhMuc == idDm);
+                }
+                else
+                {
+                    query = query.Where(k => k.DanhMuc == danhmuc);
+                }
             }
 
-            // Tìm kiếm theo IDKhoaHoc
-            if (!string.IsNullOrEmpty(search))
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                danhSachKhoaHoc = danhSachKhoaHoc
-                    .Where(kh => kh.IDKhoaHoc.ToLower().Contains(search.ToLower()))
-                    .ToList();
+                string kw = search.Trim().ToLower();
+                query = query.Where(k => k.IDKhoaHoc.ToLower().Contains(kw) || 
+                                        k.TenKhoaHoc.ToLower().Contains(kw) || 
+                                        (k.GiangVien != null && k.GiangVien.TenGV.ToLower().Contains(kw)));
             }
+
+            var dsKhoaHoc = query.OrderByDescending(k => k.NgayTao).ToList();
+
+            ViewBag.DanhSachDanhMuc = db.DanhMucKhoaHocs.Where(d => d.TrangThai == "Hoạt động").ToList();
+            ViewBag.CurrentDanhMuc = danhmuc;
+            ViewBag.CurrentSearch = search;
 
             if (TempData["ThongBao"] != null)
             {
                 ViewBag.ThongBao = TempData["ThongBao"];
             }
 
-            return View(danhSachKhoaHoc);
+            return View(dsKhoaHoc);
         }
 
-        // GET: Details khóa học
-        public ActionResult Details(string id)
-        {
-            if (id == null)
-                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
-
-            KhoaHoc khoaHoc = db.KhoaHocs.Find(id);
-            if (khoaHoc == null)
-                return HttpNotFound();
-
-            return View(khoaHoc);
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Details(KhoaHoc kh, HttpPostedFileBase ImageFile)
-        {
-            ViewBag.DanhMucList = new List<string> { "TOEIC", "IELTS" };
-
-            // Kiểm tra dữ liệu trống
-            if (string.IsNullOrWhiteSpace(kh.TenKhoaHoc) ||
-                string.IsNullOrWhiteSpace(kh.DanhMuc) ||
-                kh.HocPhi <= 0 ||
-                string.IsNullOrWhiteSpace(kh.MoTa))
-            {
-                ViewBag.ThongBao = "Không được để trống thông tin.";
-                return View(kh);
-            }
-
-            var existing = db.KhoaHocs.Find(kh.IDKhoaHoc);
-            if (existing == null)
-            {
-                ViewBag.ThongBao = "Không tìm thấy khóa học cần cập nhật.";
-                return View(kh);
-            }
-
-            // Cập nhật thông tin
-            existing.TenKhoaHoc = kh.TenKhoaHoc;
-            existing.DanhMuc = kh.DanhMuc;
-            existing.HocPhi = kh.HocPhi;
-            existing.MoTa = kh.MoTa;
-
-            // Hình ảnh
-            if (ImageFile != null && ImageFile.ContentLength > 0)
-            {
-                var fileName = Path.GetFileName(ImageFile.FileName);
-                var path = Path.Combine(Server.MapPath("~/Images/"), fileName);
-                if (!Directory.Exists(Server.MapPath("~/Images/")))
-                    Directory.CreateDirectory(Server.MapPath("~/Images/"));
-                ImageFile.SaveAs(path);
-                existing.HinhAnhKH = fileName;
-            }
-
-            db.SaveChanges();
-            TempData["ThongBao"] = "Cập nhật thành công!";
-            return RedirectToAction("QuanLyKhoaHoc");
-        }
-
-
-        // GET: Create khóa học (hiển thị form)
+        // GET: Create
         public ActionResult Create()
         {
-            // Có thể truyền ViewBag nếu cần danh mục
-            ViewBag.DanhMucList = new List<string> { "TOEIC", "IELTS" };
+            ViewBag.IDDanhMuc = new SelectList(db.DanhMucKhoaHocs.Where(d => d.TrangThai == "Hoạt động"), "IDDanhMuc", "TenDanhMuc");
+            ViewBag.IDGiangVien = new SelectList(db.GiangViens, "IDGiangVien", "TenGV");
             return View();
         }
 
-        // POST: Create khóa học (xử lý lưu)
+        // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(KhoaHoc khoaHoc, HttpPostedFileBase ImageFile)
         {
-            ViewBag.DanhMucList = new List<string> { "TOEIC", "IELTS" };
+            ViewBag.IDDanhMuc = new SelectList(db.DanhMucKhoaHocs.Where(d => d.TrangThai == "Hoạt động"), "IDDanhMuc", "TenDanhMuc", khoaHoc.IDDanhMuc);
+            ViewBag.IDGiangVien = new SelectList(db.GiangViens, "IDGiangVien", "TenGV", khoaHoc.IDGiangVien);
 
-            // Kiểm tra trường bắt buộc
-            if (string.IsNullOrWhiteSpace(khoaHoc.IDKhoaHoc) || string.IsNullOrWhiteSpace(khoaHoc.TenKhoaHoc) ||
-                string.IsNullOrWhiteSpace(khoaHoc.DanhMuc) || khoaHoc.HocPhi == 0 || string.IsNullOrWhiteSpace(khoaHoc.MoTa))
+            if (string.IsNullOrWhiteSpace(khoaHoc.IDKhoaHoc) || string.IsNullOrWhiteSpace(khoaHoc.TenKhoaHoc))
             {
-                ViewBag.ThongBao = "Vui lòng nhập đầy đủ thông tin.";
+                ViewBag.ThongBao = "Vui lòng nhập đầy đủ mã và tên khóa học!";
                 return View(khoaHoc);
             }
 
-            // Kiểm tra trùng ID
-            if (db.KhoaHocs.Any(k => k.IDKhoaHoc == khoaHoc.IDKhoaHoc))
+            khoaHoc.IDKhoaHoc = khoaHoc.IDKhoaHoc.Trim();
+            if (db.KhoaHocs.Any(k => k.IDKhoaHoc.ToLower() == khoaHoc.IDKhoaHoc.ToLower()))
             {
-                ViewBag.ThongBao = "ID khóa học đã tồn tại.";
+                ViewBag.ThongBao = "Mã khóa học đã tồn tại!";
                 return View(khoaHoc);
             }
 
-            // Xử lý upload hình ảnh
+            // Xử lý upload ảnh
             if (ImageFile != null && ImageFile.ContentLength > 0)
             {
-                string fileName = Path.GetFileName(ImageFile.FileName);
-                string path = Path.Combine(Server.MapPath("~/Images/"), fileName);
-
-                // Tạo thư mục nếu chưa có
-                if (!Directory.Exists(Server.MapPath("~/Images/")))
-                {
-                    Directory.CreateDirectory(Server.MapPath("~/Images/"));
-                }
-
-                ImageFile.SaveAs(path);
+                string ext = Path.GetExtension(ImageFile.FileName);
+                string fileName = "kh_" + Guid.NewGuid().ToString().Substring(0, 8) + ext;
+                string dir = Server.MapPath("~/Images/");
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                ImageFile.SaveAs(Path.Combine(dir, fileName));
                 khoaHoc.HinhAnhKH = fileName;
+            }
+
+            khoaHoc.NgayTao = DateTime.Now;
+            if (string.IsNullOrEmpty(khoaHoc.TrangThai)) khoaHoc.TrangThai = "Hiển thị";
+            if (!khoaHoc.HocPhi.HasValue) khoaHoc.HocPhi = 0;
+
+            if (khoaHoc.IDDanhMuc.HasValue)
+            {
+                var dm = db.DanhMucKhoaHocs.Find(khoaHoc.IDDanhMuc.Value);
+                if (dm != null) khoaHoc.DanhMuc = dm.TenDanhMuc;
             }
 
             db.KhoaHocs.Add(khoaHoc);
             db.SaveChanges();
-            TempData["ThongBao"] = "Thêm khóa học thành công!";
+
+            TempData["ThongBao"] = "Thêm mới khóa học thành công!";
             return RedirectToAction("QuanLyKhoaHoc");
         }
 
+        // GET: Details / Edit
+        public ActionResult Details(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-        // Delete khóa học (xác nhận)
+            var khoaHoc = db.KhoaHocs.Include(k => k.DanhMucKhoaHoc).Include(k => k.GiangVien).FirstOrDefault(k => k.IDKhoaHoc == id);
+            if (khoaHoc == null) return HttpNotFound();
+
+            ViewBag.IDDanhMuc = new SelectList(db.DanhMucKhoaHocs.Where(d => d.TrangThai == "Hoạt động"), "IDDanhMuc", "TenDanhMuc", khoaHoc.IDDanhMuc);
+            ViewBag.IDGiangVien = new SelectList(db.GiangViens, "IDGiangVien", "TenGV", khoaHoc.IDGiangVien);
+            return View(khoaHoc);
+        }
+
+        // POST: Details / Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Details(KhoaHoc kh, HttpPostedFileBase ImageFile)
+        {
+            ViewBag.IDDanhMuc = new SelectList(db.DanhMucKhoaHocs.Where(d => d.TrangThai == "Hoạt động"), "IDDanhMuc", "TenDanhMuc", kh.IDDanhMuc);
+            ViewBag.IDGiangVien = new SelectList(db.GiangViens, "IDGiangVien", "TenGV", kh.IDGiangVien);
+
+            if (string.IsNullOrWhiteSpace(kh.TenKhoaHoc))
+            {
+                ViewBag.ThongBao = "Tên khóa học không được để trống!";
+                return View(kh);
+            }
+
+            var existing = db.KhoaHocs.Find(kh.IDKhoaHoc);
+            if (existing == null) return HttpNotFound();
+
+            if (ImageFile != null && ImageFile.ContentLength > 0)
+            {
+                string ext = Path.GetExtension(ImageFile.FileName);
+                string fileName = "kh_" + Guid.NewGuid().ToString().Substring(0, 8) + ext;
+                string dir = Server.MapPath("~/Images/");
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                ImageFile.SaveAs(Path.Combine(dir, fileName));
+                existing.HinhAnhKH = fileName;
+            }
+
+            existing.TenKhoaHoc = kh.TenKhoaHoc;
+            existing.IDDanhMuc = kh.IDDanhMuc;
+            existing.IDGiangVien = kh.IDGiangVien;
+            existing.HocPhi = kh.HocPhi ?? 0;
+            existing.MoTa = kh.MoTa;
+            existing.NoiDung = kh.NoiDung;
+            existing.TrangThai = kh.TrangThai;
+
+            if (kh.IDDanhMuc.HasValue)
+            {
+                var dm = db.DanhMucKhoaHocs.Find(kh.IDDanhMuc.Value);
+                if (dm != null) existing.DanhMuc = dm.TenDanhMuc;
+            }
+
+            db.SaveChanges();
+            TempData["ThongBao"] = "Cập nhật khóa học thành công!";
+            return RedirectToAction("QuanLyKhoaHoc");
+        }
+
+        // POST: Delete / Chuyển trạng thái Ẩn
         public ActionResult Delete(string id)
         {
-            if (string.IsNullOrEmpty(id))
-                return new HttpStatusCodeResult(System.Net.HttpStatusCode.BadRequest);
+            var kh = db.KhoaHocs.Find(id);
+            if (kh == null) return HttpNotFound();
 
-            var khoaHoc = db.KhoaHocs.Find(id);
-            if (khoaHoc == null)
-                return HttpNotFound();
+            // Kiểm tra có học viên đã đăng ký hoặc thanh toán chưa
+            int countDangKy = db.DangKyKhoaHocs.Count(d => d.IDKhoaHoc == id);
+            int countThanhToan = db.ThanhToans.Count(t => t.IDKhoaHoc == id);
 
-            // Xử lý ràng buộc: Gán IDKhoaHoc = null cho các bản ghi có liên kết
-            var lopHocs = db.LopHocs.Where(lh => lh.IDKhoaHoc == id).ToList();
-            foreach (var lh in lopHocs)
+            if (countDangKy > 0 || countThanhToan > 0)
             {
-                lh.IDKhoaHoc = null;
+                // Soft delete: chuyển sang trạng thái Ẩn
+                kh.TrangThai = "Ẩn";
+                db.SaveChanges();
+                TempData["ThongBao"] = "Khóa học đã có học viên đăng ký hoặc phát sinh thanh toán. Đã tự động chuyển trạng thái sang 'Ẩn' để bảo đảm an toàn dữ liệu!";
+                return RedirectToAction("QuanLyKhoaHoc");
             }
 
-            var thanhToans = db.ThanhToans.Where(tt => tt.IDKhoaHoc == id).ToList();
-            foreach (var tt in thanhToans)
-            {
-                tt.IDKhoaHoc = null;
-            }
-
-            // Xóa hình ảnh khỏi thư mục nếu có
-            if (!string.IsNullOrEmpty(khoaHoc.HinhAnhKH))
-            {
-                string imagePath = Path.Combine(Server.MapPath("~/Images/"), khoaHoc.HinhAnhKH);
-                if (System.IO.File.Exists(imagePath))
-                {
-                    System.IO.File.Delete(imagePath);
-                }
-            }
-
-            db.KhoaHocs.Remove(khoaHoc);
+            db.KhoaHocs.Remove(kh);
             db.SaveChanges();
-
             TempData["ThongBao"] = "Xóa khóa học thành công!";
             return RedirectToAction("QuanLyKhoaHoc");
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

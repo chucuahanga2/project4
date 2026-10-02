@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -23,11 +23,11 @@ namespace DuAnEnglish.ViewModels
         public int? TongDiemTOEIC { get; set; }
 
         // Thuộc tính chung để View dễ dùng
-        public decimal? DiemNghe => DiemNgheIELTS ?? (DiemNgheTOEIC.HasValue ? (decimal?)DiemNgheTOEIC.Value : null);
-        public decimal? DiemNoi => DiemNoiIELTS ?? (DiemNoiTOEIC.HasValue ? (decimal?)DiemNoiTOEIC.Value : null);
-        public decimal? DiemDoc => DiemDocIELTS ?? (DiemDocTOEIC.HasValue ? (decimal?)DiemDocTOEIC.Value : null);
-        public decimal? DiemViet => DiemVietIELTS ?? (DiemVietTOEIC.HasValue ? (decimal?)DiemVietTOEIC.Value : null);
-        public decimal? TongDiem => TongDiemIELTS ?? (TongDiemTOEIC.HasValue ? (decimal?)TongDiemTOEIC.Value : null);
+        public decimal? DiemNghe { get { return DiemNgheIELTS ?? (DiemNgheTOEIC.HasValue ? (decimal?)DiemNgheTOEIC.Value : null); } }
+        public decimal? DiemNoi { get { return DiemNoiIELTS ?? (DiemNoiTOEIC.HasValue ? (decimal?)DiemNoiTOEIC.Value : null); } }
+        public decimal? DiemDoc { get { return DiemDocIELTS ?? (DiemDocTOEIC.HasValue ? (decimal?)DiemDocTOEIC.Value : null); } }
+        public decimal? DiemViet { get { return DiemVietIELTS ?? (DiemVietTOEIC.HasValue ? (decimal?)DiemVietTOEIC.Value : null); } }
+        public decimal? TongDiem { get { return TongDiemIELTS ?? (TongDiemTOEIC.HasValue ? (decimal?)TongDiemTOEIC.Value : null); } }
 
         public string DanhMuc { get; set; }
     }

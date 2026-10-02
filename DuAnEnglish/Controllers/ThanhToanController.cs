@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
+using System.Configuration;
+using System.Data.Entity;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DuAnEnglish.Controllers
 {
@@ -13,18 +11,21 @@ namespace DuAnEnglish.Controllers
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
-        // GET: ThanhToan
+        // GET: ThanhToan/DanhSachHoaDon
         public ActionResult DanhSachHoaDon()
         {
-            string tenDangNhap = Session["User"]?.ToString();
-            if (tenDangNhap == null)
+            if (Session["User"] == null)
             {
-                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập để đăng ký khóa học";
+                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để xem danh sách hóa đơn!";
                 return RedirectToAction("DangNhap", "DangNhap");
             }
 
+            string tenDangNhap = Session["User"].ToString();
             var hoaDons = db.ThanhToans
+                            .Include(t => t.KhoaHoc)
+                            .Include(t => t.DangKyKhoaHoc)
                             .Where(t => t.TenDangNhap == tenDangNhap)
+                            .OrderByDescending(t => t.IDThanhToan)
                             .ToList();
 
             if (TempData["ThongBao"] != null)
@@ -35,200 +36,104 @@ namespace DuAnEnglish.Controllers
             return View(hoaDons);
         }
 
-        public ActionResult XoaHoaDon(int id)
-        {
-            var hoaDon = db.ThanhToans.FirstOrDefault(h => h.IDThanhToan == id && h.TrangThai == "Chưa thanh toán");
-
-            if (hoaDon == null)
-            {
-                TempData["ThongBao"] = "Không thể xóa vì đã được xử lý.";
-                return RedirectToAction("DanhSachHoaDon");
-            }
-
-            db.ThanhToans.Remove(hoaDon);
-            db.SaveChanges();
-
-            TempData["ThongBao"] = "Xóa thành công.";
-            return RedirectToAction("DanhSachHoaDon");
-        }
-
+        // GET: ThanhToan/HoaDon/5
         public ActionResult HoaDon(int id)
         {
             if (Session["User"] == null)
             {
-                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập để thực hiện thanh toán.";
+                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để thực hiện thanh toán!";
                 return RedirectToAction("DangNhap", "DangNhap");
             }
 
-            var hoaDon = db.ThanhToans.FirstOrDefault(h => h.IDThanhToan == id && h.TrangThai == "Chưa thanh toán");
+            string tenDangNhap = Session["User"].ToString();
+            var hoaDon = db.ThanhToans
+                           .Include(h => h.KhoaHoc)
+                           .FirstOrDefault(h => h.IDThanhToan == id);
+
             if (hoaDon == null)
             {
                 TempData["ThongBao"] = "Không tìm thấy hóa đơn cần thanh toán.";
                 return RedirectToAction("DanhSachHoaDon");
             }
 
+            // Kiểm tra quyền sở hữu hóa đơn
+            string role = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "";
+            if (hoaDon.TenDangNhap != tenDangNhap && role != "admin")
+            {
+                TempData["ThongBao"] = "Bạn không có quyền truy cập vào hóa đơn này!";
+                return RedirectToAction("DanhSachHoaDon");
+            }
+
             var hocVien = db.HocViens.FirstOrDefault(hv => hv.IDTenDangNhap == hoaDon.TenDangNhap);
-            ViewBag.TenHocVien = hocVien != null ? hocVien.TenHV : "";
-
-            var khoaHoc = db.KhoaHocs.FirstOrDefault(kh => kh.IDKhoaHoc == hoaDon.IDKhoaHoc);
-            ViewBag.TenKhoaHoc = khoaHoc != null ? khoaHoc.TenKhoaHoc : "";
-
-            var lopHoc = db.LopHocs.FirstOrDefault(lh => lh.IDLopHoc == hoaDon.IDLopHoc);
-            ViewBag.TenLop = lopHoc != null ? lopHoc.TenLop : "";
+            ViewBag.TenHocVien = hocVien != null ? hocVien.TenHV : hoaDon.TenDangNhap;
+            ViewBag.Email = hocVien != null && hocVien.TaiKhoan != null ? hocVien.TaiKhoan.Email : "";
+            ViewBag.SDT = hocVien != null && hocVien.TaiKhoan != null ? hocVien.TaiKhoan.SDT : "";
 
             return View(hoaDon);
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult HoaDon(int idThanhToan, string phuongThucTT, string ngayThanhToan)
-        //{
-        //    var thanhToan = db.ThanhToans.FirstOrDefault(t => t.IDThanhToan == idThanhToan);
-        //    if (thanhToan == null)
-        //    {
-        //        TempData["ThongBao"] = "Không tìm thấy hóa đơn.";
-        //        return RedirectToAction("DanhSachHoaDon");
-        //    }
-
-        //    DateTime parsedNgayThanhToan;
-        //    if (!DateTime.TryParse(ngayThanhToan, out parsedNgayThanhToan))
-        //    {
-        //        parsedNgayThanhToan = DateTime.Now;
-        //    }
-
-        //    var lopHoc = db.LopHocs.FirstOrDefault(l => l.IDLopHoc == thanhToan.IDLopHoc);
-        //    if (lopHoc == null)
-        //    {
-        //        TempData["ThongBao"] = "Không tìm thấy lớp học cho hóa đơn này.";
-        //        return RedirectToAction("DanhSachHoaDon");
-        //    }
-
-        //    if (phuongThucTT == "Thanh toán trực tiếp")
-        //    {
-        //        thanhToan.PhuongThucTT = "Thanh toán trực tiếp";
-        //        thanhToan.NgayThanhToan = parsedNgayThanhToan;
-        //        thanhToan.TrangThai = "Chờ xử lý";
-        //        thanhToan.NgayXacNhan = null;
-
-        //        if (lopHoc.Slot > 0)
-        //        {
-        //            lopHoc.Slot -= 1;
-        //            db.SaveChanges();
-        //        }
-        //        else
-        //        {
-        //            TempData["ThongBao"] = "Lớp học đã hết chỗ, không thể xác nhận thanh toán.";
-        //            return RedirectToAction("DanhSachHoaDon");
-        //        }
-
-        //        db.SaveChanges();
-
-        //        TempData["ThongBao"] = "Đã gửi yêu cầu thanh toán trực tiếp, vui lòng chờ xử lý.";
-        //        return RedirectToAction("DanhSachHoaDon");
-        //    }
-        //    else if (phuongThucTT == "Thanh toán qua VNPAY")
-        //    {
-        //        string returnUrl = Url.Action("VnpReturn", "ThanhToan", null, Request.Url.Scheme);
-        //        string vnpayUrl = CreateVnpayPaymentUrl(thanhToan, returnUrl);
-        //        return Redirect(vnpayUrl);
-        //    }
-
-        //    TempData["ThongBao"] = "Phương thức thanh toán không hợp lệ.";
-        //    return RedirectToAction("DanhSachHoaDon");
-        //}
-
-
+        // POST: ThanhToan/ThanhToanVNPay
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult HoaDon(string id, string ngayThanhToan)
-        {
-            int idThanhToan;
-            if (!int.TryParse(id, out idThanhToan))
-            {
-                TempData["ThongBao"] = "ID hóa đơn không hợp lệ.";
-                return RedirectToAction("DanhSachHoaDon");
-            }
-
-            var thanhToan = db.ThanhToans.FirstOrDefault(t => t.IDThanhToan == idThanhToan);
-            if (thanhToan == null)
-            {
-                TempData["ThongBao"] = "Không tìm thấy hóa đơn.";
-                return RedirectToAction("DanhSachHoaDon");
-            }
-
-            var lopHoc = db.LopHocs.FirstOrDefault(l => l.IDLopHoc == thanhToan.IDLopHoc);
-            if (lopHoc == null)
-            {
-                TempData["ThongBao"] = "Không tìm thấy lớp học cho hóa đơn này.";
-                return RedirectToAction("DanhSachHoaDon");
-            }
-
-            // Parse ngày thanh toán từ chuỗi
-            DateTime parsedNgayThanhToan;
-            if (!DateTime.TryParse(ngayThanhToan, out parsedNgayThanhToan))
-            {
-                parsedNgayThanhToan = DateTime.Now;
-            }
-
-            // Cập nhật thông tin thanh toán
-            thanhToan.PhuongThucTT = "VNPAY";
-            thanhToan.NgayThanhToan = parsedNgayThanhToan;
-            thanhToan.TrangThai = "Chờ xử lý";
-
-            db.SaveChanges();
-
-            // Tạo URL thanh toán VNPAY và chuyển hướng
-            string returnUrl = Url.Action("VnpReturn", "ThanhToan", null, Request.Url.Scheme);
-            return ThanhToanVNPay(thanhToan.IDThanhToan);
-        }
-
-        // Hàm tạo URL thanh toán VNPAY
         public ActionResult ThanhToanVNPay(int id)
         {
+            if (Session["User"] == null)
+            {
+                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để thanh toán!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
             var hoaDon = db.ThanhToans.FirstOrDefault(h => h.IDThanhToan == id && h.TrangThai == "Chưa thanh toán");
             if (hoaDon == null)
             {
-                TempData["ThongBao"] = "Không tìm thấy hóa đơn.";
+                TempData["ThongBao"] = "Hóa đơn không tồn tại hoặc đã được xử lý.";
                 return RedirectToAction("DanhSachHoaDon");
             }
 
-            VnPayLibrary vnpay = new VnPayLibrary();
-            string vnp_Returnurl = System.Configuration.ConfigurationManager.AppSettings["Vnp_ReturnUrl"];
-            string vnp_Url = System.Configuration.ConfigurationManager.AppSettings["Vnp_Url"];
-            string vnp_TmnCode = System.Configuration.ConfigurationManager.AppSettings["Vnp_TmnCode"];
-            string vnp_HashSecret = System.Configuration.ConfigurationManager.AppSettings["Vnp_HashSecret"];
-
-            vnpay.AddRequestData("vnp_Version", VnPayLibrary.VERSION);
-            vnpay.AddRequestData("vnp_Command", "pay");
-            vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
-            vnpay.AddRequestData("vnp_Amount", ((int)(hoaDon.SoTien.GetValueOrDefault() * 100)).ToString()); // x100 vì VNPay yêu cầu đơn vị là VND * 100
-            vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
-            vnpay.AddRequestData("vnp_CurrCode", "VND");
-            vnpay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress());
-            vnpay.AddRequestData("vnp_Locale", "vn");
-            vnpay.AddRequestData("vnp_OrderInfo", $"Thanh toan khoa hoc {hoaDon.IDKhoaHoc}");
-            vnpay.AddRequestData("vnp_OrderType", "education");
-            vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
-            vnpay.AddRequestData("vnp_TxnRef", hoaDon.IDThanhToan.ToString());
-
-            string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
-            return Redirect(paymentUrl);
-        }
-
-        // Hàm tạo chữ ký HMAC SHA512
-        public static string HashHmacSHA512(string key, string data)
-        {
-            var keyBytes = Encoding.UTF8.GetBytes(key);
-            var dataBytes = Encoding.UTF8.GetBytes(data);
-
-            using (var hmac = new HMACSHA512(keyBytes))
+            try
             {
-                var hashBytes = hmac.ComputeHash(dataBytes);
-                return BitConverter.ToString(hashBytes).Replace("-", "").ToUpper();
+                VnPayLibrary vnpay = new VnPayLibrary();
+                string vnp_Returnurl = ConfigurationManager.AppSettings["Vnp_ReturnUrl"];
+                if (string.IsNullOrEmpty(vnp_Returnurl))
+                {
+                    vnp_Returnurl = Url.Action("ReturnVnpay", "ThanhToan", null, Request.Url.Scheme);
+                }
+
+                string vnp_Url = ConfigurationManager.AppSettings["Vnp_Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+                string vnp_TmnCode = ConfigurationManager.AppSettings["Vnp_TmnCode"] ?? "2QXUI4J4";
+                string vnp_HashSecret = ConfigurationManager.AppSettings["Vnp_HashSecret"] ?? "RAOICV25ENA20VTXBWD7KEUMFSOYSRS5";
+
+                long amount = (long)((hoaDon.SoTien ?? 0) * 100); // VNPay yêu cầu nhân 100
+
+                vnpay.AddRequestData("vnp_Version", VnPayLibrary.VERSION);
+                vnpay.AddRequestData("vnp_Command", "pay");
+                vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+                vnpay.AddRequestData("vnp_Amount", amount.ToString());
+                vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
+                vnpay.AddRequestData("vnp_CurrCode", "VND");
+                vnpay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress());
+                vnpay.AddRequestData("vnp_Locale", "vn");
+                vnpay.AddRequestData("vnp_OrderInfo", string.Format("Thanh toan khoa hoc #{0}", hoaDon.IDKhoaHoc));
+                vnpay.AddRequestData("vnp_OrderType", "education");
+                vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
+                vnpay.AddRequestData("vnp_TxnRef", hoaDon.IDThanhToan.ToString());
+
+                // Cập nhật phương thức
+                hoaDon.PhuongThucTT = "VNPAY";
+                hoaDon.NgayThanhToan = DateTime.Now;
+                db.SaveChanges();
+
+                string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+                return Redirect(paymentUrl);
+            }
+            catch (Exception ex)
+            {
+                TempData["ThongBao"] = "Lỗi khởi tạo cổng VNPay: " + ex.Message;
+                return RedirectToAction("HoaDon", new { id = id });
             }
         }
 
-        // Xử lý callback trả về từ VNPAY
+        // GET: ThanhToan/ReturnVnpay (Callback từ VNPay)
         public ActionResult ReturnVnpay()
         {
             var vnpay = new VnPayLibrary();
@@ -240,26 +145,31 @@ namespace DuAnEnglish.Controllers
                 }
             }
 
-            string vnp_HashSecret = System.Configuration.ConfigurationManager.AppSettings["Vnp_HashSecret"];
+            string vnp_HashSecret = ConfigurationManager.AppSettings["Vnp_HashSecret"] ?? "RAOICV25ENA20VTXBWD7KEUMFSOYSRS5";
             string vnp_SecureHash = Request.QueryString["vnp_SecureHash"];
             bool isValid = vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
 
-            int idThanhToan = int.Parse(Request.QueryString["vnp_TxnRef"]);
-            var hoaDon = db.ThanhToans.FirstOrDefault(h => h.IDThanhToan == idThanhToan);
-
-            if (hoaDon == null)
+            string vnp_TxnRef = Request.QueryString["vnp_TxnRef"];
+            int idThanhToan;
+            if (!int.TryParse(vnp_TxnRef, out idThanhToan))
             {
-                TempData["ThongBao"] = "Không tìm thấy hóa đơn.";
+                TempData["ThongBao"] = "Mã hóa đơn phản hồi từ VNPay không hợp lệ.";
                 return RedirectToAction("DanhSachHoaDon");
             }
 
-            if (isValid)
+            var hoaDon = db.ThanhToans.Include(t => t.DangKyKhoaHoc).FirstOrDefault(h => h.IDThanhToan == idThanhToan);
+            if (hoaDon == null)
             {
-                string responseCode = Request.QueryString["vnp_ResponseCode"];
-                string transactionNo = Request.QueryString["vnp_TransactionNo"];
-                string amount = Request.QueryString["vnp_Amount"];
+                TempData["ThongBao"] = "Không tìm thấy hóa đơn tương ứng.";
+                return RedirectToAction("DanhSachHoaDon");
+            }
 
-                // Lưu giao dịch
+            string responseCode = Request.QueryString["vnp_ResponseCode"];
+            string transactionNo = Request.QueryString["vnp_TransactionNo"];
+
+            // 1. Lưu log giao dịch VNPAY
+            try
+            {
                 db.GiaoDichVNPAYs.Add(new GiaoDichVNPAY
                 {
                     IDThanhToan = hoaDon.IDThanhToan,
@@ -267,25 +177,92 @@ namespace DuAnEnglish.Controllers
                     NgayGiaoDich = DateTime.Now,
                     SoTien = hoaDon.SoTien,
                     TrangThai = responseCode == "00" ? "Thành công" : "Thất bại",
-                    NoiDung = $"Thanh toán cho hóa đơn #{hoaDon.IDThanhToan}",
+                    NoiDung = string.Format("Thanh toán cho hóa đơn #{0} - Khóa học {1}", hoaDon.IDThanhToan, hoaDon.IDKhoaHoc),
                     PhanHoiVNPAY = responseCode
                 });
+            }
+            catch { }
 
-                if (responseCode == "00")
+            // 2. Xử lý trạng thái thanh toán và kích hoạt khóa học
+            if (isValid && responseCode == "00")
+            {
+                hoaDon.TrangThai = "Đã thanh toán";
+                hoaDon.NgayXacNhan = DateTime.Now;
+
+                // Tự động kích hoạt quyền học
+                if (hoaDon.IDDangKy.HasValue)
                 {
-                    hoaDon.TrangThai = "Chờ xử lý";
+                    var dangKy = db.DangKyKhoaHocs.Find(hoaDon.IDDangKy.Value);
+                    if (dangKy != null)
+                    {
+                        dangKy.TrangThai = "Đã kích hoạt";
+                    }
+                }
+                else
+                {
+                    // Tìm kiếm bản ghi đăng ký theo học viên và khóa học
+                    var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == hoaDon.TenDangNhap);
+                    if (hocVien != null)
+                    {
+                        var dangKy = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && d.IDKhoaHoc == hoaDon.IDKhoaHoc);
+                        if (dangKy != null)
+                        {
+                            dangKy.TrangThai = "Đã kích hoạt";
+                        }
+                    }
                 }
 
                 db.SaveChanges();
 
-                TempData["ThongBao"] = responseCode == "00" ? "Thanh toán thành công." : "Thanh toán thất bại.";
+                TempData["ThongBao"] = "Thanh toán thành công qua VNPay! Khóa học của bạn đã được kích hoạt, hãy bắt đầu học ngay bây giờ.";
+                return RedirectToAction("VaoHoc", "HocTap", new { id = hoaDon.IDKhoaHoc });
             }
             else
             {
-                TempData["ThongBao"] = "Xác thực không hợp lệ.";
+                hoaDon.TrangThai = "Thanh toán thất bại";
+                db.SaveChanges();
+
+                TempData["ThongBao"] = string.Format("Giao dịch thanh toán không thành công hoặc đã bị hủy (Mã phản hồi: {0}). Bạn có thể thử lại.", responseCode);
+                return RedirectToAction("DanhSachHoaDon");
+            }
+        }
+
+        // Hủy hóa đơn chưa thanh toán
+        public ActionResult XoaHoaDon(int id)
+        {
+            if (Session["User"] == null)
+            {
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            string tenDangNhap = Session["User"].ToString();
+            var hoaDon = db.ThanhToans.FirstOrDefault(h => h.IDThanhToan == id && h.TenDangNhap == tenDangNhap && h.TrangThai == "Chưa thanh toán");
+
+            if (hoaDon != null)
+            {
+                if (hoaDon.IDDangKy.HasValue)
+                {
+                    var dangKy = db.DangKyKhoaHocs.Find(hoaDon.IDDangKy.Value);
+                    if (dangKy != null && dangKy.TrangThai == "Chưa kích hoạt")
+                    {
+                        db.DangKyKhoaHocs.Remove(dangKy);
+                    }
+                }
+                db.ThanhToans.Remove(hoaDon);
+                db.SaveChanges();
+                TempData["ThongBao"] = "Đã hủy hóa đơn thành công.";
             }
 
             return RedirectToAction("DanhSachHoaDon");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

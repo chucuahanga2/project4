@@ -1,84 +1,326 @@
-﻿@{
-    ViewBag.Title = "_LayoutAdmin";
+@{
+    string currentCtrl = ViewContext.RouteData.Values["controller"] != null ? ViewContext.RouteData.Values["controller"].ToString() : "";
+    string currentAct = ViewContext.RouteData.Values["action"] != null ? ViewContext.RouteData.Values["action"].ToString() : "";
+    string adminUser = Session["User"] != null ? Session["User"].ToString() : "Admin";
 }
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>@(ViewBag.Title ?? "Quản trị") - Hệ thống Khóa học Trực tuyến</title>
+
+    <!-- Custom fonts for this template -->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="~/Content/sb-admin-2.min.css" rel="stylesheet">
+
+    <!-- Custom styles for tables -->
+    <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <style>
-        /* Đảm bảo các action con hiển thị bên cạnh */
-        .menu-con {
-            position: absolute;
-            left: 100%; /* Đẩy menu con ra bên phải */
-            top: 0;
-            display: none; /* Ẩn menu con mặc định */
-            background-color: white;
-            color: black;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 200px; /* Chiều rộng của menu con */
-            z-index: 50; /* Đảm bảo menu con xuất hiện phía trên các phần tử khác */
+        .table th {
+            background-color: #f8f9fc;
+            color: #4e73df;
+            font-weight: 700;
+            vertical-align: middle !important;
         }
-
-        /* Hiển thị menu con khi hover vào mục cha */
-        .relative.group:hover .menu-con {
-            display: block;
+        .table td {
+            vertical-align: middle !important;
         }
-
-        .menu-con a {
-            padding: 0.5rem 1rem;
-            text-decoration: none;
-            display: block;
+        .badge-status-active {
+            background-color: #1cc88a;
+            color: #fff;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.25rem;
+            font-size: 85%;
         }
-
-            .menu-con a:hover {
-                background-color: #f3f4f6; /* Màu hover */
-            }
+        .badge-status-locked {
+            background-color: #e74a3b;
+            color: #fff;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.25rem;
+            font-size: 85%;
+        }
+        .badge-status-pending {
+            background-color: #f6c23e;
+            color: #fff;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.25rem;
+            font-size: 85%;
+        }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="flex">
-        <!-- Sidebar cố định -->
-        <aside class="fixed top-0 left-0 h-full w-64 bg-[#ce3235] p-6 text-white flex flex-col space-y-6">
-            <!-- Logo -->
-            <a href="@Url.Action("Index", "HomeAdmin")" class="flex items-center space-x-2">
-                <h2 class="text-3xl font-bold tracking-wide text-white">MY ADMIN</h2>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="@Url.Action("Index", "HomeAdmin")">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-graduation-cap fa-2x"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">EDUMASTER <sup>ADMIN</sup></div>
             </a>
 
-            <!-- Navigation -->
-            <nav class="flex flex-col space-y-4 text-sm font-medium">
+            string userRole = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "admin";
+            if (userRole == "giangvien")
+            {
+                <!-- Divider -->
+                <hr class="sidebar-divider my-0">
 
-                <a href="@Url.Action("QuanLyTaiKhoan", "QuanLyTaiKhoan")" class="hover:text-gray-200">QUẢN LÝ TÀI KHOẢN</a>
-                <a href="@Url.Action("QuanLyGiangVien", "QuanLyGiangVien")" class="hover:text-gray-200">QUẢN LÝ GIẢNG VIÊN</a>
-                <a href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc")" class="hover:text-gray-200">QUẢN LÝ KHÓA HỌC</a>
-                <a href="@Url.Action("QuanLyLopHoc", "QuanLyLopHoc")" class="hover:text-gray-200">QUẢN LÝ LỚP HỌC</a>
-                <a href="@Url.Action("QuanLyThanhToan", "QuanLyThanhToan")" class="hover:text-gray-200">QUẢN LÝ THANH TOÁN</a>
-                <a href="@Url.Action("QuanLyPhongHoc", "QuanLyPhongHoc")" class="hover:text-gray-200">QUẢN LÝ PHÒNG HỌC</a>
-                <a href="@Url.Action("QuanLyThongBaoGV", "QuanLyThongBaoGV")" class="hover:text-gray-200">QUẢN LÝ THÔNG BÁO</a>
-                <a href="@Url.Action("QuanLyChatBot", "QuanLyChatBot")" class="hover:text-gray-200">QUẢN LÝ CHATBOT</a>
-                <a href="@Url.Action("BaoCaoThongKe", "QLBaoCaoThongKe")" class="hover:text-gray-200">BÁO CÁO THỐNG KÊ</a>
-            </nav>
+                <li class="nav-item @(currentCtrl == "HomeGiangVien" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("Index", "HomeGiangVien")">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Bàn làm việc Giảng viên</span>
+                    </a>
+                </li>
 
-            <!-- Logout -->
-            <a href="@Url.Action("DangXuat", "DangNhap")"
-               class="mt-auto text-center bg-white text-red-600 font-semibold py-2 rounded-md transition-colors duration-300 hover:bg-gray-800 hover:text-white">
-                Đăng Xuất
-            </a>
-        </aside>
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">
+                    Khóa học của tôi
+                </div>
 
-        <!-- Nội dung trang - đẩy sang phải để không bị sidebar đè lên -->
-        <main class="ml-64 flex-1 p-6">
-            @RenderBody()
-        </main>
+                <li class="nav-item @(currentCtrl == "GiangVienKhoaHoc" && currentAct == "Index" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("Index", "GiangVienKhoaHoc")">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Danh sách Khóa học</span>
+                    </a>
+                </li>
+
+                <li class="nav-item @(currentCtrl == "GiangVienKhoaHoc" && currentAct == "ThemKhoaHoc" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("ThemKhoaHoc", "GiangVienKhoaHoc")">
+                        <i class="fas fa-fw fa-plus-circle"></i>
+                        <span>Tạo Khóa học Mới</span>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <!-- Divider -->
+                <hr class="sidebar-divider my-0">
+
+                <!-- Nav Item - Dashboard -->
+                <li class="nav-item @(currentCtrl == "HomeAdmin" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("Index", "HomeAdmin")">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Tổng quan (Dashboard)</span>
+                    </a>
+                </li>
+
+                <!-- Divider -->
+                <hr class="sidebar-divider">
+
+                <!-- Heading -->
+                <div class="sidebar-heading">
+                    Quản lý Khóa học & Nội dung
+                </div>
+
+                <!-- Nav Item - Quản lý Danh mục -->
+                <li class="nav-item @(currentCtrl == "QuanLyDanhMuc" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("Index", "QuanLyDanhMuc")">
+                        <i class="fas fa-fw fa-folder"></i>
+                        <span>Danh mục Khóa học</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Quản lý Khóa học -->
+                <li class="nav-item @(currentCtrl == "QuanLyKhoaHoc" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc")">
+                        <i class="fas fa-fw fa-book-open"></i>
+                        <span>Quản lý Khóa học</span>
+                    </a>
+                </li>
+
+                <!-- Divider -->
+                <hr class="sidebar-divider">
+
+                <!-- Heading -->
+                <div class="sidebar-heading">
+                    Người dùng & Tài khoản
+                </div>
+
+                <!-- Nav Item - Quản lý Học viên -->
+                <li class="nav-item @(currentCtrl == "QuanLyHocVien" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyHocVien", "QuanLyHocVien")">
+                        <i class="fas fa-fw fa-user-graduate"></i>
+                        <span>Quản lý Học viên</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Quản lý Giảng viên -->
+                <li class="nav-item @(currentCtrl == "QuanLyGiangVien" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyGiangVien", "QuanLyGiangVien")">
+                        <i class="fas fa-fw fa-chalkboard-teacher"></i>
+                        <span>Quản lý Giảng viên</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Quản lý Tài khoản -->
+                <li class="nav-item @(currentCtrl == "QuanLyTaiKhoan" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyTaiKhoan", "QuanLyTaiKhoan")">
+                        <i class="fas fa-fw fa-users-cog"></i>
+                        <span>Quản lý Tài khoản</span>
+                    </a>
+                </li>
+
+                <!-- Divider -->
+                <hr class="sidebar-divider">
+
+                <!-- Heading -->
+                <div class="sidebar-heading">
+                    Tài chính & Hệ thống
+                </div>
+
+                <!-- Nav Item - Quản lý Thanh toán -->
+                <li class="nav-item @(currentCtrl == "QuanLyThanhToan" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyThanhToan", "QuanLyThanhToan")">
+                        <i class="fas fa-fw fa-credit-card"></i>
+                        <span>Quản lý Thanh toán</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - Báo cáo thống kê -->
+                <li class="nav-item @(currentCtrl == "QLBaoCaoThongKe" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("BaoCaoThongKe", "QLBaoCaoThongKe")">
+                        <i class="fas fa-fw fa-chart-line"></i>
+                        <span>Báo cáo Doanh thu</span>
+                    </a>
+                </li>
+
+                <!-- Nav Item - ChatBot tư vấn -->
+                <li class="nav-item @(currentCtrl == "QuanLyChatBot" ? "active" : "")">
+                    <a class="nav-link" href="@Url.Action("QuanLyChatBot", "QuanLyChatBot")">
+                        <i class="fas fa-fw fa-robot"></i>
+                        <span>Cấu hình ChatBot</span>
+                    </a>
+                </li>
+            }
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Quick Website Link -->
+            <li class="nav-item">
+                <a class="nav-link text-warning" href="@Url.Action("Index", "Home")" target="_blank">
+                    <i class="fas fa-fw fa-external-link-alt text-warning"></i>
+                    <span>Xem Trang chủ Website</span>
+                </a>
+            </li>
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <h5 class="h6 font-weight-bold text-gray-800 mb-0 d-none d-sm-inline-block">
+                        <i class="fas fa-shield-alt text-primary mr-1"></i> BẢNG ĐIỀU KHIỂN HỆ THỐNG KHÓA HỌC TRỰC TUYẾN
+                    </h5>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small font-weight-bold">Xin chào, @adminUser</span>
+                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="@Url.Action("Index", "HomeAdmin")">
+                                    <i class="fas fa-tachometer-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Bảng điều khiển
+                                </a>
+                                <a class="dropdown-item" href="@Url.Action("DoiMatKhau", "DoiMatKhau")">
+                                    <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Đổi mật khẩu
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger font-weight-bold" href="@Url.Action("DangXuat", "DangNhap")">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i>
+                                    Đăng xuất
+                                </a>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white shadow-sm mt-4">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Hệ thống Quản lý Khóa học Trực tuyến &copy; @DateTime.Now.Year - Phát triển trên nền tảng ASP.NET MVC 5</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
     </div>
+    <!-- End of Page Wrapper -->
 
-    <!-- Scripts -->
-    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/Scripts/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
     @RenderSection("Scripts", required: false)
 </body>
-
 </html>

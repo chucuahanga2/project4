@@ -1,0 +1,114 @@
+@model List<DuAnEnglish.ViewModels.KhoaHocCuaToiItem>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Khóa Học Của Tôi - TikiCourse";
+}
+
+<!-- Breadcrumbs (Tiki Style) -->
+<nav class="flex items-center gap-2 text-xs text-[#808089] mb-4">
+    <a href="@Url.Action("Index", "Home")" class="hover:text-[#1a94ff] transition">Trang chủ</a>
+    <span>&rsaquo;</span>
+    <span class="text-[#27272a] font-medium">Khóa học của tôi</span>
+</nav>
+
+<!-- Page Header & Stats Bar (Tiki Dashboard Card) -->
+<div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-lg font-black text-[#27272a] uppercase tracking-wide flex items-center gap-2">
+            <i class="fas fa-book-reader text-[#1a94ff]"></i> KHÓA HỌC CỦA TÔI
+        </h1>
+        <p class="text-xs text-[#808089] mt-0.5">Quản lý và tiếp tục lộ trình học tập của bạn tại TikiCourse.</p>
+    </div>
+    <div class="flex items-center gap-3">
+        <div class="px-3.5 py-1.5 rounded-lg bg-[#e5f2ff] text-[#0b74e5] text-xs font-bold">
+            Tổng cộng: @(Model != null ? Model.Count : 0) khóa học đã đăng ký
+        </div>
+        <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="px-3.5 py-1.5 rounded-lg bg-[#1a94ff] hover:bg-blue-600 text-white text-xs font-bold transition shadow-sm">
+            <i class="fas fa-plus"></i> Khám phá thêm
+        </a>
+    </div>
+</div>
+
+@if (ViewBag.ThongBao != null)
+{
+    <div class="mb-5 p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs flex items-center gap-2">
+        <i class="fas fa-info-circle text-[#1a94ff]"></i>
+        <span>@ViewBag.ThongBao</span>
+    </div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        @foreach (var item in Model)
+        {
+            <div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm overflow-hidden flex flex-col justify-between tiki-card-hover group">
+                <div>
+                    <!-- Thumbnail -->
+                    <div class="aspect-video relative overflow-hidden bg-gray-100">
+                        <img src="@(string.IsNullOrEmpty(item.HinhAnhKH) ? "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=80" : item.HinhAnhKH)" 
+                             alt="@item.TenKhoaHoc" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                             onerror="this.src='https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=80'" />
+                        
+                        <div class="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded text-white text-[11px] font-bold">
+                            @item.SoBaiDaHoanThanh / @item.TongSoBai bài đã xong
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-4">
+                        <div class="text-[11px] text-[#808089] mb-1 flex items-center gap-1.5">
+                            <i class="fas fa-chalkboard-teacher text-[#1a94ff]"></i>
+                            <span>@(item.TenGiangVien ?? "ThS. Huỳnh Phước")</span>
+                        </div>
+                        <h3 class="font-bold text-sm text-[#27272a] mb-3 line-clamp-2 leading-snug group-hover:text-[#1a94ff] transition">
+                            @item.TenKhoaHoc
+                        </h3>
+
+                        <!-- Tiki Progress Bar -->
+                        <div class="mb-3">
+                            <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                                <span class="text-[#808089]">Tiến độ học tập</span>
+                                <span class="@(item.PhanTramTienDo == 100 ? "text-[#00ab56] font-bold" : "text-[#1a94ff] font-bold")">
+                                    @item.PhanTramTienDo%
+                                </span>
+                            </div>
+                            <div class="w-full bg-[#f5f5fa] rounded-full h-2 overflow-hidden border border-[#ebebf0]">
+                                <div class="@(item.PhanTramTienDo == 100 ? "bg-[#00ab56]" : "bg-[#1a94ff]") h-2 rounded-full transition-all duration-500" 
+                                     style="width: @item.PhanTramTienDo%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="text-[11px] text-[#808089]">
+                            Ngày đăng ký: @(item.NgayDangKy.HasValue ? item.NgayDangKy.Value.ToString("dd/MM/yyyy") : "N/A")
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Action -->
+                <div class="p-4 pt-0">
+                    <a href="@Url.Action("VaoHoc", "HocTap", new { idKhoaHoc = item.IDKhoaHoc })" 
+                       class="w-full block text-center py-2.5 rounded-lg @(item.PhanTramTienDo == 100 ? "bg-emerald-50 text-[#00ab56] hover:bg-[#00ab56] hover:text-white" : "bg-[#e5f2ff] text-[#0b74e5] hover:bg-[#1a94ff] hover:text-white") font-bold text-xs transition">
+                        <i class="fas fa-play mr-1"></i> @(item.PhanTramTienDo == 100 ? "Ôn tập lại" : "Tiếp tục bài học")
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="bg-white rounded-xl border border-[#ebebf0] p-12 text-center shadow-sm">
+        <div class="w-16 h-16 rounded-full bg-blue-50 text-[#1a94ff] flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fas fa-book-open"></i>
+        </div>
+        <h3 class="text-base font-bold text-[#27272a] mb-1">Bạn chưa đăng ký khóa học nào</h3>
+        <p class="text-xs text-[#808089] mb-5 max-w-md mx-auto">
+            Khám phá ngay kho tàng khóa học lập trình ASP.NET MVC, C#, SQL Server và Ngoại ngữ trên TikiCourse để nâng cao kỹ năng!
+        </p>
+        <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="inline-block px-5 py-2.5 bg-[#1a94ff] hover:bg-blue-600 text-white font-bold text-xs rounded-lg transition shadow-sm">
+            Xem danh sách khóa học
+        </a>
+    </div>
+}

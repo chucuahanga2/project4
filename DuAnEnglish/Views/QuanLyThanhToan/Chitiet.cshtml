@@ -1,63 +1,120 @@
-﻿@model DuAnEnglish.Models.ThanhToan
-
+@model DuAnEnglish.Models.ThanhToan
 @{
-    ViewBag.Title = "Chi tiết thanh toán";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Chi tiết hóa đơn #" + Model.IDThanhToan;
 }
 
-<div class="min-h-screen flex justify-center items-center bg-gray-100">
-    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-2xl">
-        <h2 class="text-3xl font-bold text-center text-red-600 mb-8">
-            CHI TIẾT THANH TOÁN
-        </h2>
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">CHI TIẾT HÓA ĐƠN #@Model.IDThanhToan</h1>
+            <a href="@Url.Action("QuanLyThanhToan")" class="btn btn-secondary btn-sm shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Quay lại danh sách
+            </a>
+        </div>
 
-        @using (Html.BeginForm("ChiTiet", "QuanLyThanhToan", FormMethod.Post))
-        {
-            @Html.AntiForgeryToken()
-            @Html.HiddenFor(model => model.IDThanhToan)
-
-            <div class="grid grid-cols-2 gap-y-4 text-sm">
-                <div><strong>Mã Hóa Đơn :</strong></div>
-                <div>@Model.IDThanhToan</div>
-
-                <div><strong>Mã Lớp Học :</strong></div>
-                <div>@Model.IDLopHoc</div>
-
-                <div><strong>Mã Khóa Học :</strong></div>
-                <div>@Model.IDKhoaHoc</div>
-
-                <div><strong>Tên Đăng Nhập :</strong></div>
-                <div>@Model.TenDangNhap</div>
-
-                <div><strong>Số Tiền :</strong></div>
-                <div>@(Model.SoTien.HasValue ? Model.SoTien.Value.ToString("N0") + " VNĐ" : "Không rõ")</div>
-
-                <div><strong>Phương Thức TT :</strong></div>
-                <div>@Model.PhuongThucTT</div>
-
-                <div><strong>Ngày Thanh Toán :</strong></div>
+        <!-- Invoice Details Card (SB Admin 2 format) -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-file-invoice mr-1"></i> Thông Tin Hóa Đơn Mua Khóa Học
+                </h6>
                 <div>
-                    @(Model.NgayThanhToan.HasValue
-                        ? Model.NgayThanhToan.Value.ToString("dd/MM/yyyy HH:mm:ss")
-                        : "Chưa thanh toán")
+                    @if (Model.TrangThai == "Đã thanh toán")
+                    {
+                        <span class="badge badge-success px-3 py-2"><i class="fas fa-check-circle mr-1"></i> ĐÃ THANH TOÁN</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-warning px-3 py-2"><i class="fas fa-clock mr-1"></i> CHƯA THANH TOÁN</span>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6 border-right">
+                        <h6 class="font-weight-bold text-gray-700 mb-3"><i class="fas fa-user-circle mr-1 text-primary"></i> Thông Tin Học Viên</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td class="text-muted" style="width: 140px;">Tài khoản:</td>
+                                <td class="font-weight-bold">@Model.TenDangNhap</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Mã đăng ký:</td>
+                                <td><span class="badge badge-light border">@(Model.IDDangKy.HasValue ? "#" + Model.IDDangKy.Value.ToString() : "Đăng ký trực tiếp")</span></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Phương thức TT:</td>
+                                <td class="font-weight-bold">@(string.IsNullOrEmpty(Model.PhuongThuc) ? "VNPay QR / Thẻ nội địa" : Model.PhuongThuc)</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6 class="font-weight-bold text-gray-700 mb-3"><i class="fas fa-book-open mr-1 text-primary"></i> Khóa Học Đăng Ký</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td class="text-muted" style="width: 140px;">Tên khóa học:</td>
+                                <td class="font-weight-bold text-primary">@(Model.KhoaHoc != null ? Model.KhoaHoc.TenKhoaHoc : Model.IDKhoaHoc)</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Mã khóa học:</td>
+                                <td>@Model.IDKhoaHoc</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Số tiền thanh toán:</td>
+                                <td class="font-weight-bold text-danger h5 mb-0">@string.Format("{0:N0} VNĐ", Model.SoTien ?? 0)</td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
 
-                <div><strong>Trạng Thái :</strong></div>
-                <div>
-                    @Html.DropDownListFor(model => model.TrangThai, new SelectList(new[] {
-                        "Chờ xác nhận", "Đã thanh toán", "Chưa thanh toán", "Chờ xử lý"
-                    }, Model.TrangThai), new { @class = "border border-gray-300 px-3 py-1 rounded w-full" })
+                <div class="row bg-light rounded p-3 mb-4 mx-0">
+                    <div class="col-md-4">
+                        <div class="small text-muted font-weight-bold">NGÀY TẠO HÓA ĐƠN</div>
+                        <div class="font-weight-bold text-gray-800">
+                            @(Model.NgayThanhToan.HasValue ? Model.NgayThanhToan.Value.ToString("dd/MM/yyyy HH:mm:ss") : "Chưa ghi nhận")
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted font-weight-bold">NGÀY XÁC NHẬN</div>
+                        <div class="font-weight-bold text-gray-800">
+                            @(Model.NgayXacNhan.HasValue ? Model.NgayXacNhan.Value.ToString("dd/MM/yyyy HH:mm:ss") : "Chưa xác nhận")
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small text-muted font-weight-bold">MÃ GIAO DỊCH VNPAY</div>
+                        <div class="font-weight-bold text-info">
+                            @(Model.GiaoDichVNPAYs != null && Model.GiaoDichVNPAYs.Any() ? Model.GiaoDichVNPAYs.FirstOrDefault().MaGiaoDichVNPAY : "N/A")
+                        </div>
+                    </div>
                 </div>
 
-                <div><strong>Ngày Xác Nhận :</strong></div>
-                <div>@(Model.NgayXacNhan.HasValue ? Model.NgayXacNhan.Value.ToString("dd/MM/yyyy") : "Chưa xác nhận")</div>
-            </div>
+                <!-- Update Status Form -->
+                @using (Html.BeginForm("ChiTiet", "QuanLyThanhToan", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="IDThanhToan" value="@Model.IDThanhToan" />
 
-            <div class="mt-6 text-center">
-                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-6 rounded shadow">
-                    Cập nhật
-                </button>
+                    <div class="form-row align-items-center justify-content-between">
+                        <div class="col-md-6">
+                            <label class="font-weight-bold text-gray-700">Cập nhật trạng thái giao dịch:</label>
+                            <select name="TrangThai" class="form-control">
+                                <option value="Đã thanh toán" @(Model.TrangThai == "Đã thanh toán" ? "selected" : "")>Đã thanh toán (Kích hoạt học ngay)</option>
+                                <option value="Chưa thanh toán" @(Model.TrangThai == "Chưa thanh toán" ? "selected" : "")>Chưa thanh toán (Chờ học viên chuyển khoản)</option>
+                                <option value="Chờ xác nhận" @(Model.TrangThai == "Chờ xác nhận" ? "selected" : "")>Chờ xác nhận</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-right mt-3 mt-md-4">
+                            <a href="@Url.Action("QuanLyThanhToan")" class="btn btn-secondary mr-2">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary font-weight-bold">
+                                <i class="fas fa-save mr-1"></i> Lưu Cập Nhật
+                            </button>
+                        </div>
+                    </div>
+                }
             </div>
-        }
+        </div>
     </div>
 </div>

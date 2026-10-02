@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
 
@@ -10,10 +8,18 @@ namespace DuAnEnglish.Controllers
     public class DangNhapController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
-        // GET: TaiKhoans/DangNhap
-        // Dùng để hiển thị trang đăng nhập
+
+        // GET: DangNhap/DangNhap
         public ActionResult DangNhap()
         {
+            if (Session["User"] != null)
+            {
+                string role = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "";
+                if (role == "admin") return RedirectToAction("Index", "HomeAdmin");
+                if (role == "giangvien") return RedirectToAction("Index", "HomeGiangVien");
+                return RedirectToAction("Index", "HomeHocVien");
+            }
+
             if (TempData["ThongBaoDangNhap"] != null)
             {
                 ViewBag.ThongBao = TempData["ThongBaoDangNhap"];
@@ -21,17 +27,18 @@ namespace DuAnEnglish.Controllers
             return View();
         }
 
-        // POST: TaiKhoans/DangNhap
+        // POST: DangNhap/DangNhap
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult DangNhap(string TenDangNhap, string MatKhau)
         {
-            // Kiểm tra có để trống tên đăng nhập hoặc mật khẩu không
-            if (string.IsNullOrEmpty(TenDangNhap) || string.IsNullOrEmpty(MatKhau))
+            if (string.IsNullOrWhiteSpace(TenDangNhap) || string.IsNullOrWhiteSpace(MatKhau))
             {
                 ViewBag.ThongBao = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!";
                 return View();
             }
 
+            TenDangNhap = TenDangNhap.Trim();
             var user = db.TaiKhoans.FirstOrDefault(t => t.TenDangNhap == TenDangNhap);
 
             if (user == null || user.MatKhau != MatKhau)
@@ -40,54 +47,79 @@ namespace DuAnEnglish.Controllers
                 return View();
             }
 
-            if (user.TrangThai == "Khóa") // Kiểm tra trạng thái tài khoản
+            if (user.TrangThai == "Khóa")
             {
-                ViewBag.ThongBao = "Tài khoản của bạn đã bị khóa!";
+                ViewBag.ThongBao = "Tài khoản của bạn đã bị khóa! Vui lòng liên hệ ban quản trị.";
                 return View();
             }
 
-            // Đăng nhập thành công, lưu thông tin vào session
+            // Lưu thông tin cốt lõi vào Session
             Session["User"] = user.TenDangNhap;
-            Session["Role"] = user.LoaiTK;
+            string role = (user.LoaiTK ?? "").ToLower();
+            Session["Role"] = role;
 
-
-            // Kiểm tra phân quyền và chuyển hướng đến trang Home tương ứng
-            switch (user.LoaiTK)
+            if (role == "hocvien")
             {
-                case "admin": // Admin
-                    return RedirectToAction("Index", "HomeAdmin"); // Redirect đến trang Home của Admin
-                case "giangvien": // Giảng viên
-                    return RedirectToAction("Index", "HomeGiangVien"); // Redirect đến trang Home của Giảng viên
-                case "hocvien": // Học viên
-                    return RedirectToAction("Index", "HomeHocVien"); // Redirect đến trang Home của Học viên
-                default:
-                    ViewBag.ThongBao = "Phân quyền không hợp lệ!";
-                    return View();
+                var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == user.TenDangNhap);
+                if (hocVien != null)
+                {
+                    Session["IDHocVien"] = hocVien.IDHocVien;
+                    Session["TenHienThi"] = string.IsNullOrEmpty(hocVien.TenHV) ? user.TenDangNhap : hocVien.TenHV;
+                }
+                else
+                {
+                    Session["TenHienThi"] = user.TenDangNhap;
+                }
+                return RedirectToAction("Index", "HomeHocVien");
+            }
+            else if (role == "giangvien")
+            {
+                var giangVien = db.GiangViens.FirstOrDefault(g => g.IDTenDangNhap == user.TenDangNhap);
+                if (giangVien != null)
+                {
+                    Session["IDGiangVien"] = giangVien.IDGiangVien;
+                    Session["TenHienThi"] = string.IsNullOrEmpty(giangVien.TenGV) ? user.TenDangNhap : giangVien.TenGV;
+                }
+                else
+                {
+                    Session["TenHienThi"] = user.TenDangNhap;
+                }
+                return RedirectToAction("Index", "HomeGiangVien");
+            }
+            else if (role == "admin")
+            {
+                Session["TenHienThi"] = "Quản trị viên";
+                return RedirectToAction("Index", "HomeAdmin");
+            }
+            else
+            {
+                ViewBag.ThongBao = "Loại tài khoản không hợp lệ!";
+                return View();
             }
         }
 
-        // Đăng xuất
+        // GET: DangNhap/DangXuat
         public ActionResult DangXuat()
         {
-            Session.Clear(); // Xóa tất cả session
-            Session.Abandon(); // Hủy session hiện tại
-
-            // Kiểm tra xem session đã bị xóa chưa
-            //if (Session["User"] == null && Session["Role"] == null)
-            //{
-            //    System.Diagnostics.Debug.WriteLine( "Session đã được xóa thành công!");
-            //}
-            //else
-            //{
-            //    ViewBag.DebugMessage = "Lỗi: Session chưa bị xóa!";
-            //}
-            return View("DangNhap"); // Quay lại trang đăng nhập
+            Session.Clear();
+            Session.Abandon();
+            TempData["ThongBaoDangNhap"] = "Bạn đã đăng xuất thành công.";
+            return RedirectToAction("DangNhap");
         }
 
         // Chuyển hướng sang trang Đăng Ký
         public ActionResult DangKy()
         {
             return RedirectToAction("DangKy", "DangKy");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -1,104 +1,168 @@
-﻿@model List<DuAnEnglish.Models.KhoaHoc>
-
+@model IEnumerable<DuAnEnglish.Models.KhoaHoc>
 @{
+    ViewBag.Title = "Quản lý Khóa học";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
-    ViewBag.Title = "QuanLyKhoaHoc";
+    var dsDanhMuc = ViewBag.DanhSachDanhMuc as List<DuAnEnglish.Models.DanhMucKhoaHoc> ?? new List<DuAnEnglish.Models.DanhMucKhoaHoc>();
+    string currentDm = ViewBag.CurrentDanhMuc as string ?? "all";
+    string currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
-<!-- SweetAlert2 -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
 
-<div class="min-h-screen flex  justify-center bg-gray-100">
-    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-6xl">
-        <h2 class="text-3xl font-bold text-center text-red-600 mb-6">Quản lý khóa học</h2>
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800 font-weight-bold">QUẢN LÝ KHÓA HỌC</h1>
+<p class="mb-4">Theo dõi toàn bộ danh sách khóa học trực tuyến, cập nhật giáo trình, giảng viên phụ trách và kiểm soát trạng thái hiển thị.</p>
 
-        <div class="container mx-auto px-4 py-8">
-            <div class="flex justify-center mb-8">
-                <div class="inline-flex rounded-full bg-gray-100 p-1 shadow-inner">
-                    <a href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc", new { danhmuc = "all" })"
-                       class="px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-white hover:shadow-md hover:text-[#00aab5] mx-1">
-                        Tất cả
-                    </a>
-                    <a href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc", new { danhmuc = "TOEIC" })"
-                       class="px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-white hover:shadow-md hover:text-[#00aab5] mx-1">
-                        TOEIC
-                    </a>
-                    <a href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc", new { danhmuc = "IELTS" })"
-                       class="px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-white hover:shadow-md hover:text-[#00aab5] mx-1">
-                        IELTS
-                    </a>
+@if (ViewBag.ThongBao != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
 
+<!-- DataTales Card (SB Admin 2 format) -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-book-reader mr-1"></i> Danh Sách Khóa Học Hệ Thống (@(Model != null ? Model.Count() : 0))
+        </h6>
+        <div class="mt-2 mt-md-0">
+            <a href="@Url.Action("Create")" class="btn btn-primary btn-sm shadow-sm font-weight-bold">
+                <i class="fas fa-plus fa-sm mr-1"></i> Thêm Khóa Học Mới
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Search and Filter Toolbar -->
+        <form method="get" action="@Url.Action("QuanLyKhoaHoc")" class="mb-3">
+            <div class="form-row align-items-center">
+                <div class="col-md-4 my-1">
+                    <div class="input-group">
+                        <input type="text" name="search" value="@currentSearch" class="form-control" placeholder="Tìm theo mã, tên khóa học hoặc giảng viên...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 my-1">
+                    <select name="danhmuc" class="form-control" onchange="this.form.submit()">
+                        <option value="all" @(currentDm == "all" ? "selected" : "")>-- Tất cả danh mục --</option>
+                        @foreach (var dm in dsDanhMuc)
+                        {
+                            <option value="@dm.IDDanhMuc" @(currentDm == dm.IDDanhMuc.ToString() ? "selected" : "")>@dm.TenDanhMuc</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 my-1">
+                    <a href="@Url.Action("QuanLyKhoaHoc")" class="btn btn-secondary btn-block">
+                        <i class="fas fa-sync-alt mr-1"></i> Làm mới
+                    </a>
                 </div>
             </div>
+        </form>
 
-        </div>
-        <p class="mb-4">
-            @Html.ActionLink("+ Thêm mới", "Create", "QuanLyKhoaHoc", null, new
-            {
-                @class = "bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded shadow"
-            })
-        </p>
-        <div class="flex justify-end mb-4">
-            <form method="get" action="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc")" class="flex items-center space-x-2">
-                <input type="text" name="search" value="@Request["search"]" placeholder="Nhập mã khóa học..."
-                       class="border border-gray-300 rounded px-3 py-2 text-sm placeholder-gray-400 w-72" />
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
-                    Tìm kiếm
-                </button>
-            </form>
-        </div>
-        @if (Model == null || !Model.Any())
-        {
-            <div class="text-center text-gray-500 text-lg italic">Hiện chưa có thông báo nào</div>
-        }
-        else
-        {
-            <table class="table-auto w-full border border-gray-300 text-center">
-                <thead class="bg-red-500 text-white">
+        <!-- 5-Column Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
                     <tr>
-                        <th class="py-3 px-4 border">Mã khóa học</th>
-                        <th class="py-3 px-4 border">Tên khóa học</th>
-                        <th class="py-3 px-4 border">Mô tả</th>
-                        <th class="py-3 px-4 border">Học phí</th>
-                        <th class="py-3 px-4 border">Hình ảnh</th>
-                        <th class="py-3 px-4 border">Thao tác</th>
+                        <th style="width: 70px;" class="text-center">STT</th>
+                        <th>Khóa học</th>
+                        <th>Danh mục & Giảng viên</th>
+                        <th style="width: 170px;">Học phí & Trạng thái</th>
+                        <th style="width: 150px;" class="text-center">Chức năng</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var kh in Model)
+                    @if (Model != null && Model.Any())
                     {
-                        <tr class="border-b border-gray-300 hover:bg-gray-50">
-                            <td>@kh.IDKhoaHoc</td>
-                            <td>@kh.TenKhoaHoc</td>
-                            <td class="py-2 px-4 truncate max-w-xs" title="@kh.MoTa">@kh.MoTa</td>
-                            <td>@kh.HocPhi</td>
-                            <td class="py-2 px-4">
-                                <img src="@Url.Content("~/Images/" + kh.HinhAnhKH)" class="w-20 h-16 object-cover rounded" />
-                            </td>
-                            <td class="py-2 px-4">
-                                <a href="@Url.Action("details", new { id = kh.IDKhoaHoc })"
-                                   class="inline-block bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded mr-1 shadow my-0.5">
-                                    Chi tiết
-                                </a>
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            string imgUrl = !string.IsNullOrEmpty(item.HinhAnhKH) ? Url.Content("~/Images/" + item.HinhAnhKH) : Url.Content("~/Images/default_course.png");
+                            <tr>
+                                <!-- Cột 1: STT & Mã -->
+                                <td class="text-center font-weight-bold text-muted">
+                                    @stt
+                                    <div class="small badge badge-light border">@item.IDKhoaHoc</div>
+                                </td>
 
-                                <a href="@Url.Action("Delete", new { id = kh.IDKhoaHoc })"
-                                   class="btn-xoa inline-block bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded shadow my-0.5">
-                                    Xóa
-                                </a>
+                                <!-- Cột 2: Tên khóa học & Hình ảnh -->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="@imgUrl" class="rounded mr-2 shadow-sm" style="width: 60px; height: 45px; object-fit: cover;" onerror="this.src='/Images/TI_CoBan.jpg';" />
+                                        <div>
+                                            <a href="@Url.Action("Details", new { id = item.IDKhoaHoc })" class="font-weight-bold text-primary text-decoration-none">
+                                                @item.TenKhoaHoc
+                                            </a>
+                                            <div class="small text-muted text-truncate" style="max-width: 320px;">
+                                                @(string.IsNullOrEmpty(item.MoTa) ? "Chưa có mô tả" : item.MoTa)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Cột 3: Danh mục & Giảng viên -->
+                                <td>
+                                    <div>
+                                        <i class="fas fa-folder text-warning mr-1"></i>
+                                        <span class="font-weight-bold">@(item.DanhMucKhoaHoc != null ? item.DanhMucKhoaHoc.TenDanhMuc : (item.DanhMuc ?? "Chưa phân loại"))</span>
+                                    </div>
+                                    <div class="small text-muted mt-1">
+                                        <i class="fas fa-chalkboard-teacher text-info mr-1"></i>
+                                        @(item.GiangVien != null ? item.GiangVien.TenGV : "Chưa phân công")
+                                    </div>
+                                </td>
+
+                                <!-- Cột 4: Học phí & Trạng thái -->
+                                <td>
+                                    <div class="font-weight-bold @(item.HocPhi == 0 || item.HocPhi == null ? "text-success" : "text-danger")">
+                                        @(item.HocPhi == 0 || item.HocPhi == null ? "Miễn phí" : string.Format("{0:N0} đ", item.HocPhi))
+                                    </div>
+                                    <div class="mt-1">
+                                        @if (item.TrangThai == "Hiển thị" || string.IsNullOrEmpty(item.TrangThai))
+                                        {
+                                            <span class="badge badge-status-active">Hiển thị</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-status-locked">Ẩn</span>
+                                        }
+                                        <span class="small text-muted ml-1">(@(item.DangKyKhoaHocs != null ? item.DangKyKhoaHocs.Count : 0) HV)</span>
+                                    </div>
+                                </td>
+
+                                <!-- Cột 5: Chức năng -->
+                                <td class="text-center">
+                                    <a href="@Url.Action("Details", new { id = item.IDKhoaHoc })" class="btn btn-info btn-sm shadow-sm" title="Xem chi tiết & Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="@Url.Action("Delete", new { id = item.IDKhoaHoc })" 
+                                       class="btn btn-danger btn-sm shadow-sm ml-1" 
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa hoặc ẩn khóa học @item.TenKhoaHoc?');"
+                                       title="Xóa hoặc Ẩn khóa học">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-inbox fa-2x mb-2 text-gray-400 d-block"></i>
+                                Không tìm thấy khóa học nào phù hợp.
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-        }
+        </div>
     </div>
 </div>
-<script src="~/Scripts/JSThongBao.js"></script>
-<script src="~/Scripts/JSXacNhanXoa.js"></script>
-@if (ViewBag.ThongBao != null)
-{
-    <script>
-            // Gọi hàm showAlert từ file JSThongBao.js
-            showAlert('@Html.Raw(ViewBag.ThongBao)');
-    </script>
-}

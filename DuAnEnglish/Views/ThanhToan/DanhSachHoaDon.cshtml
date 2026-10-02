@@ -1,103 +1,109 @@
-﻿@model List<DuAnEnglish.Models.ThanhToan>
+@model List<DuAnEnglish.Models.ThanhToan>
 @{
-    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Lịch Sử Giao Dịch & Hóa Đơn - TikiCourse";
 }
-@{
-    ViewBag.Title = "Danh Sách Hóa Đơn";
+
+<!-- Breadcrumbs (Tiki Style) -->
+<nav class="flex items-center gap-2 text-xs text-[#808089] mb-4">
+    <a href="@Url.Action("Index", "Home")" class="hover:text-[#1a94ff] transition">Trang chủ</a>
+    <span>&rsaquo;</span>
+    <span class="text-[#27272a] font-medium">Lịch sử giao dịch &amp; hóa đơn</span>
+</nav>
+
+<!-- Page Header (Tiki Style) -->
+<div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-lg font-black text-[#27272a] uppercase tracking-wide flex items-center gap-2">
+            <i class="fas fa-file-invoice-dollar text-[#1a94ff]"></i> LỊCH SỬ ĐƠN HÀNG &amp; THANH TOÁN
+        </h1>
+        <p class="text-xs text-[#808089] mt-0.5">Theo dõi chi tiết các giao dịch mua khóa học trực tuyến qua cổng VNPay.</p>
+    </div>
+</div>
+
+@if (TempData["ThongBao"] != null)
+{
+    <div class="mb-5 p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs flex items-center gap-2">
+        <i class="fas fa-info-circle text-[#1a94ff]"></i>
+        <span>@TempData["ThongBao"]</span>
+    </div>
 }
-<meta charset="UTF-8" />
-<!-- SweetAlert2 -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
 
-<div class="min-h-screen bg-white flex items-center justify-center py-10">
-    <div class="w-full max-w-7xl p-6 bg-white shadow-lg rounded-lg">
-        <!-- Tăng max-w-4xl thành max-w-7xl -->
-        <h2 class="text-3xl text-red-600 font-semibold mb-6">Danh Sách Hóa Đơn</h2>
-
-        @if (Model != null && Model.Any())
-        {
-            <table class="w-full table-auto border-collapse border border-gray-300">
+<div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm overflow-hidden">
+    @if (Model != null && Model.Any())
+    {
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr class="text-left bg-gray-100 text-black">
-                        <th class="px-4 py-2">Mã Hóa Đơn</th>
-                        <th class="px-4 py-2">Mã Lớp</th>
-                        <th class="px-4 py-2">Mã Khóa Học</th>
-                        <th class="px-4 py-2">Số Tiền</th>
-                        <th class="px-4 py-2">Trạng Thái</th>
-                        <th class="px-4 py-2">Thanh Toán</th>
-                        <th class="px-4 py-2">Hóa Đơn</th>
+                    <tr class="bg-[#fafafa] text-[#808089] uppercase font-bold border-b border-[#ebebf0]">
+                        <th class="py-3 px-4">Mã đơn</th>
+                        <th class="py-3 px-4">Khóa học đăng ký</th>
+                        <th class="py-3 px-4">Số tiền</th>
+                        <th class="py-3 px-4">Ngày tạo</th>
+                        <th class="py-3 px-4 text-center">Trạng thái</th>
+                        <th class="py-3 px-4 text-center">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-[#ebebf0]">
                     @foreach (var item in Model)
                     {
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-4 py-2">@item.IDThanhToan</td>
-                            <td class="px-4 py-2">@item.IDLopHoc</td>
-                            <td class="px-4 py-2">@item.IDKhoaHoc</td>
-                            <td class="px-4 py-2">@(item.SoTien.HasValue ? item.SoTien.Value.ToString("N0") + " VNĐ" : "0 vnđ")</td>
-                            <td class="px-4 py-2">@item.TrangThai</td>
-                            <td class="px-4 py-2">
-                                @if (item.TrangThai == "Chưa thanh toán")
-                                {
-                                    <a href="@Url.Action("HoaDon", "ThanhToan", new { id = item.IDThanhToan })"
-                                       class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-gradient-to-r from-green-400 via-green-500 to-green-600
-                                              bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
-                                              text-white shadow-md">
-                                        Thanh Toán
-                                    </a>
-
-                                }
-                                else if (item.TrangThai == "Chờ xử lý")
-                                {
-                                    <span class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-green-500 text-white shadow-md">
-                                        Đang xử lý
-                                    </span>
-                                }
-                                else if (item.TrangThai == "Đã thanh toán")
-                                {
-                                    <span class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-green-500 text-white shadow-md">
-                                        Đã thanh toán
-                                    </span>
-                                }
-
+                        <tr class="hover:bg-blue-50/30 transition">
+                            <td class="py-3 px-4 font-bold text-[#27272a]">
+                                #@item.IDThanhToan
                             </td>
-                            <td class="px-4 py-2">
-                                    <a href="@Url.Action("XoaHoaDon", "ThanhToan", new { id = item.IDThanhToan })"
-                                       class="btn-xoa inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-gradient-to-r from-red-600 via-red-500 to-red-600
-                                    bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
-                                    text-white shadow-md">
-                                        Xóa hóa đơn
+                            <td class="py-3 px-4">
+                                <div class="font-bold text-[#27272a]">
+                                    @(item.KhoaHoc != null ? item.KhoaHoc.TenKhoaHoc : item.IDKhoaHoc)
+                                </div>
+                                <div class="text-[11px] text-[#808089]">Mã KH: @item.IDKhoaHoc</div>
+                            </td>
+                            <td class="py-3 px-4 font-extrabold text-[#ff424e]">
+                                @(item.SoTien.HasValue ? item.SoTien.Value.ToString("N0") + " ₫" : "0 ₫")
+                            </td>
+                            <td class="py-3 px-4 text-[#808089]">
+                                @(item.NgayThanhToan.HasValue ? item.NgayThanhToan.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                @if (item.TrangThai == "Đã thanh toán")
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-[#00ab56] border border-emerald-200">
+                                        <i class="fas fa-check-circle mr-1"></i> Đã thanh toán
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                                        <i class="fas fa-clock mr-1"></i> Chờ thanh toán
+                                    </span>
+                                }
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                @if (item.TrangThai == "Đã thanh toán")
+                                {
+                                    <a href="@Url.Action("VaoHoc", "HocTap", new { idKhoaHoc = item.IDKhoaHoc })" 
+                                       class="px-3 py-1 rounded-lg bg-[#e5f2ff] hover:bg-[#1a94ff] text-[#0b74e5] hover:text-white font-bold transition">
+                                        Vào học ngay
                                     </a>
-                               
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("HoaDon", "ThanhToan", new { idThanhToan = item.IDThanhToan })" 
+                                       class="px-3 py-1 rounded-lg bg-[#ff424e] hover:bg-red-600 text-white font-bold transition shadow-sm">
+                                        Thanh toán lại
+                                    </a>
+                                }
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
-        }
-        else
-        {
-            <div class="alert alert-warning bg-yellow-200 text-black p-4 rounded-lg mt-4">
-                Hiện tại chưa có hóa đơn nào để thanh toán.
-            </div>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="p-12 text-center text-[#808089]">
+            <i class="fas fa-receipt text-4xl text-gray-300 mb-3"></i>
+            <p class="text-xs">Chưa có giao dịch hóa đơn nào.</p>
+        </div>
+    }
 </div>
-
-<script src="~/Scripts/JSThongBao.js"></script>
-<script src="~/Scripts/JSXacNhanXoa.js"></script>
-@if (ViewBag.ThongBao != null)
-{
-    <script>
-        showAlert('@Html.Raw(ViewBag.ThongBao)');
-    </script>
-}
-
-@if (TempData["ThongBao"] != null)
-{
-    <script>
-        showAlert('@Html.Raw(TempData["ThongBao"])');
-    </script>
-}

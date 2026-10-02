@@ -1,125 +1,159 @@
-﻿﻿@{
-    Layout = null;
-}
-@{
-    ViewBag.Title = "DangKy";
-}
+@{ Layout = null; }
 <!DOCTYPE html>
-<html lang="vi" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="vi">
 <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng Ký</title>
+    <title>Đăng Ký Tài Khoản - TikiCourse</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SweetAlert2 để thông báo -->
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f5f5fa; }
+    </style>
 </head>
-<body class="bg-[#F4FFF7] min-h-screen flex items-center justify-center">
+<body class="min-h-screen w-full flex items-center justify-center p-4">
 
+    <!-- Container Card (Tiki Auth Modal Style) -->
+    <div class="bg-white w-full max-w-4xl rounded-2xl overflow-hidden shadow-xl border border-[#ebebf0] flex flex-col md:flex-row">
 
-
-    <!-- Container chính với giao diện responsive -->
-    <div class="bg-white w-full max-w-6xl h-auto rounded-2xl overflow-hidden shadow-lg flex flex-col md:flex-row">
         <!-- Cột bên trái: Form đăng ký -->
-        <div class="w-full md:w-1/2 p-8 flex flex-col justify-center">
-            <div class="flex items-center justify-between mb-6">
-                <div class="text-xl font-bold text-green-600">
-                    English FiveStars
+        <div class="w-full md:w-1/2 p-8 md:p-10 flex flex-col justify-between">
+            <div>
+                <!-- Brand Logo -->
+                <div class="flex items-center gap-2 mb-6">
+                    <div class="w-9 h-9 rounded-xl bg-[#1a94ff] text-white flex items-center justify-center font-black text-lg">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <div class="text-xl font-black text-[#1a94ff] tracking-tight">Tiki<span class="text-yellow-400">Course</span></div>
+                        <div class="text-[9px] text-[#808089] uppercase tracking-wider font-semibold">Tốt &amp; Nhanh &bull; Học Trực Tuyến</div>
+                    </div>
                 </div>
+
+                <h1 class="text-2xl font-black text-[#27272a] mb-1">
+                    Tạo tài khoản mới
+                </h1>
+                <p class="text-xs text-[#808089] mb-5">
+                    Tham gia cộng đồng học trực tuyến TikiCourse ngay hôm nay.
+                </p>
+
+                <!-- Form đăng ký -->
+                @using (Html.BeginForm("DangKy", "DangKy", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-[#27272a] mb-1">Tên đăng nhập *</label>
+                            <input type="text" name="TenDangNhap" required
+                                   class="w-full px-3 py-2 text-xs border border-[#ebebf0] rounded-lg focus:outline-none focus:border-[#1a94ff] transition"
+                                   placeholder="Chọn tên đăng nhập (viết liền không dấu)" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-[#27272a] mb-1">Mật khẩu *</label>
+                            <input type="password" name="MatKhau" required
+                                   class="w-full px-3 py-2 text-xs border border-[#ebebf0] rounded-lg focus:outline-none focus:border-[#1a94ff] transition"
+                                   placeholder="Tạo mật khẩu an toàn" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-[#27272a] mb-1">Nhập lại mật khẩu *</label>
+                            <input type="password" name="NhapLaiMatKhau" required
+                                   class="w-full px-3 py-2 text-xs border border-[#ebebf0] rounded-lg focus:outline-none focus:border-[#1a94ff] transition"
+                                   placeholder="Xác nhận lại mật khẩu" />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-[#27272a] mb-1">Email</label>
+                                <input type="email" name="Email"
+                                       class="w-full px-3 py-2 text-xs border border-[#ebebf0] rounded-lg focus:outline-none focus:border-[#1a94ff] transition"
+                                       placeholder="email@example.com" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-[#27272a] mb-1">Số điện thoại</label>
+                                <input type="tel" name="SDT"
+                                       class="w-full px-3 py-2 text-xs border border-[#ebebf0] rounded-lg focus:outline-none focus:border-[#1a94ff] transition"
+                                       placeholder="0912345678" />
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full py-2.5 bg-[#1a94ff] hover:bg-blue-600 text-white font-bold text-xs rounded-lg transition shadow-sm mt-3 flex items-center justify-center gap-2">
+                            <span>Đăng ký tài khoản</span>
+                            <i class="fas fa-check text-[10px]"></i>
+                        </button>
+                    </div>
+                }
             </div>
-            <h1 class="text-2xl font-bold text-gray-800 mb-6">
-                Vui lòng điền đầy đủ thông tin bên dưới để tạo tài khoản mới.
-            </h1>
 
-            <!-- Form đăng ký -->
-            @using (Html.BeginForm("DangKy", "DangKy", FormMethod.Post))
-            {
-                <div class="space-y-4">
-                    <!-- Tên đăng nhập -->
-                    <div>
-                        <label for="TenDangNhap" class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
-                        <input type="text" id="TenDangNhap" name="TenDangNhap" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
-                               placeholder="Nhập tên đăng nhập" />
-                    </div>
-
-                    <!-- Mật khẩu -->
-                    <div>
-                        <label for="MatKhau" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
-                        <input type="password" id="MatKhau" name="MatKhau" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
-                               placeholder="Nhập mật khẩu" />
-                    </div>
-
-                    <!-- Nhập lại mật khẩu -->
-                    <div>
-                        <label for="NhapLaiMatKhau" class="block text-sm font-medium text-gray-700 mb-1">Nhập Lại Mật khẩu</label>
-                        <input type="password" id="NhapLaiMatKhau" name="NhapLaiMatKhau" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
-                               placeholder="Xác nhận mật khẩu" />
-                    </div>
-
-                    <!-- Họ và tên -->
-                    <div>
-                        <label for="HoTen" class="block text-sm font-medium text-gray-700 mb-1">Họ và Tên</label>
-                        <input type="text" id="HoTen" name="HoTen" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
-                               placeholder="Nhập họ và tên" />
-                    </div>
-
-                    <!-- Email -->
-                    <div>
-                        <label for="Email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="email" id="Email" name="Email" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
-                               placeholder="Nhập email" />
-                    </div>
-
-                    <!-- Số điện thoại -->
-                    <div>
-                        <label for="SDT" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                        <input type="text" id="SDT" name="SDT" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
-                               placeholder="Nhập số điện thoại" />
-                    </div>
-
-                    <!-- Nút đăng ký -->
-                    <button type="submit"
-                            class="w-full bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition duration-200">
-                        Đăng Ký
-                    </button>
-                </div>
-            }
-
-            <!-- Liên kết chuyển sang đăng nhập -->
-            <div class="mt-6 text-center">
-                <a href="@Url.Action("DangNhap", "DangNhap")" class="text-sm text-gray-500 underline hover:text-gray-700">
-                    Đã có tài khoản? Đăng nhập ngay
+            <div class="mt-6 pt-4 border-t border-[#ebebf0] text-center text-xs text-[#808089]">
+                Đã có tài khoản?
+                <a href="@Url.Action("DangNhap", "DangNhap")" class="text-[#1a94ff] font-bold hover:underline ml-1">
+                    Đăng nhập ngay
                 </a>
             </div>
         </div>
 
-        <!-- Cột bên phải: Hình nền minh họa với overlay thông tin -->
-        <div class="hidden md:flex md:w-1/2 relative">
-            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="Ảnh nền minh họa"
-                 class="w-full h-full object-cover" />
-            <div class="absolute inset-0 bg-black/40 flex items-center justify-center p-8">
-                <div class="bg-white/80 backdrop-blur-sm rounded-lg p-6 text-center">
-                    <h2 class="text-xl font-bold text-gray-800 mb-2">FIVESTARS</h2>
+        <!-- Cột bên phải: Banner Hero -->
+        <div class="hidden md:flex w-1/2 bg-gradient-to-br from-[#0b74e5] to-[#1a94ff] p-10 flex-col justify-between text-white relative overflow-hidden">
+            <div class="relative z-10">
+                <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-yellow-300 text-[10px] font-bold uppercase tracking-wider mb-4 border border-white/20">
+                    Gia Nhập TikiCourse
+                </span>
+                <h2 class="text-2xl font-black leading-snug mb-3">
+                    Bắt Đầu Hành Trình Học Lập Trình Thực Chiến
+                </h2>
+                <p class="text-xs text-blue-100 leading-relaxed">
+                    Đăng ký tài khoản miễn phí để nhận ngay quyền truy cập khóa học ASP.NET MVC 5 và các tài liệu lập trình chọn lọc.
+                </p>
+            </div>
+
+            <div class="relative z-10 space-y-3 my-6">
+                <div class="flex items-center gap-2.5 text-xs text-blue-100">
+                    <i class="fas fa-gift text-yellow-300"></i>
+                    <span>Nhận khóa học Lập trình Web ASP.NET MVC 5 hoàn toàn miễn phí</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-blue-100">
+                    <i class="fas fa-play-circle text-yellow-300"></i>
+                    <span>Xem bài giảng video Full HD mọi lúc, mọi nơi</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-blue-100">
+                    <i class="fas fa-tasks text-yellow-300"></i>
+                    <span>Tự động lưu tiến độ học tập trên mọi thiết bị</span>
                 </div>
             </div>
-        </div>
 
+            <div class="relative z-10 text-[11px] text-blue-200">
+                &copy; 2026 TikiCourse. All rights reserved.
+            </div>
+
+            <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+        </div>
     </div>
-    <script src="~/Scripts/JSThongBao.js"></script>
+
+    <!-- SweetAlert Thông báo lỗi nếu có -->
     @if (ViewBag.ThongBao != null)
     {
         <script>
-            // Gọi hàm showAlert từ file JSThongBao.js
-            showAlert('@Html.Raw(ViewBag.ThongBao)');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thông báo',
+                text: '@Html.Raw(ViewBag.ThongBao)',
+                confirmButtonColor: '#1a94ff'
+            });
         </script>
     }
+
 </body>
 </html>

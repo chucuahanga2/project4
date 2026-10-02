@@ -1,203 +1,90 @@
-﻿using System;
+using System;
+using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
-using System.Data.Entity;
-using System.Collections.Generic;
+using DuAnEnglish.Security;
 
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("admin")]
     public class QuanLyHocVienController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
-        public ActionResult QuanLyHocVien(string idLop)
+        // GET: QuanLyHocVien
+        public ActionResult QuanLyHocVien(string search = "")
         {
-            // Lấy tên đăng nhập từ session
-            string tenDangNhap = Session["User"]?.ToString();
-            if (string.IsNullOrEmpty(tenDangNhap))
+            var query = db.HocViens.Include(h => h.TaiKhoan).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập để đăng ký khóa học";
-                return RedirectToAction("DangNhap", "DangNhap");
+                string kw = search.Trim().ToLower();
+                query = query.Where(h => h.IDHocVien.ToString().Contains(kw) ||
+                                        (h.TenHV != null && h.TenHV.ToLower().Contains(kw)) ||
+                                        (h.IDTenDangNhap != null && h.IDTenDangNhap.ToLower().Contains(kw)) ||
+                                        (h.TaiKhoan != null && h.TaiKhoan.Email != null && h.TaiKhoan.Email.ToLower().Contains(kw)));
             }
 
-            // Tìm giảng viên theo tên đăng nhập
-            var giangVien = db.GiangViens.FirstOrDefault(gv => gv.IDTenDangNhap == tenDangNhap);
-            if (giangVien == null)
+            var dsHocVien = query.OrderByDescending(h => h.IDHocVien).ToList();
+
+            ViewBag.CurrentSearch = search;
+            if (TempData["ThongBao"] != null)
             {
-                TempData["ThongBao"] = "Không tìm thấy thông tin giảng viên.";
-                return RedirectToAction("Index", "Home");
+                ViewBag.ThongBao = TempData["ThongBao"];
             }
 
-            // Lấy danh sách lớp do giảng viên quản lý
-            var danhSachLop = db.LopHocs
-                .Where(l => l.IDGiangVien == giangVien.IDGiangVien)
-                .ToList();
+            return View(dsHocVien);
+        }
 
-            ViewBag.DanhSachLop = danhSachLop;
-            ViewBag.IDLopDangChon = idLop;
+        // GET: QuanLyHocVien/ChiTiet/5
+        public ActionResult ChiTiet(int? id)
+        {
+            if (id == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-            List<HocVien> hocViens;
+            var hocVien = db.HocViens
+                            .Include(h => h.TaiKhoan)
+                            .Include(h => h.DangKyKhoaHocs.Select(d => d.KhoaHoc))
+                            .FirstOrDefault(h => h.IDHocVien == id);
 
-            if (string.IsNullOrEmpty(idLop))
+            if (hocVien == null) return HttpNotFound();
+
+            return View(hocVien);
+        }
+
+        // POST: Khóa hoặc Mở khóa tài khoản học viên
+        public ActionResult KhoaMoTaiKhoan(int id)
+        {
+            var hocVien = db.HocViens.Include(h => h.TaiKhoan).FirstOrDefault(h => h.IDHocVien == id);
+            if (hocVien == null || hocVien.TaiKhoan == null)
             {
-                // Nếu không chọn lớp thì không hiển thị học viên nào
-                hocViens = new List<HocVien>();
+                TempData["ThongBao"] = "Không tìm thấy tài khoản học viên!";
+                return RedirectToAction("QuanLyHocVien");
+            }
+
+            if (hocVien.TaiKhoan.TrangThai == "Khóa")
+            {
+                hocVien.TaiKhoan.TrangThai = "Hoạt động";
+                TempData["ThongBao"] = string.Format("Đã mở khóa thành công tài khoản học viên '{0}'!", hocVien.TenHV ?? hocVien.IDTenDangNhap);
             }
             else
             {
-                // Lấy học viên thuộc lớp đã chọn
-                hocViens = db.HocVienLopHocs
-                    .Where(hvl => hvl.IDLopHoc.Trim() == idLop.Trim())
-                    .Select(hvl => hvl.HocVien)
-                    .Include(hv => hv.TaiKhoan)
-                    .Distinct()
-                    .ToList();
+                hocVien.TaiKhoan.TrangThai = "Khóa";
+                TempData["ThongBao"] = string.Format("Đã khóa tài khoản học viên '{0}'!", hocVien.TenHV ?? hocVien.IDTenDangNhap);
             }
 
-            if (TempData["ThongBao"] != null)
-            {
-                ViewBag.ThongBao = TempData["ThongBao"];
-            }
-
-            return View(hocViens);
-        }
-
-
-
-
-        // GET: QuanLyHocVien/Them
-        [HttpGet]
-        public ActionResult Them(string idLop)
-        {
-            if (string.IsNullOrEmpty(idLop))
-            {
-                TempData["ThongBao"] = "Vui lòng chọn lớp học trước khi thêm học viên.";
-                return RedirectToAction("QuanLyHocVien", new { idLop = "" });
-            }
-
-            ViewBag.IDLopHoc = idLop;
-
-            // Lấy tất cả học viên (không lọc theo lớp)
-            var tatCaHocVien = db.HocViens.ToList();
-            if (TempData["ThongBao"] != null)
-            {
-                ViewBag.ThongBao = TempData["ThongBao"];
-            }
-            return View(tatCaHocVien);
-        }
-
-        // POST: QuanLyHocVien/Them
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult ThemVaoLop(int idHocVien, string idLopHoc)
-        {
-            var daTonTai = db.HocVienLopHocs.Any(x => x.IDHocVien == idHocVien && x.IDLopHoc == idLopHoc);
-            if (daTonTai)
-            {
-                ViewBag.IDLopHoc = idLopHoc;
-                ViewBag.ThongBao = "Học viên đã tồn tại trong lớp này.";
-                var danhSachHocVien = db.HocViens.ToList();
-                return View("Them", danhSachHocVien);
-            }
-
-            // Nếu chưa có thì thêm vào lớp
-            var hocVienLop = new HocVienLopHoc
-            {
-                IDHocVien = idHocVien,
-                IDLopHoc = idLopHoc,
-            };
-
-            db.HocVienLopHocs.Add(hocVienLop);
             db.SaveChanges();
-
-            TempData["ThongBao"] = "Thêm học viên thành công.";
-            return RedirectToAction("Them", new { idLop = idLopHoc });
-        }
-        //Tim kiem
-        [HttpPost]
-        public ActionResult Them(string idLop, string tuKhoa)
-        {
-            ViewBag.IDLopHoc = idLop;
-
-            var danhSachHocVien = db.HocViens.AsQueryable();
-
-            if (!string.IsNullOrEmpty(tuKhoa))
-            {
-                // Chuyển từ khóa về dạng chuỗi để so sánh dễ dàng
-                tuKhoa = tuKhoa.Trim();
-
-                // Nếu từ khóa là số => tìm theo IDHocVien
-                if (int.TryParse(tuKhoa, out int id))
-                {
-                    danhSachHocVien = danhSachHocVien.Where(hv =>
-                        hv.IDHocVien.ToString().Contains(tuKhoa));
-                }
-                else
-                {
-                    // Nếu từ khóa không phải số => tìm theo IDTenDangNhap
-                    danhSachHocVien = danhSachHocVien.Where(hv =>
-                        hv.IDTenDangNhap.Contains(tuKhoa));
-                }
-
-                var ketQua = danhSachHocVien.ToList();
-
-                if (ketQua.Any())
-                {
-                    ViewBag.ThongBao = "Đã tìm thấy " + ketQua.Count + " học viên.";
-                    return View(ketQua);
-                }
-                else
-                {
-                    ViewBag.ThongBao = "Không tìm thấy học viên nào phù hợp.";
-                    return View(new List<HocVien>());
-                }
-            }
-
-            // Nếu không nhập từ khóa => load toàn bộ
-            return View(db.HocViens.ToList());
-        }
-
-        // GET: QuanLyHocVien/Xoa
-        public ActionResult Xoa(int id)
-        {
-            try
-            {
-                var hocVien = db.HocViens.Find(id);
-                if (hocVien == null)
-                {
-                    TempData["ThongBao"] = "Không tìm thấy học viên.";
-                    return RedirectToAction("QuanLyHocVien");
-                }
-
-                // Xóa điểm IELTS liên quan
-                var ielts = db.DiemIELTS.Where(d => d.IDHocVien == id).ToList();
-                db.DiemIELTS.RemoveRange(ielts);
-
-                // Xóa điểm TOEIC liên quan
-                var toeic = db.DiemTOEICs.Where(d => d.IDHocVien == id).ToList();
-                db.DiemTOEICs.RemoveRange(toeic);
-
-                // Xóa học viên lớp học liên quan
-                var hvLop = db.HocVienLopHocs.Where(hv => hv.IDHocVien == id).ToList();
-                db.HocVienLopHocs.RemoveRange(hvLop);
-
-
-                // Xóa học viên
-                db.HocViens.Remove(hocVien);
-
-                // Lưu thay đổi
-                db.SaveChanges();
-
-                TempData["ThongBao"] = "Xóa học viên thành công.";
-            }
-            catch (Exception ex)
-            {
-                TempData["ThongBao"] = "Lỗi khi xóa học viên: " + ex.Message;
-            }
-
             return RedirectToAction("QuanLyHocVien");
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

@@ -1,69 +1,276 @@
-﻿<!DOCTYPE html>
+@{
+    string username = Session["User"] != null ? Session["User"].ToString() : null;
+    string userRole = Session["Role"] != null ? Session["Role"].ToString().ToLower() : null;
+    string displayName = Session["TenHienThi"] != null ? Session["TenHienThi"].ToString() : username;
+}
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title</title>
+    <title>@(ViewBag.Title ?? "Khóa Học Trực Tuyến") - TikiCourse</title>
     <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
-    <!-- Tailwind CDN -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tiki: {
+                            blue: '#1a94ff',
+                            darkblue: '#0b74e5',
+                            lightblue: '#e5f2ff',
+                            red: '#ff424e',
+                            lightred: '#fff0f1',
+                            yellow: '#ffaa00',
+                            star: '#ffc400',
+                            green: '#00ab56',
+                            bg: '#f5f5fa',
+                            card: '#ffffff',
+                            text: '#27272a',
+                            muted: '#808089',
+                            border: '#ebebf0'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter (Tiki Standard Typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Quicksand', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5fa;
+            color: #27272a;
             -webkit-font-smoothing: antialiased;
+        }
+        .tiki-shadow {
+            box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.1), 0 2px 6px 2px rgba(60, 64, 67, 0.06);
+        }
+        .tiki-card-hover {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tiki-card-hover:hover {
+            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-[#f5f5fa] text-[#27272a] flex flex-col min-h-screen">
 
-    <!-- Navbar -->
-    <header class="bg-[#ce3235] shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <!-- Logo -->
-            <a href="@Url.Action("Index", "Home")" class="flex items-center space-x-2">
-                <h2 class="text-3xl font-bold tracking-wide text-white">FIVESTARS</h2>
+    <!-- Tiki Main Header -->
+    <header class="bg-[#1a94ff] text-white sticky top-0 z-50 shadow-md">
+        <!-- Top Main Bar -->
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4 lg:gap-8">
+            <!-- Brand Logo (Tiki Style) -->
+            <a href="@Url.Action("Index", "Home")" class="flex items-center gap-2.5 flex-shrink-0 group">
+                <div class="w-10 h-10 rounded-xl bg-white text-[#1a94ff] flex items-center justify-center font-black text-xl shadow-sm group-hover:scale-105 transition">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black tracking-tight leading-none text-white flex items-center gap-1">
+                        Tiki<span class="text-yellow-300">Course</span>
+                    </div>
+                    <div class="text-[10px] text-blue-100 font-semibold tracking-wide uppercase mt-0.5">
+                        Tốt &amp; Nhanh &bull; Học Trực Tuyến
+                    </div>
+                </div>
             </a>
 
-            <!-- Navigation -->
-            <nav class="hidden md:flex space-x-6 text-sm font-medium">
-                <a href="@Url.Action("Index", "Home")" class="text-white hover:text-gray-200">TRANG CHỦ</a>
-                <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="text-white hover:text-gray-200">KHÓA HỌC</a>
-                <a href="@Url.Action("ChiaSe", "Home")" class="text-white hover:text-gray-200">CHIA SẺ</a>
-                <a href="@Url.Action("SuKien", "Home")" class="text-white hover:text-gray-200">SỰ KIỆN</a>
-                <a href="@Url.Action("LienHe", "Home")" class="text-white hover:text-gray-200">LIÊN HỆ</a>
-                <a href="@Url.Action("TuyenDung", "Home")" class="text-white hover:text-gray-200">TUYỂN DỤNG</a>
-            </nav>
+            <!-- Search Bar (Iconic Tiki Rounded Search Input) -->
+            <form action="@Url.Action("KhoaHoc", "KhoaHoc")" method="get" class="flex-grow max-w-2xl hidden md:flex items-center">
+                <div class="relative w-full flex items-center bg-white rounded-lg overflow-hidden border border-transparent focus-within:border-blue-300 shadow-sm">
+                    <div class="pl-3 text-gray-400">
+                        <i class="fas fa-search text-sm"></i>
+                    </div>
+                    <input type="text" name="searchString" value="@(Request["searchString"])" 
+                           placeholder="Bạn muốn học gì hôm nay? (ASP.NET, C#, SQL Server, IELTS...)" 
+                           class="w-full py-2.5 px-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none" />
+                    <button type="submit" class="bg-[#0b74e5] hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 transition flex items-center gap-1.5 flex-shrink-0 border-l border-blue-600">
+                        <span>Tìm kiếm</span>
+                    </button>
+                </div>
+            </form>
 
-            <!-- Buttons -->
-            <div class="flex space-x-2">
-                <a href="@Url.Action("DangNhap", "DangNhap")">
-                    <button class="px-4 py-2 bg-white text-[#ce3235] rounded-lg hover:bg-gray-100 transition">
-                        Đăng nhập
-                    </button>
+            <!-- Right Actions Bar -->
+            <div class="flex items-center gap-3 lg:gap-5 flex-shrink-0 text-sm">
+                <!-- Home Link -->
+                <a href="@Url.Action("Index", "Home")" class="hidden xl:flex items-center gap-1.5 font-medium hover:text-blue-100 transition py-1">
+                    <i class="fas fa-home text-base"></i>
+                    <span>Trang chủ</span>
                 </a>
-                <a href="@Url.Action("DangKy", "DangKy")">
-                    <button class="px-4 py-2 bg-white text-[#ce3235] rounded-lg hover:bg-gray-100 transition">
-                        Đăng ký
-                    </button>
+
+                <!-- Courses Catalog Link -->
+                <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="flex items-center gap-1.5 font-medium hover:text-blue-100 transition py-1">
+                    <i class="fas fa-th-large text-base"></i>
+                    <span class="hidden sm:inline">Khóa học</span>
                 </a>
+
+                @if (username != null && userRole == "hocvien")
+                {
+                    <!-- My Courses (Tiki Cart Style Badge) -->
+                    <a href="@Url.Action("KhoaHocCuaToi", "HocTap")" class="flex items-center gap-2 bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg transition text-yellow-300 font-semibold">
+                        <div class="relative">
+                            <i class="fas fa-book-reader text-lg"></i>
+                        </div>
+                        <span class="hidden lg:inline text-white">Khóa học của tôi</span>
+                    </a>
+                }
+
+                <!-- Account Area -->
+                @if (string.IsNullOrEmpty(username))
+                {
+                    <div class="flex items-center gap-2">
+                        <a href="@Url.Action("DangNhap", "DangNhap")" class="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition font-medium">
+                            <i class="far fa-user text-base"></i>
+                            <span>Đăng nhập</span>
+                        </a>
+                        <a href="@Url.Action("DangKy", "DangKy")" class="hidden sm:inline-block bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold px-3 py-1.5 rounded-lg transition shadow-sm">
+                            Đăng ký
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="flex items-center gap-3">
+                        @if (userRole == "admin")
+                        {
+                            <a href="@Url.Action("Index", "HomeAdmin")" class="hidden sm:flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-[#ff424e] text-white rounded-lg hover:bg-red-600 transition shadow-sm">
+                                <i class="fas fa-shield-alt"></i> Quản trị
+                            </a>
+                        }
+                        else if (userRole == "giangvien")
+                        {
+                            <a href="@Url.Action("Index", "GiangVienKhoaHoc")" class="hidden sm:flex items-center gap-1 px-3 py-1.5 text-xs font-bold bg-[#00ab56] text-white rounded-lg hover:bg-green-600 transition shadow-sm">
+                                <i class="fas fa-chalkboard-teacher"></i> Giảng viên
+                            </a>
+                        }
+
+                        <!-- User Profile Menu -->
+                        <a href="@Url.Action("ThongTinCaNhan", "HocTap")" class="flex items-center gap-2 bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg transition">
+                            <div class="w-7 h-7 rounded-full bg-white text-[#1a94ff] flex items-center justify-center font-black text-xs">
+                                @(string.IsNullOrEmpty(displayName) ? "U" : displayName.Substring(0, 1).ToUpper())
+                            </div>
+                            <span class="font-bold text-xs max-w-[100px] truncate hidden md:inline">@displayName</span>
+                        </a>
+
+                        <!-- Logout -->
+                        <a href="@Url.Action("DangXuat", "DangNhap")" class="text-blue-100 hover:text-white p-1 transition" title="Đăng xuất">
+                            <i class="fas fa-sign-out-alt text-base"></i>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Secondary Tiki Navigation Bar (Category Quick Links & Badges) -->
+        <div class="bg-[#0b74e5] border-t border-blue-400/30 text-xs">
+            <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between overflow-x-auto gap-4 scrollbar-none">
+                <div class="flex items-center gap-5 whitespace-nowrap text-blue-100 font-medium">
+                    <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="hover:text-white transition flex items-center gap-1">
+                        <i class="fas fa-bars"></i> Tất cả danh mục
+                    </a>
+                    <a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Lập trình Web" })" class="hover:text-white transition">Lập trình Web</a>
+                    <a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Lập trình C# / .NET" })" class="hover:text-white transition">C# / .NET</a>
+                    <a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Cơ sở dữ liệu & SQL" })" class="hover:text-white transition">Cơ sở dữ liệu &amp; SQL</a>
+                    <a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Ngoại ngữ & Tiếng Anh" })" class="hover:text-white transition">Ngoại ngữ &amp; Tiếng Anh</a>
+                    <a href="@Url.Action("KhoaHoc", "KhoaHoc", new { priceFilter = "free" })" class="text-yellow-300 font-bold hover:text-white transition">
+                        ⚡ Khóa học Miễn phí
+                    </a>
+                </div>
+                <div class="hidden lg:flex items-center gap-4 text-[11px] text-blue-100 flex-shrink-0">
+                    <span class="flex items-center gap-1"><i class="fas fa-check-circle text-yellow-300"></i> 100% Video Bản Quyền</span>
+                    <span class="flex items-center gap-1"><i class="fas fa-bolt text-yellow-300"></i> Kích Hoạt Tức Thì</span>
+                    <span class="flex items-center gap-1"><i class="fas fa-shield-alt text-yellow-300"></i> Thanh Toán VNPay Chuẩn</span>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8 min-h-[calc(100vh-160px)]">
+    <!-- Main Page Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full">
         @RenderBody()
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-[#ce3235] border-t border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 py-4 text-center text-sm text-white">
-            &copy; @DateTime.Now.Year - NHÓM 8 - DTU
+    <!-- Tiki Style Footer -->
+    <footer class="bg-white border-t border-[#ebebf0] mt-12 text-[#808089] text-xs">
+        <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+            <!-- Col 1 -->
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-7 h-7 rounded-lg bg-[#1a94ff] text-white flex items-center justify-center font-bold text-sm">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="text-base font-black text-[#1a94ff] tracking-tight">TikiCourse</span>
+                </div>
+                <p class="text-xs text-[#808089] leading-relaxed mb-4">
+                    Nền tảng chia sẻ khóa học trực tuyến hàng đầu, cung cấp các lộ trình học lập trình ASP.NET MVC, C#, SQL Server và Ngoại ngữ chất lượng cao.
+                </p>
+                <div class="text-[11px] text-[#808089] space-y-1">
+                    <div><strong>Hotline:</strong> 1900-6035 (8:00 - 21:00)</div>
+                    <div><strong>Email:</strong> support@tikicourse.vn</div>
+                </div>
+            </div>
+
+            <!-- Col 2 -->
+            <div>
+                <h4 class="font-bold text-[#27272a] text-sm mb-3">Về TikiCourse</h4>
+                <ul class="space-y-2">
+                    <li><a href="@Url.Action("Index", "Home")" class="hover:text-[#1a94ff] transition">Giới thiệu TikiCourse</a></li>
+                    <li><a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="hover:text-[#1a94ff] transition">Tuyển dụng giảng viên</a></li>
+                    <li><a href="#" class="hover:text-[#1a94ff] transition">Chính sách bảo mật thông tin</a></li>
+                    <li><a href="#" class="hover:text-[#1a94ff] transition">Điều khoản sử dụng dịch vụ</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 3 -->
+            <div>
+                <h4 class="font-bold text-[#27272a] text-sm mb-3">Danh Mục Đào Tạo</h4>
+                <ul class="space-y-2">
+                    <li><a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Lập trình Web" })" class="hover:text-[#1a94ff] transition">Lập trình Web ASP.NET MVC 5</a></li>
+                    <li><a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Lập trình C# / .NET" })" class="hover:text-[#1a94ff] transition">Lập trình C# Cơ bản &amp; Nâng cao</a></li>
+                    <li><a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Cơ sở dữ liệu & SQL" })" class="hover:text-[#1a94ff] transition">Quản trị SQL Server 2022</a></li>
+                    <li><a href="@Url.Action("KhoaHoc", "KhoaHoc", new { category = "Ngoại ngữ & Tiếng Anh" })" class="hover:text-[#1a94ff] transition">Luyện thi chứng chỉ IELTS &amp; TOEIC</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 4 -->
+            <div>
+                <h4 class="font-bold text-[#27272a] text-sm mb-3">Phương Thức Thanh Toán</h4>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="px-2.5 py-1 bg-blue-50 border border-blue-200 rounded font-bold text-[#0b74e5] text-xs flex items-center gap-1">
+                        <i class="fas fa-qrcode"></i> VNPay QR
+                    </span>
+                    <span class="px-2.5 py-1 bg-red-50 border border-red-200 rounded font-bold text-red-600 text-xs">
+                        ATM / Visa
+                    </span>
+                </div>
+                <h4 class="font-bold text-[#27272a] text-sm mb-2">Kết Nối Với Chúng Tôi</h4>
+                <div class="flex items-center gap-3 text-lg text-gray-500">
+                    <a href="#" class="hover:text-[#1a94ff] transition"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="hover:text-red-500 transition"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="hover:text-gray-900 transition"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-[#ebebf0] py-4 bg-[#fafafa]">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[#808089]">
+                <div>&copy; 2026 TikiCourse - Website Chia Sẻ Khóa Học Trực Tuyến. Phát triển trên nền tảng ASP.NET MVC 5.</div>
+                <div class="text-[11px]">Đồ án Tốt nghiệp CNTT - Hệ thống đào tạo trực tuyến chuẩn thương mại điện tử</div>
+            </div>
         </div>
     </footer>
 

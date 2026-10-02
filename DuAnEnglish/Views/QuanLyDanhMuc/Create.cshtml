@@ -1,0 +1,75 @@
+@model DuAnEnglish.Models.DanhMucKhoaHoc
+@{
+    ViewBag.Title = "Thêm Danh Mục Khóa Học Mới";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800 font-weight-bold">THÊM DANH MỤC KHÓA HỌC</h1>
+    <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm shadow-sm">
+        <i class="fas fa-arrow-left fa-sm mr-1"></i> Quay lại danh mục
+    </a>
+</div>
+
+@if (ViewBag.ThongBao != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-plus-circle mr-1"></i> Thông Tin Danh Mục Mới</h6>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Create", "QuanLyDanhMuc", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Tên Danh Mục <span class="text-danger">*</span></label>
+                        @Html.TextBoxFor(m => m.TenDanhMuc, new { @class = "form-control", placeholder = "Ví dụ: Lập trình Web, Cơ sở dữ liệu...", required = "required" })
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Thứ Tự Ưu Tiên</label>
+                            @Html.TextBoxFor(m => m.ThuTu, new { @class = "form-control", type = "number", value = "1" })
+                            <small class="form-text text-muted">Số càng nhỏ ưu tiên hiển thị trước.</small>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Trạng Thái</label>
+                            <select name="TrangThai" class="form-control">
+                                <option value="Hoạt động" selected>Hoạt động</option>
+                                <option value="Khóa">Khóa / Tạm ẩn</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Mô Tả Danh Mục</label>
+                        @Html.TextAreaFor(m => m.MoTa, new { @class = "form-control", rows = "3", placeholder = "Mô tả ngắn gọn về các loại khóa học trong danh mục này..." })
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-end">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary mr-2">
+                            <i class="fas fa-times mr-1"></i> Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-primary font-weight-bold shadow-sm">
+                            <i class="fas fa-save mr-1"></i> Lưu Danh Mục
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

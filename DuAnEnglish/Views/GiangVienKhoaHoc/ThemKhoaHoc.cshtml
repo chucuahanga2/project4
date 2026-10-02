@@ -1,0 +1,93 @@
+@model DuAnEnglish.Models.KhoaHoc
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Tạo khóa học mới";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <!-- Page Heading -->
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">TẠO KHÓA HỌC MỚI</h1>
+            <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50 mr-1"></i> Quay lại danh sách
+            </a>
+        </div>
+
+        @if (ViewBag.ThongBao != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle mr-2"></i> @ViewBag.ThongBao
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <!-- Card Form (SB Admin 2 format) -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-plus-circle mr-1"></i> Thông Tin Khóa Học Mới
+                </h6>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("ThemKhoaHoc", "GiangVienKhoaHoc", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Mã khóa học <span class="text-danger">*</span></label>
+                            <input type="text" name="IDKhoaHoc" class="form-control" placeholder="VD: ASPNET_01, CSHARP_PRO" required />
+                            <small class="form-text text-muted">Mã duy nhất, viết liền không dấu</small>
+                        </div>
+
+                        <div class="form-group col-md-8">
+                            <label class="font-weight-bold text-gray-700">Tên khóa học <span class="text-danger">*</span></label>
+                            <input type="text" name="TenKhoaHoc" class="form-control" placeholder="VD: Lập trình ASP.NET MVC 5 từ cơ bản đến nâng cao" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Danh mục khóa học <span class="text-danger">*</span></label>
+                            @Html.DropDownList("IDDanhMuc", ViewBag.DanhSachDanhMuc as SelectList, "-- Chọn danh mục --", new { @class = "form-control", required = "required" })
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Học phí (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" name="HocPhi" class="form-control" placeholder="0 nếu miễn phí" min="0" step="1000" value="0" required />
+                            <small class="form-text text-muted">Để 0 nếu khóa học được chia sẻ miễn phí</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Hình ảnh đại diện / Thumbnail</label>
+                        <input type="file" name="HinhAnhFile" class="form-control-file border p-2 rounded" accept="image/*" />
+                        <small class="form-text text-muted">Hỗ trợ các định dạng .jpg, .png, .jpeg (kích thước đề xuất 800x450px)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Mô tả ngắn khóa học</label>
+                        <textarea name="MoTa" rows="3" class="form-control" placeholder="Tóm tắt ngắn gọn nội dung và mục tiêu người học sẽ đạt được sau khóa học..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Nội dung chi tiết giới thiệu</label>
+                        <textarea name="NoiDung" rows="5" class="form-control" placeholder="Yêu cầu tiên quyết, đối tượng phù hợp, các công nghệ sử dụng, quyền lợi học viên..."></textarea>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="text-right">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary px-4 mr-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary px-4 font-weight-bold">
+                            <i class="fas fa-save mr-1"></i> Lưu & Soạn Giáo Trình
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
 
@@ -11,100 +9,128 @@ namespace DuAnEnglish.Controllers
     public class DangKyController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
+
         // GET: DangKy
         public ActionResult DangKy()
         {
+            if (Session["User"] != null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             return View();
         }
-        // POST: Xử lý đăng ký
+
+        // POST: DangKy
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult DangKy(string TenDangNhap, string MatKhau, string NhapLaiMatKhau, string Email, string SDT, string HoTen)
         {
-            // Kiểm tra độ dài mật khẩu
+            TenDangNhap = (TenDangNhap ?? "").Trim();
+            HoTen = (HoTen ?? "").Trim();
+            Email = (Email ?? "").Trim();
+            SDT = (SDT ?? "").Trim();
+
+            if (string.IsNullOrWhiteSpace(TenDangNhap) || string.IsNullOrWhiteSpace(MatKhau) || string.IsNullOrWhiteSpace(HoTen))
+            {
+                ViewBag.ThongBao = "Vui lòng nhập đầy đủ các trường bắt buộc!";
+                return View();
+            }
+
+            if (TenDangNhap.Length < 4 || TenDangNhap.Contains(" "))
+            {
+                ViewBag.ThongBao = "Tên đăng nhập phải có ít nhất 4 ký tự và không chứa khoảng trắng!";
+                return View();
+            }
+
+            if (HoTen.Length < 3)
+            {
+                ViewBag.ThongBao = "Họ tên phải có ít nhất 3 ký tự!";
+                return View();
+            }
+
             if (MatKhau.Length < 3 || MatKhau.Length > 20)
             {
                 ViewBag.ThongBao = "Mật khẩu phải có độ dài từ 3 đến 20 ký tự!";
                 return View();
             }
 
-            // Kiểm tra độ dài tên đăng nhập
-            if (TenDangNhap.Length < 4)
-            {
-                ViewBag.ThongBao = "Tên đăng nhập phải có ít nhất 4 ký tự!";
-                return View();
-            }
-
-            // Kiểm tra độ dài họ tên
-            if (HoTen.Length < 5)
-            {
-                ViewBag.ThongBao = "Họ tên phải có ít nhất 5 ký tự!";
-                return View();
-            }
-            // So sánh mật khẩu
             if (MatKhau != NhapLaiMatKhau)
             {
-                ViewBag.ThongBao = "Mật khẩu và nhập lại mật khẩu không khớp!";
+                ViewBag.ThongBao = "Mật khẩu và xác nhận mật khẩu không khớp!";
                 return View();
             }
 
-            // Kiểm tra nếu tên đăng nhập đã tồn tại
-            var user = db.TaiKhoans.FirstOrDefault(t => t.TenDangNhap == TenDangNhap);
-            if (user != null)
+            // Kiểm tra trùng lặp
+            if (db.TaiKhoans.Any(t => t.TenDangNhap.ToLower() == TenDangNhap.ToLower()))
             {
-                ViewBag.ThongBao = "Tên đăng nhập đã tồn tại!";
+                ViewBag.ThongBao = "Tên đăng nhập đã tồn tại, vui lòng chọn tên khác!";
                 return View();
             }
 
-            // Kiểm tra định dạng email
-            var emailRegex = new Regex(@"^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com)$", RegexOptions.IgnoreCase);
-            bool emailHopLe = emailRegex.IsMatch(Email);
-
-            var sdtRegex = new Regex(@"^\d{10}$");
-            bool sdtHopLe = sdtRegex.IsMatch(SDT);
-
-            if (!emailHopLe && !sdtHopLe)
+            // Kiểm tra email
+            if (!string.IsNullOrEmpty(Email))
             {
-                ViewBag.ThongBao = "Email không hợp lệ! Số điện thoại phải có 10 chữ số!";
-                return View();
-            }
-            if (!emailHopLe)
-            {
-                ViewBag.ThongBao = "Email không hợp lệ!";
-                return View();
-            }
-            if (!sdtHopLe)
-            {
-                ViewBag.ThongBao = "Số điện thoại phải có 10 chữ số!";
-                return View();
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                if (!emailRegex.IsMatch(Email))
+                {
+                    ViewBag.ThongBao = "Định dạng email không hợp lệ!";
+                    return View();
+                }
             }
 
-            var taiKhoanMoi = new TaiKhoan
+            // Kiểm tra số điện thoại
+            if (!string.IsNullOrEmpty(SDT))
             {
-                TenDangNhap = TenDangNhap,
-                MatKhau = MatKhau,
-                Email = Email,
-                SDT = SDT,
-                LoaiTK = "hocvien",
-                TrangThai = "Hoạt động"
-            };
+                var sdtRegex = new Regex(@"^\d{9,11}$");
+                if (!sdtRegex.IsMatch(SDT))
+                {
+                    ViewBag.ThongBao = "Số điện thoại phải từ 9 đến 11 chữ số!";
+                    return View();
+                }
+            }
 
-            db.TaiKhoans.Add(taiKhoanMoi);
-            db.SaveChanges();
-
-            var hocVienMoi = new HocVien
+            try
             {
-                IDTenDangNhap = TenDangNhap,
-                TenHV = HoTen,
-                NgaySinh = null,
-                GioiTinh = null,
-                DiaChi = null
-            };
+                var taiKhoanMoi = new TaiKhoan
+                {
+                    TenDangNhap = TenDangNhap,
+                    MatKhau = MatKhau,
+                    Email = string.IsNullOrEmpty(Email) ? null : Email,
+                    SDT = string.IsNullOrEmpty(SDT) ? null : SDT,
+                    LoaiTK = "hocvien",
+                    TrangThai = "Hoạt động"
+                };
+                db.TaiKhoans.Add(taiKhoanMoi);
 
-            db.HocViens.Add(hocVienMoi);
-            db.SaveChanges();
+                var hocVienMoi = new HocVien
+                {
+                    IDTenDangNhap = TenDangNhap,
+                    TenHV = HoTen,
+                    NgaySinh = null,
+                    GioiTinh = null,
+                    DiaChi = null
+                };
+                db.HocViens.Add(hocVienMoi);
 
-            TempData["ThongBaoDangNhap"] = "Đăng ký thành công";
-            return RedirectToAction("DangNhap", "DangNhap");
+                db.SaveChanges();
+
+                TempData["ThongBaoDangNhap"] = "Đăng ký tài khoản thành công! Vui lòng đăng nhập.";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ThongBao = "Lỗi khi đăng ký tài khoản: " + ex.Message;
+                return View();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

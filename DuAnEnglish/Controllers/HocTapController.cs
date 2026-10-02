@@ -1,129 +1,401 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
+using DuAnEnglish.ViewModels;
 
 namespace DuAnEnglish.Controllers
 {
     public class HocTapController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
-        // GET: HocTap/XemLop
-        public ActionResult XemLop()
+
+        // GET: HocTap/KhoaHocCuaToi
+        public ActionResult KhoaHocCuaToi()
         {
-            // Lấy tên đăng nhập của người dùng từ session
-            string tenDangNhap = Session["User"] as string;
-            if (string.IsNullOrEmpty(tenDangNhap))
+            if (Session["User"] == null)
             {
-                // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
+                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để xem các khóa học của bạn!";
                 return RedirectToAction("DangNhap", "DangNhap");
             }
 
-            // Lấy thông tin học viên từ bảng HocVien theo tên đăng nhập
-            var hocVien = db.HocViens.FirstOrDefault(hv => hv.IDTenDangNhap == tenDangNhap);
+            string tenDangNhap = Session["User"].ToString();
+            var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
             if (hocVien == null)
             {
-                return HttpNotFound("Không tìm thấy học viên.");
+                TempData["ThongBaoDangNhap"] = "Không tìm thấy hồ sơ học viên!";
+                return RedirectToAction("DangNhap", "DangNhap");
             }
 
-            // Lấy danh sách các lớp học mà học viên đã đăng ký
-            var lopHocs = db.HocVienLopHocs
-                             .Where(hvlh => hvlh.IDHocVien == hocVien.IDHocVien)
-                             .Select(hvlh => hvlh.LopHoc)
-                             .Include(lh => lh.PhongHoc)
+            // Lấy danh sách các khóa học đã đăng ký thành công (kích hoạt)
+            var dsDangKy = db.DangKyKhoaHocs
+                             .Include(d => d.KhoaHoc)
+                             .Include(d => d.KhoaHoc.GiangVien)
+                             .Where(d => d.IDHocVien == hocVien.IDHocVien && 
+                                        (d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành"))
+                             .OrderByDescending(d => d.NgayDangKy)
                              .ToList();
 
-            // Truyền mã học viên vào ViewBag để sử dụng trong view
-            ViewBag.MahocVien = hocVien.IDHocVien;
+            var ketQua = new List<KhoaHocCuaToiItem>();
 
-            // Trả về View với danh sách lớp học
-            return View(lopHocs);
-        }
-        // GET: hiển thị điểm số lên
-        public ActionResult XemDiem(string idLopHoc, int idHocVien)
-        {
-            // Kiểm tra lớp học có tồn tại không
-            var lopHoc = db.LopHocs.FirstOrDefault(lh => lh.IDLopHoc == idLopHoc);
-            if (lopHoc == null)
+            foreach (var dk in dsDangKy)
             {
-                return HttpNotFound("Không tìm thấy lớp học.");
+                var kh = dk.KhoaHoc;
+                if (kh == null) continue;
+
+                // Đếm tổng số bài học của khóa học
+                int tongSoBai = db.BaiHocs.Count(b => b.ChuongHoc.IDKhoaHoc == kh.IDKhoaHoc);
+
+                // Đếm số bài học đã hoàn thành
+                int soBaiHoanThanh = db.TienDoHocs.Count(t => t.IDHocVien == hocVien.IDHocVien &&
+                                                             t.DaHoanThanh == true &&
+                                                             t.BaiHoc.ChuongHoc.IDKhoaHoc == kh.IDKhoaHoc);
+
+                // Tìm bài học gần nhất đã xem hoặc bài học đầu tiên
+                var tienDoGanNhat = db.TienDoHocs
+                                      .Where(t => t.IDHocVien == hocVien.IDHocVien && t.BaiHoc.ChuongHoc.IDKhoaHoc == kh.IDKhoaHoc)
+                                      .OrderByDescending(t => t.ThoiDiemXemGanNhat)
+                                      .FirstOrDefault();
+
+                int? nextBaiId = null;
+                string nextBaiName = null;
+
+                if (tienDoGanNhat != null && tienDoGanNhat.BaiHoc != null)
+                {
+                    nextBaiId = tienDoGanNhat.IDBaiHoc;
+                    nextBaiName = tienDoGanNhat.BaiHoc.TenBaiHoc;
+                }
+                else
+                {
+                    // Lấy bài học đầu tiên
+                    var baiDauTien = db.BaiHocs
+                                       .Where(b => b.ChuongHoc.IDKhoaHoc == kh.IDKhoaHoc)
+                                       .OrderBy(b => b.ChuongHoc.ThuTu)
+                                       .ThenBy(b => b.ThuTu)
+                                       .FirstOrDefault();
+                    if (baiDauTien != null)
+                    {
+                        nextBaiId = baiDauTien.IDBaiHoc;
+                        nextBaiName = baiDauTien.TenBaiHoc;
+                    }
+                }
+
+                ketQua.Add(new KhoaHocCuaToiItem
+                {
+                    IDKhoaHoc = kh.IDKhoaHoc,
+                    TenKhoaHoc = kh.TenKhoaHoc,
+                    HinhAnhKH = kh.HinhAnhKH,
+                    TenGiangVien = kh.GiangVien != null ? kh.GiangVien.TenGV : "Giảng viên hệ thống",
+                    NgayDangKy = dk.NgayDangKy,
+                    TongSoBai = tongSoBai,
+                    SoBaiDaHoanThanh = soBaiHoanThanh,
+                    IDBaiHocTiepTheo = nextBaiId,
+                    TenBaiHocTiepTheo = nextBaiName
+                });
             }
 
-            // Lấy khóa học tương ứng với lớp
-            var khoaHoc = db.KhoaHocs.FirstOrDefault(kh => kh.IDKhoaHoc == lopHoc.IDKhoaHoc);
+            if (TempData["ThongBao"] != null)
+            {
+                ViewBag.ThongBao = TempData["ThongBao"];
+            }
+
+            return View(ketQua);
+        }
+
+        // GET: HocTap/VaoHoc/MVC2026?baiId=1
+        public ActionResult VaoHoc(string id, int? baiId)
+        {
+            if (Session["User"] == null)
+            {
+                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để vào học!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            string tenDangNhap = Session["User"].ToString();
+            var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
+            if (hocVien == null)
+            {
+                TempData["ThongBaoDangNhap"] = "Không tìm thấy thông tin học viên!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            // 1. Kiểm tra quyền truy cập khóa học
+            var dangKy = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && 
+                                                               d.IDKhoaHoc == id && 
+                                                               (d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành"));
+            if (dangKy == null)
+            {
+                TempData["ThongBao"] = "Bạn chưa đăng ký hoặc chưa hoàn tất thanh toán khóa học này!";
+                return RedirectToAction("ChiTietKhoaHoc", "KhoaHoc", new { id = id });
+            }
+
+            var khoaHoc = db.KhoaHocs
+                            .Include(k => k.GiangVien)
+                            .Include(k => k.ChuongHocs.Select(c => c.BaiHocs))
+                            .FirstOrDefault(k => k.IDKhoaHoc == id);
+
             if (khoaHoc == null)
             {
                 return HttpNotFound("Không tìm thấy khóa học.");
             }
 
-            // Lấy thông tin học viên
-            var hocVien = db.HocViens.FirstOrDefault(hv => hv.IDHocVien == idHocVien);
-            if (hocVien == null)
+            // Danh sách toàn bộ bài học theo thứ tự chương và bài
+            var allBaiHocs = new List<BaiHoc>();
+            var dsChuongItems = new List<ChuongHocItem>();
+
+            // Lấy danh sách ID các bài học mà học viên đã hoàn thành
+            var completedBaiIds = db.TienDoHocs
+                                    .Where(t => t.IDHocVien == hocVien.IDHocVien && 
+                                                t.DaHoanThanh == true && 
+                                                t.BaiHoc.ChuongHoc.IDKhoaHoc == id)
+                                    .Select(t => t.IDBaiHoc)
+                                    .ToList();
+
+            var dsChuongSorted = khoaHoc.ChuongHocs.OrderBy(c => c.ThuTu).ToList();
+            foreach (var ch in dsChuongSorted)
             {
-                return HttpNotFound("Không tìm thấy học viên.");
+                var dsBaiSorted = ch.BaiHocs.OrderBy(b => b.ThuTu).ToList();
+                allBaiHocs.AddRange(dsBaiSorted);
+
+                var chItem = new ChuongHocItem
+                {
+                    Chuong = ch,
+                    DanhSachBai = dsBaiSorted.Select(b => new BaiHocItem
+                    {
+                        Bai = b,
+                        DaHoanThanh = completedBaiIds.Contains(b.IDBaiHoc),
+                        DangHoc = false
+                    }).ToList()
+                };
+                dsChuongItems.Add(chItem);
             }
 
-            // Truyền thông tin phụ vào ViewBag
-            ViewBag.IDLopHoc = idLopHoc;
-            ViewBag.TenLopHoc = lopHoc.TenLop;
-            ViewBag.IDHocVien = idHocVien;
-            ViewBag.TenHocVien = hocVien.TenHV;
-
-            // Kiểm tra danh mục khóa học và lấy điểm theo loại khóa học
-            var danhMuc = khoaHoc.DanhMuc?.Trim().ToLower();
-            if (danhMuc == "ielts")
+            if (allBaiHocs.Count == 0)
             {
-                var diem = db.DiemIELTS.FirstOrDefault(d => d.IDHocVien == idHocVien && d.IDLopHoc == idLopHoc);
-                if (diem == null)
-                {
-                    diem = new DiemIELT
-                    {
-                        DiemNghe = null,
-                        DiemNoi = null,
-                        DiemDoc = null,
-                        DiemViet = null,
-                        TongDiem = null
-                    };
-                }
-
-                ViewBag.LoaiKhoaHoc = "IELTS";
-                return View("XemDiemIELTS", diem);
+                ViewBag.ThongBao = "Khóa học này hiện chưa có bài học nào.";
+                return View("KhoaHocChuaCoBai", khoaHoc);
             }
-            else if (danhMuc == "toeic")
-            {
-                var diem = db.DiemTOEICs.FirstOrDefault(d => d.IDHocVien == idHocVien && d.IDLopHoc == idLopHoc);
-                if (diem == null)
-                {
-                    diem = new DiemTOEIC
-                    {
-                        Part1 = null,
-                        Part2 = null,
-                        Part3 = null,
-                        Part4 = null,
-                        DiemNghe = null,
-                        Part5 = null,
-                        Part6 = null,
-                        Part7 = null,
-                        DiemDoc = null,
-                        DiemNoi = null,
-                        DiemViet = null,
-                        TongDiem = null
-                    };
-                }
 
-                ViewBag.LoaiKhoaHoc = "TOEIC";
-                return View("XemDiemTOEIC", diem);
+            // 2. Xác định bài học hiển thị
+            BaiHoc baiHienTai = null;
+
+            if (baiId.HasValue)
+            {
+                baiHienTai = allBaiHocs.FirstOrDefault(b => b.IDBaiHoc == baiId.Value);
+            }
+
+            if (baiHienTai == null)
+            {
+                // Lấy bài học gần nhất đã xem
+                var tienDoGanNhat = db.TienDoHocs
+                                      .Where(t => t.IDHocVien == hocVien.IDHocVien && t.BaiHoc.ChuongHoc.IDKhoaHoc == id)
+                                      .OrderByDescending(t => t.ThoiDiemXemGanNhat)
+                                      .FirstOrDefault();
+                if (tienDoGanNhat != null)
+                {
+                    baiHienTai = allBaiHocs.FirstOrDefault(b => b.IDBaiHoc == tienDoGanNhat.IDBaiHoc);
+                }
+            }
+
+            if (baiHienTai == null)
+            {
+                // Mặc định lấy bài đầu tiên
+                baiHienTai = allBaiHocs.FirstOrDefault();
+            }
+
+            // Cập nhật trạng thái 'DangHoc' trong danh sách
+            foreach (var ch in dsChuongItems)
+            {
+                foreach (var b in ch.DanhSachBai)
+                {
+                    if (b.Bai.IDBaiHoc == baiHienTai.IDBaiHoc)
+                    {
+                        b.DangHoc = true;
+                    }
+                }
+            }
+
+            // 3. Ghi nhận thời điểm xem gần nhất vào TienDoHoc
+            var tienDoRecord = db.TienDoHocs.FirstOrDefault(t => t.IDHocVien == hocVien.IDHocVien && t.IDBaiHoc == baiHienTai.IDBaiHoc);
+            if (tienDoRecord == null)
+            {
+                tienDoRecord = new TienDoHoc
+                {
+                    IDHocVien = hocVien.IDHocVien,
+                    IDBaiHoc = baiHienTai.IDBaiHoc,
+                    DaHoanThanh = false,
+                    ThoiDiemXemGanNhat = DateTime.Now
+                };
+                db.TienDoHocs.Add(tienDoRecord);
             }
             else
             {
-                return Content("Khóa học không thuộc IELTS hay TOEIC.");
+                tienDoRecord.ThoiDiemXemGanNhat = DateTime.Now;
             }
+            db.SaveChanges();
+
+            // 4. Xác định bài trước và bài sau
+            int currentIndex = allBaiHocs.FindIndex(b => b.IDBaiHoc == baiHienTai.IDBaiHoc);
+            BaiHoc baiTruoc = currentIndex > 0 ? allBaiHocs[currentIndex - 1] : null;
+            BaiHoc baiSau = currentIndex < allBaiHocs.Count - 1 ? allBaiHocs[currentIndex + 1] : null;
+
+            bool daHoanThanhHienTai = completedBaiIds.Contains(baiHienTai.IDBaiHoc);
+
+            var viewModel = new VaoHocViewModel
+            {
+                KhoaHoc = khoaHoc,
+                BaiHocHienTai = baiHienTai,
+                DanhSachChuong = dsChuongItems,
+                TongSoBai = allBaiHocs.Count,
+                SoBaiDaHoanThanh = completedBaiIds.Count,
+                DaHoanThanhBaiHienTai = daHoanThanhHienTai,
+                BaiHocTruoc = baiTruoc,
+                BaiHocSau = baiSau
+            };
+
+            return View(viewModel);
         }
 
+        // POST: HocTap/DanhDauHoanThanh (AJAX)
+        [HttpPost]
+        public ActionResult DanhDauHoanThanh(int idBaiHoc)
+        {
+            if (Session["User"] == null)
+            {
+                return Json(new { success = false, message = "Chưa đăng nhập" });
+            }
 
+            string tenDangNhap = Session["User"].ToString();
+            var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
+            if (hocVien == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy học viên" });
+            }
 
+            var baiHoc = db.BaiHocs.Include(b => b.ChuongHoc).FirstOrDefault(b => b.IDBaiHoc == idBaiHoc);
+            if (baiHoc == null)
+            {
+                return Json(new { success = false, message = "Bài học không tồn tại" });
+            }
+
+            string idKhoaHoc = baiHoc.ChuongHoc.IDKhoaHoc;
+
+            // Tìm hoặc tạo mới bản ghi tiến độ
+            var tienDo = db.TienDoHocs.FirstOrDefault(t => t.IDHocVien == hocVien.IDHocVien && t.IDBaiHoc == idBaiHoc);
+            if (tienDo == null)
+            {
+                tienDo = new TienDoHoc
+                {
+                    IDHocVien = hocVien.IDHocVien,
+                    IDBaiHoc = idBaiHoc,
+                    DaHoanThanh = true,
+                    NgayHoanThanh = DateTime.Now,
+                    ThoiDiemXemGanNhat = DateTime.Now
+                };
+                db.TienDoHocs.Add(tienDo);
+            }
+            else
+            {
+                tienDo.DaHoanThanh = true;
+                tienDo.NgayHoanThanh = DateTime.Now;
+                tienDo.ThoiDiemXemGanNhat = DateTime.Now;
+            }
+
+            db.SaveChanges();
+
+            // Tính toán lại tiến độ toàn khóa
+            int tongSoBai = db.BaiHocs.Count(b => b.ChuongHoc.IDKhoaHoc == idKhoaHoc);
+            int soBaiHoanThanh = db.TienDoHocs.Count(t => t.IDHocVien == hocVien.IDHocVien && 
+                                                         t.DaHoanThanh == true && 
+                                                         t.BaiHoc.ChuongHoc.IDKhoaHoc == idKhoaHoc);
+
+            int phanTram = tongSoBai > 0 ? (int)Math.Round((double)soBaiHoanThanh / tongSoBai * 100) : 0;
+
+            // Nếu hoàn thành 100% -> Cập nhật trạng thái khóa học đã hoàn thành
+            if (phanTram == 100)
+            {
+                var dangKy = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && d.IDKhoaHoc == idKhoaHoc);
+                if (dangKy != null)
+                {
+                    dangKy.TrangThai = "Đã hoàn thành";
+                    dangKy.NgayHoanThanh = DateTime.Now;
+                    db.SaveChanges();
+                }
+            }
+
+            return Json(new
+            {
+                success = true,
+                daHoanThanh = true,
+                soBaiHoanThanh = soBaiHoanThanh,
+                tongSoBai = tongSoBai,
+                phanTram = phanTram,
+                message = "Đã hoàn thành bài học!"
+            });
+        }
+
+        // GET: HocTap/ThongTinCaNhan
+        public ActionResult ThongTinCaNhan()
+        {
+            if (Session["User"] == null)
+            {
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            string username = Session["User"].ToString();
+            var hocVien = db.HocViens.Include(h => h.TaiKhoan).FirstOrDefault(h => h.IDTenDangNhap == username);
+            if (hocVien == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (TempData["ThongBao"] != null)
+            {
+                ViewBag.ThongBao = TempData["ThongBao"];
+            }
+
+            return View(hocVien);
+        }
+
+        // POST: HocTap/ThongTinCaNhan
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ThongTinCaNhan(string TenHV, string Email, string SDT, string DiaChi)
+        {
+            if (Session["User"] == null)
+            {
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            string username = Session["User"].ToString();
+            var hocVien = db.HocViens.Include(h => h.TaiKhoan).FirstOrDefault(h => h.IDTenDangNhap == username);
+            if (hocVien != null)
+            {
+                hocVien.TenHV = TenHV;
+                hocVien.DiaChi = DiaChi;
+                if (hocVien.TaiKhoan != null)
+                {
+                    hocVien.TaiKhoan.Email = Email;
+                    hocVien.TaiKhoan.SDT = SDT;
+                }
+
+                db.SaveChanges();
+                Session["TenHienThi"] = TenHV;
+                TempData["ThongBao"] = "Cập nhật thông tin cá nhân thành công!";
+            }
+
+            return RedirectToAction("ThongTinCaNhan");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

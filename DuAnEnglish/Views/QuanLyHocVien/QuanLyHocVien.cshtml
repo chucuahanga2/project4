@@ -1,109 +1,125 @@
-﻿@model IEnumerable<DuAnEnglish.Models.HocVien>
+@model IEnumerable<DuAnEnglish.Models.HocVien>
 @{
-    Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
-    ViewBag.Title = "Quản Lý Học Viên";
+    ViewBag.Title = "Quản lý Học viên";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    string currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
-<!-- SweetAlert2 -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
-<div class="container mx-auto px-4 py-6">
-    <h2 class="text-2xl font-bold text-red-800">Danh Sách Học Viên</h2>
-    <!-- Phần hiển thị lớp -->
-    <div class="mb-6">
-        <form method="get" action="@Url.Action("QuanLyHocVien", "QuanLyHocVien")">
-            <div class="flex items-center gap-4">
-                <span class="text-lg font-semibold text-gray-700">Lớp:</span>
-                <select name="idLop" class="w-48 px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="this.form.submit()">
-                    <option value="">-- Chọn lớp --</option>
-                    @foreach (var lop in ViewBag.DanhSachLop)
-                    {
-                        <option value="@lop.IDLopHoc" @(ViewBag.IDLopDangChon == lop.IDLopHoc ? "selected" : "")>@lop.TenLop</option>
-                    }
-                </select>
-            </div>
-        </form>
+
+<h1 class="h3 mb-2 text-gray-800 font-weight-bold">QUẢN LÝ HỌC VIÊN</h1>
+<p class="mb-4">Theo dõi thông tin học viên, tiến độ các khóa học đã ghi danh và kiểm soát quyền truy cập tài khoản.</p>
+
+@if (ViewBag.ThongBao != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-white">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-user-graduate mr-1"></i> Danh Sách Học Viên (@(Model != null ? Model.Count() : 0))
+        </h6>
     </div>
 
+    <div class="card-body">
+        <!-- Search form -->
+        <form method="get" action="@Url.Action("QuanLyHocVien")" class="mb-3">
+            <div class="form-row align-items-center">
+                <div class="col-md-5 my-1">
+                    <div class="input-group">
+                        <input type="text" name="search" value="@currentSearch" class="form-control" placeholder="Tìm theo tên học viên, tên đăng nhập, email...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 my-1">
+                    <a href="@Url.Action("QuanLyHocVien")" class="btn btn-secondary btn-block">
+                        <i class="fas fa-sync-alt mr-1"></i> Làm mới
+                    </a>
+                </div>
+            </div>
+        </form>
 
-    <!-- Phần tiêu đề và nút thêm -->
-    <form method="get" action="@Url.Action("Them", "QuanLyHocVien")">
-        <input type="hidden" name="idLop" value="@ViewBag.IDLopDangChon" />
-        <button type="submit"
-                class="w-[140px] bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-center">
-            Thêm Học Viên
-        </button>
-    </form>
-
-
-    <!-- Bảng danh sách -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 font-bold text-left text-sm text-black uppercase tracking-wider">Mã HV</th>
-                    <th class="px-6 py-3 font-bold text-left text-sm text-black uppercase tracking-wider">Tên đăng nhập</th>
-                    <th class="px-6 py-3 font-bold text-left text-sm text-black uppercase tracking-wider">Họ tên</th>
-                    <th class="px-6 py-3 font-bold text-left text-sm text-black uppercase tracking-wider">Ngày sinh</th>
-                    <th class="px-6 py-3 font-bold text-left text-sm text-black uppercase tracking-wider">Giới tính</th>
-                    <th class="px-6 py-3 font-bold text-left text-sm text-black uppercase tracking-wider">Địa chỉ</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @if (!Model.Any())
-                {
+        <!-- 5-Column Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
                     <tr>
-                        <!-- colspan điều chỉnh theo số cột -->
-                        <td colspan="6" class="text-center px-4 py-2 border-b border-gray-200">
-                            Vui lòng chọn lớp để xem danh sách !
-                        </td>
+                        <th style="width: 70px;" class="text-center">STT</th>
+                        <th>Học Viên</th>
+                        <th>Liên Hệ (Email & SĐT)</th>
+                        <th style="width: 170px;" class="text-center">Trạng Thái Tài Khoản</th>
+                        <th style="width: 150px;" class="text-center">Chức Năng</th>
                     </tr>
-                }
-                else
-                {
-                    foreach (var hocVien in Model)
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@hocVien.IDHocVien</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@hocVien.TaiKhoan.TenDangNhap</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@hocVien.TenHV</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                @if (hocVien.NgaySinh.HasValue)
-                                {
-                                    @hocVien.NgaySinh.Value.ToString("dd/MM/yyyy")
-                                }
-                                else
-                                {
-                                    <span class="text-gray-400">N/A</span>
-                                }
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                      @(hocVien.GioiTinh == "Nam" ? "" : "")">
-                                    @hocVien.GioiTinh
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">@hocVien.DiaChi</td>
-                            <td>
-                                <a href="@Url.Action("Xoa", "QuanLyHocVien", new { id = hocVien.IDHocVien })"
-                                   class="btn-xoa bg-red-600 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded">
-                                    Xóa
-                                </a>
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            string tt = item.TaiKhoan != null ? item.TaiKhoan.TrangThai : "Hoạt động";
+                            <tr>
+                                <td class="text-center font-weight-bold text-muted">
+                                    @stt
+                                    <div class="small badge badge-light border">#@item.IDHocVien</div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold text-primary">
+                                        <i class="fas fa-user text-gray-400 mr-1"></i>
+                                        @(string.IsNullOrEmpty(item.TenHV) ? item.IDTenDangNhap : item.TenHV)
+                                    </div>
+                                    <div class="small text-muted">
+                                        Username: <strong>@item.IDTenDangNhap</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div><i class="fas fa-envelope text-info mr-1"></i> @(item.TaiKhoan != null && !string.IsNullOrEmpty(item.TaiKhoan.Email) ? item.TaiKhoan.Email : "Chưa cập nhật")</div>
+                                    <div class="small text-muted mt-1"><i class="fas fa-phone text-success mr-1"></i> @(item.TaiKhoan != null && !string.IsNullOrEmpty(item.TaiKhoan.SDT) ? item.TaiKhoan.SDT : "Chưa cập nhật")</div>
+                                </td>
+                                <td class="text-center">
+                                    @if (tt == "Hoạt động")
+                                    {
+                                        <span class="badge badge-status-active">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-status-locked">Đã khóa</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a href="@Url.Action("ChiTiet", new { id = item.IDHocVien })" class="btn btn-info btn-sm shadow-sm" title="Xem chi tiết & Khóa học đã học">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("KhoaMoTaiKhoan", new { id = item.IDHocVien })" 
+                                       class="btn @(tt == "Khóa" ? "btn-success" : "btn-warning") btn-sm shadow-sm ml-1" 
+                                       title="@(tt == "Khóa" ? "Mở khóa tài khoản" : "Khóa tài khoản")"
+                                       onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?');">
+                                        <i class="fas @(tt == "Khóa" ? "fa-unlock" : "fa-lock")"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-user-graduate fa-2x mb-2 text-gray-400 d-block"></i>
+                                Không tìm thấy học viên nào.
                             </td>
                         </tr>
                     }
-                }
-
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-
-<script src="~/Scripts/JSThongBao.js"></script>
-<script src="~/Scripts/JSXacNhanXoa.js"></script>
-@if (ViewBag.ThongBao != null)
-{
-    <script>
-        showAlert('@Html.Raw(ViewBag.ThongBao)');
-    </script>
-}

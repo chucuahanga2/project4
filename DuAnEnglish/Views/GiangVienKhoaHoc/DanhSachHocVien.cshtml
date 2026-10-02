@@ -1,0 +1,112 @@
+@model IEnumerable<DuAnEnglish.Models.DangKyKhoaHoc>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var kh = ViewBag.KhoaHoc as DuAnEnglish.Models.KhoaHoc;
+    ViewBag.Title = "Danh sách học viên - " + (kh != null ? kh.TenKhoaHoc : "");
+}
+
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800 font-weight-bold">DANH SÁCH HỌC VIÊN ĐĂNG KÝ</h1>
+        <p class="text-muted mb-0">Khóa học: <span class="font-weight-bold text-primary">@(kh != null ? kh.TenKhoaHoc : "")</span></p>
+    </div>
+    <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm shadow-sm">
+        <i class="fas fa-arrow-left mr-1"></i> Quay lại
+    </a>
+</div>
+
+<!-- DataTales Card (SB Admin 2 format) -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-user-graduate mr-1"></i> Tổng số: @(Model != null ? Model.Count() : 0) Học Viên
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;" class="text-center">STT</th>
+                        <th>Học viên</th>
+                        <th>Tài khoản & Email</th>
+                        <th style="width: 180px;">Ngày đăng ký</th>
+                        <th style="width: 170px;" class="text-center">Trạng thái học</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            var hv = item.HocVien;
+                            var tk = hv != null ? hv.TaiKhoan : null;
+                            <tr>
+                                <!-- Cột 1: STT -->
+                                <td class="text-center font-weight-bold text-muted">
+                                    @stt
+                                    <div class="small badge badge-light border">#@item.IDDangKy</div>
+                                </td>
+
+                                <!-- Cột 2: Tên học viên -->
+                                <td>
+                                    <div class="font-weight-bold text-primary">
+                                        <i class="fas fa-user mr-1 text-muted"></i>
+                                        @(hv != null && !string.IsNullOrEmpty(hv.TenHV) ? hv.TenHV : (tk != null ? tk.TenDangNhap : "Học viên"))
+                                    </div>
+                                    <div class="small text-muted">Mã HV: @item.IDHocVien</div>
+                                </td>
+
+                                <!-- Cột 3: Tài khoản & Email -->
+                                <td>
+                                    <div>
+                                        <i class="fas fa-id-badge text-muted mr-1"></i>
+                                        @(tk != null ? tk.TenDangNhap : (hv != null ? hv.IDTenDangNhap : "N/A"))
+                                    </div>
+                                    <div class="small text-muted mt-1">
+                                        <i class="fas fa-envelope text-muted mr-1"></i>
+                                        @(tk != null && !string.IsNullOrEmpty(tk.Email) ? tk.Email : "Chưa cập nhật email")
+                                    </div>
+                                </td>
+
+                                <!-- Cột 4: Ngày đăng ký -->
+                                <td>
+                                    <i class="far fa-calendar-alt mr-1 text-muted"></i>
+                                    @(item.NgayDangKy.HasValue ? item.NgayDangKy.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                                </td>
+
+                                <!-- Cột 5: Trạng thái học -->
+                                <td class="text-center">
+                                    @if (item.TrangThai == "Đã kích hoạt")
+                                    {
+                                        <span class="badge badge-status-active">
+                                            <i class="fas fa-check-circle mr-1"></i> Đang theo học
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-status-pending">
+                                            <i class="fas fa-clock mr-1"></i> @item.TrangThai
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-users-slash fa-2x mb-2 text-gray-400 d-block"></i>
+                                Chưa có học viên nào đăng ký khóa học này.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

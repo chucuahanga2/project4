@@ -1,24 +1,177 @@
-﻿@{
-    Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
-}
+@model IEnumerable<DuAnEnglish.Models.KhoaHoc>
 @{
-    ViewBag.Title = "Home Giảng Viên";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Bàn làm việc Giảng viên";
+    var gv = ViewBag.GiangVien as DuAnEnglish.Models.GiangVien;
+    int tongKhoaHoc = ViewBag.TongSoKhoaHoc ?? 0;
+    int tongHocVien = ViewBag.TongSoHocVien ?? 0;
+    int tongChuong = ViewBag.TongSoChuong ?? 0;
 }
-<!-- Main Content -->
-<main class="min-h-screen">
-    <div class="relative h-screen w-full overflow-hidden">
-        <!-- Hình nền -->
-        <div class="absolute inset-0 bg-[url('https://img.freepik.com/free-vector/hand-drawn-english-lessons-youtube-channel-art-template_23-2149293394.jpg')] bg-cover bg-center bg-no-repeat transition-all duration-500 hover:scale-105">
-            <!-- Lớp phủ (Overlay) -->
-            <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-        </div>
 
-        <!-- Nội dung banner -->
-        <div class="relative z-10 flex h-full items-center justify-center text-center px-4">
-            <div class="max-w-4xl space-y-6 text-white">
-                <h1 class="text-4xl md:text-6xl font-bold drop-shadow-lg">Quản Lý Trung Tâm Hiệu Quả</h1>
-                <p class="text-lg md:text-xl font-medium opacity-90">Khám phá phương pháp học tập đột phá</p>
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800 font-weight-bold">BÀN LÀM VIỆC GIẢNG VIÊN</h1>
+        <p class="text-muted small mb-0">Xin chào, <strong class="text-primary">@(gv != null ? gv.TenGV : "Giảng viên")</strong>! Chúc bạn có một ngày làm việc và giảng dạy hiệu quả.</p>
+    </div>
+    <a href="@Url.Action("ThemKhoaHoc", "GiangVienKhoaHoc")" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm font-weight-bold">
+        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Tạo Khóa Học Mới
+    </a>
+</div>
+
+<!-- 3 KPI Cards (SB Admin 2 format) -->
+<div class="row">
+    <!-- Tổng khóa học -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Khóa Học Đang Phụ Trách
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@tongKhoaHoc khóa học</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-book-reader fa-2x text-gray-300"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</main>
+
+    <!-- Tổng học viên -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Tổng Lượt Học Viên Đăng Ký
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@tongHocVien học viên</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tổng chương bài học -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Chương Học Đã Biên Soạn
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@tongChuong chương học</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-layer-group fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Courses DataTales Card (SB Admin 2 format, 5 columns) -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-list mr-1"></i> Danh Sách Khóa Học Của Tôi
+        </h6>
+        <a href="@Url.Action("ThemKhoaHoc", "GiangVienKhoaHoc")" class="btn btn-primary btn-sm font-weight-bold">
+            <i class="fas fa-plus fa-sm mr-1"></i> Thêm mới
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;" class="text-center">STT</th>
+                        <th>Khóa học</th>
+                        <th>Danh mục & Giáo trình</th>
+                        <th style="width: 170px;">Học phí & Học viên</th>
+                        <th style="width: 220px;" class="text-center">Chức năng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            string imgUrl = !string.IsNullOrEmpty(item.HinhAnhKH) ? Url.Content("~/Images/" + item.HinhAnhKH) : Url.Content("~/Images/default_course.png");
+                            int countChuong = item.ChuongHocs != null ? item.ChuongHocs.Count : 0;
+                            int countHocVien = item.DangKyKhoaHocs != null ? item.DangKyKhoaHocs.Count : 0;
+
+                            <tr>
+                                <td class="text-center font-weight-bold text-muted">
+                                    @stt
+                                    <div class="small badge badge-light border">@item.IDKhoaHoc</div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="@imgUrl" class="rounded mr-2 shadow-sm" style="width: 60px; height: 45px; object-fit: cover;" onerror="this.src='/Images/TI_CoBan.jpg';" />
+                                        <div>
+                                            <a href="@Url.Action("ChiTietNoiDung", "GiangVienKhoaHoc", new { id = item.IDKhoaHoc })" class="font-weight-bold text-primary text-decoration-none">
+                                                @item.TenKhoaHoc
+                                            </a>
+                                            <div class="small text-muted text-truncate" style="max-width: 300px;">
+                                                @(string.IsNullOrEmpty(item.MoTa) ? "Chưa có mô tả" : item.MoTa)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <i class="fas fa-folder text-warning mr-1"></i>
+                                        <span class="font-weight-bold">@(item.DanhMucKhoaHoc != null ? item.DanhMucKhoaHoc.TenDanhMuc : (item.DanhMuc ?? "Chưa phân loại"))</span>
+                                    </div>
+                                    <div class="small text-muted mt-1">
+                                        <i class="fas fa-layer-group text-info mr-1"></i> @countChuong chương học
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold @(item.HocPhi == 0 || item.HocPhi == null ? "text-success" : "text-danger")">
+                                        @(item.HocPhi == 0 || item.HocPhi == null ? "Miễn phí" : string.Format("{0:N0} đ", item.HocPhi))
+                                    </div>
+                                    <div class="small mt-1 text-muted">
+                                        <i class="fas fa-users mr-1 text-primary"></i> @countHocVien học viên
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <a href="@Url.Action("ChiTietNoiDung", "GiangVienKhoaHoc", new { id = item.IDKhoaHoc })" class="btn btn-primary btn-sm shadow-sm" title="Quản lý Chương & Bài học">
+                                        <i class="fas fa-list-ol mr-1"></i> Soạn bài
+                                    </a>
+                                    <a href="@Url.Action("SuaKhoaHoc", "GiangVienKhoaHoc", new { id = item.IDKhoaHoc })" class="btn btn-info btn-sm shadow-sm ml-1" title="Chỉnh sửa thông tin">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="@Url.Action("DanhSachHocVien", "GiangVienKhoaHoc", new { id = item.IDKhoaHoc })" class="btn btn-success btn-sm shadow-sm ml-1" title="Xem danh sách học viên">
+                                        <i class="fas fa-users"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-chalkboard fa-2x mb-2 text-gray-400 d-block"></i>
+                                Bạn chưa có khóa học nào. Hãy nhấn "Tạo Khóa Học Mới" để bắt đầu!
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

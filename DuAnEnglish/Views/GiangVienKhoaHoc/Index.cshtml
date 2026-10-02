@@ -1,0 +1,143 @@
+@model IEnumerable<DuAnEnglish.Models.KhoaHoc>
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Khóa học của tôi";
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800 font-weight-bold">QUẢN LÝ KHÓA HỌC CỦA TÔI</h1>
+<p class="mb-4">Danh sách các khóa học do bạn phụ trách giảng dạy. Bạn có thể cập nhật thông tin, xây dựng giáo trình (chương & bài học) và theo dõi học viên đăng ký.</p>
+
+@if (ViewBag.ThongBao != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<!-- DataTales Card (SB Admin 2 format) -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-chalkboard-teacher mr-1"></i> Khóa Học Do Tôi Giảng Dạy (@(Model != null ? Model.Count() : 0))
+        </h6>
+        <div class="mt-2 mt-md-0">
+            <a href="@Url.Action("ThemKhoaHoc")" class="btn btn-primary btn-sm shadow-sm font-weight-bold">
+                <i class="fas fa-plus fa-sm mr-1"></i> Tạo Khóa Học Mới
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- 5-Column Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;" class="text-center">STT</th>
+                        <th>Khóa học</th>
+                        <th>Danh mục & Giáo trình</th>
+                        <th style="width: 180px;">Học phí & Học viên</th>
+                        <th style="width: 220px;" class="text-center">Chức năng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            string imgUrl = !string.IsNullOrEmpty(item.HinhAnhKH) ? Url.Content("~/Images/" + item.HinhAnhKH) : Url.Content("~/Images/default_course.png");
+                            int soChuong = item.ChuongHocs != null ? item.ChuongHocs.Count : 0;
+                            int soBai = item.ChuongHocs != null ? item.ChuongHocs.Sum(c => c.BaiHocs != null ? c.BaiHocs.Count : 0) : 0;
+                            int soHocVien = item.DangKyKhoaHocs != null ? item.DangKyKhoaHocs.Count : 0;
+
+                            <tr>
+                                <!-- Cột 1: STT & Mã -->
+                                <td class="text-center font-weight-bold text-muted">
+                                    @stt
+                                    <div class="small badge badge-light border">@item.IDKhoaHoc</div>
+                                </td>
+
+                                <!-- Cột 2: Khóa học (Ảnh & Tên) -->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="@imgUrl" class="rounded mr-2 shadow-sm" style="width: 65px; height: 50px; object-fit: cover;" onerror="this.src='/Images/TI_CoBan.jpg';" />
+                                        <div>
+                                            <a href="@Url.Action("ChiTietNoiDung", new { id = item.IDKhoaHoc })" class="font-weight-bold text-primary text-decoration-none">
+                                                @item.TenKhoaHoc
+                                            </a>
+                                            <div class="small text-muted text-truncate" style="max-width: 320px;">
+                                                @(string.IsNullOrEmpty(item.MoTa) ? "Chưa có mô tả" : item.MoTa)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Cột 3: Danh mục & Giáo trình -->
+                                <td>
+                                    <div>
+                                        <i class="fas fa-folder text-warning mr-1"></i>
+                                        <span class="font-weight-bold">@(item.DanhMucKhoaHoc != null ? item.DanhMucKhoaHoc.TenDanhMuc : (item.DanhMuc ?? "Chưa phân loại"))</span>
+                                    </div>
+                                    <div class="small text-muted mt-1">
+                                        <i class="fas fa-layer-group text-info mr-1"></i>
+                                        <strong>@soChuong</strong> chương &bull; <strong>@soBai</strong> bài học
+                                    </div>
+                                </td>
+
+                                <!-- Cột 4: Học phí & Học viên -->
+                                <td>
+                                    <div class="font-weight-bold @(item.HocPhi == 0 || item.HocPhi == null ? "text-success" : "text-danger")">
+                                        @(item.HocPhi == 0 || item.HocPhi == null ? "Miễn phí" : string.Format("{0:N0} đ", item.HocPhi))
+                                    </div>
+                                    <div class="small mt-1">
+                                        <a href="@Url.Action("DanhSachHocVien", new { id = item.IDKhoaHoc })" class="text-secondary font-weight-bold">
+                                            <i class="fas fa-users mr-1 text-primary"></i> @soHocVien học viên
+                                        </a>
+                                    </div>
+                                    <div class="mt-1">
+                                        @if (item.TrangThai == "Hiển thị" || string.IsNullOrEmpty(item.TrangThai))
+                                        {
+                                            <span class="badge badge-status-active">Hiển thị</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-status-locked">Ẩn</span>
+                                        }
+                                    </div>
+                                </td>
+
+                                <!-- Cột 5: Chức năng -->
+                                <td class="text-center">
+                                    <a href="@Url.Action("ChiTietNoiDung", new { id = item.IDKhoaHoc })" class="btn btn-primary btn-sm shadow-sm" title="Quản lý Chương & Bài học">
+                                        <i class="fas fa-list-ol mr-1"></i> Soạn bài
+                                    </a>
+                                    <a href="@Url.Action("SuaKhoaHoc", new { id = item.IDKhoaHoc })" class="btn btn-info btn-sm shadow-sm ml-1" title="Chỉnh sửa thông tin khóa học">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="@Url.Action("DanhSachHocVien", new { id = item.IDKhoaHoc })" class="btn btn-success btn-sm shadow-sm ml-1" title="Xem danh sách học viên">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-book-open fa-2x mb-2 text-gray-400 d-block"></i>
+                                Bạn chưa tạo khóa học nào. Hãy nhấn "Tạo Khóa Học Mới" để bắt đầu!
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,126 @@
+@model IEnumerable<DuAnEnglish.Models.DanhMucKhoaHoc>
+@{
+    ViewBag.Title = "Quản lý Danh mục Khóa học";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    string currentSearch = ViewBag.CurrentSearch as string ?? "";
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800 font-weight-bold">QUẢN LÝ DANH MỤC KHÓA HỌC</h1>
+<p class="mb-4">Phân loại các nhóm khóa học trên hệ thống (Lập trình, Cơ sở dữ liệu, Ngoại ngữ, v.v.).</p>
+
+@if (ViewBag.ThongBao != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-white">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-folder-open mr-1"></i> Danh Sách Danh Mục (@(Model != null ? Model.Count() : 0))
+        </h6>
+        <div class="mt-2 mt-md-0">
+            <a href="@Url.Action("Create")" class="btn btn-primary btn-sm shadow-sm font-weight-bold">
+                <i class="fas fa-plus fa-sm mr-1"></i> Thêm Danh Mục Mới
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Search form -->
+        <form method="get" action="@Url.Action("Index")" class="mb-3">
+            <div class="form-row align-items-center">
+                <div class="col-md-5 my-1">
+                    <div class="input-group">
+                        <input type="text" name="search" value="@currentSearch" class="form-control" placeholder="Tìm theo tên hoặc mô tả danh mục...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 my-1">
+                    <a href="@Url.Action("Index")" class="btn btn-secondary btn-block">
+                        <i class="fas fa-sync-alt mr-1"></i> Làm mới
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <!-- 5-Column Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;" class="text-center">STT</th>
+                        <th>Tên Danh Mục</th>
+                        <th>Mô Tả Danh Mục</th>
+                        <th style="width: 160px;" class="text-center">Thứ Tự & Trạng Thái</th>
+                        <th style="width: 140px;" class="text-center">Chức Năng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int stt = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center font-weight-bold text-muted">@stt</td>
+                                <td>
+                                    <span class="font-weight-bold text-primary">
+                                        <i class="fas fa-folder text-warning mr-1"></i> @item.TenDanhMuc
+                                    </span>
+                                    <div class="small text-muted mt-1">
+                                        Có @(item.KhoaHocs != null ? item.KhoaHocs.Count : 0) khóa học
+                                    </div>
+                                </td>
+                                <td>@(string.IsNullOrEmpty(item.MoTa) ? "Chưa có mô tả" : item.MoTa)</td>
+                                <td class="text-center">
+                                    <div class="badge badge-light border mb-1">Thứ tự: @(item.ThuTu ?? 0)</div>
+                                    <div>
+                                        @if (item.TrangThai == "Hoạt động")
+                                        {
+                                            <span class="badge badge-status-active">Hoạt động</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-status-locked">Khóa</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <a href="@Url.Action("Edit", new { id = item.IDDanhMuc })" class="btn btn-info btn-sm shadow-sm" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="@Url.Action("Delete", new { id = item.IDDanhMuc })" 
+                                       class="btn btn-danger btn-sm shadow-sm ml-1" 
+                                       onclick="return confirm('Bạn có chắc muốn xóa hoặc khóa danh mục này?');"
+                                       title="Xóa hoặc Khóa">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="fas fa-folder-open fa-2x mb-2 text-gray-400 d-block"></i>
+                                Chưa có danh mục khóa học nào.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

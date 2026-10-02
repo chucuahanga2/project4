@@ -1,94 +1,115 @@
-﻿@model DuAnEnglish.Models.GiangVien
-
+@model DuAnEnglish.Models.GiangVien
 @{
-    ViewBag.Title = "Chi tiết giảng viên";
+    ViewBag.Title = "Chỉnh sửa Giảng viên: " + Model.TenGV;
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    string email = Model.TaiKhoan != null ? Model.TaiKhoan.Email : "";
+    string sdt = Model.TaiKhoan != null ? Model.TaiKhoan.SDT : "";
+    string tt = Model.TaiKhoan != null ? Model.TaiKhoan.TrangThai : "Hoạt động";
 }
 
-<!-- SweetAlert2 -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
-
-<div class="min-h-screen flex justify-center items-center bg-gray-100 py-10">
-    <div class="bg-white w-full max-w-3xl p-8 rounded-2xl shadow-lg">
-        <h2 class="text-3xl font-bold text-center text-red-600 mb-8">Chi tiết giảng viên</h2>
-
-        @using (Html.BeginForm("Details", "QuanLyGiangVien", FormMethod.Post))
-        {
-            @Html.AntiForgeryToken()
-            @Html.HiddenFor(model => model.IDGiangVien)
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Tên giảng viên -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Họ và tên</label>
-                    @Html.TextBoxFor(m => m.TenGV, new
-                    {
-                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
-                    })
-                </div>
-
-                <!-- Ngày sinh -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Ngày sinh</label>
-                    @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new
-                    {
-                        @type = "date",
-                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
-                    })
-                </div>
-
-                <!-- Giới tính -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Giới tính</label>
-                    @Html.DropDownListFor(m => m.GioiTinh,
-                        new SelectList(new List<string> { "Nam", "Nữ", "Khác" }, Model.GioiTinh),
-                        "-- Chọn giới tính --",
-                        new { @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2" })
-                </div>
-
-                <!-- Địa chỉ -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Địa chỉ</label>
-                    @Html.TextBoxFor(m => m.DiaChi, new
-                    {
-                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
-                    })
-                </div>
-
-                <!-- Chuyên môn -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Chuyên môn</label>
-                    @Html.TextBoxFor(m => m.ChuyenMon, new
-                    {
-                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
-                    })
-                </div>
-
-                <!-- Bằng cấp -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700">Bằng cấp</label>
-                    @Html.TextBoxFor(m => m.BangCap, new
-                    {
-                        @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2"
-                    })
-                </div>
-            </div>
-
-            <div class="mt-8 flex justify-center gap-4">
-                <button type="submit"
-                        class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-lg shadow">
-                    Lưu thay đổi
-                </button>
-            </div>
-        }
-    </div>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800 font-weight-bold">CHỈNH SỬA GIẢNG VIÊN: @Model.TenGV</h1>
+    <a href="@Url.Action("QuanLyGiangVien")" class="btn btn-secondary btn-sm shadow-sm">
+        <i class="fas fa-arrow-left fa-sm mr-1"></i> Quay lại danh sách
+    </a>
 </div>
-<script src="~/Scripts/JSThongBao.js"></script>
+
 @if (ViewBag.ThongBao != null)
 {
-    <script>
-            // Gọi hàm showAlert từ file JSThongBao.js
-            showAlert('@Html.Raw(ViewBag.ThongBao)');
-    </script>
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
 }
+
+<div class="row">
+    <div class="col-lg-9 mx-auto">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-user-edit mr-1"></i> Thông Tin Giảng Viên #@Model.IDGiangVien</h6>
+                <span class="badge badge-light border">Tài khoản: @Model.IDTenDangNhap</span>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Details", "QuanLyGiangVien", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.IDGiangVien)
+                    @Html.HiddenFor(m => m.IDTenDangNhap)
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Họ và Tên Giảng Viên <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.TenGV, new { @class = "form-control", required = "required" })
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label class="font-weight-bold text-gray-700">Giới Tính</label>
+                            <select name="GioiTinh" class="form-control">
+                                <option value="Nam" @(Model.GioiTinh == "Nam" ? "selected" : "")>Nam</option>
+                                <option value="Nữ" @(Model.GioiTinh == "Nữ" ? "selected" : "")>Nữ</option>
+                                <option value="Khác" @(Model.GioiTinh == "Khác" ? "selected" : "")>Khác</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label class="font-weight-bold text-gray-700">Ngày Sinh</label>
+                            @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Email</label>
+                            <input type="email" name="Email" value="@email" class="form-control" />
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Số Điện Thoại</label>
+                            <input type="text" name="SDT" value="@sdt" class="form-control" />
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Trạng Thái Tài Khoản</label>
+                            <select name="TrangThai" class="form-control">
+                                <option value="Hoạt động" @(tt == "Hoạt động" ? "selected" : "")>Hoạt động</option>
+                                <option value="Khóa" @(tt == "Khóa" ? "selected" : "")>Khóa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Chuyên Môn</label>
+                            @Html.TextBoxFor(m => m.ChuyenMon, new { @class = "form-control" })
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Bằng Cấp</label>
+                            @Html.TextBoxFor(m => m.BangCap, new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Địa Chỉ</label>
+                        @Html.TextBoxFor(m => m.DiaChi, new { @class = "form-control" })
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="@Url.Action("Delete", new { id = Model.IDGiangVien })" 
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Bạn có chắc muốn xóa hoặc khóa giảng viên này?');">
+                            <i class="fas fa-trash-alt mr-1"></i> Xóa Giảng Viên
+                        </a>
+                        <div>
+                            <a href="@Url.Action("QuanLyGiangVien")" class="btn btn-secondary mr-2">
+                                <i class="fas fa-times mr-1"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary font-weight-bold shadow-sm">
+                                <i class="fas fa-save mr-1"></i> Lưu Cập Nhật
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

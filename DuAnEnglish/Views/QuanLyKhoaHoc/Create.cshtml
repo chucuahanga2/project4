@@ -1,128 +1,106 @@
-﻿@model DuAnEnglish.Models.KhoaHoc
-
+@model DuAnEnglish.Models.KhoaHoc
 @{
-    ViewBag.Title = "Thêm khóa học";
+    ViewBag.Title = "Thêm Khóa Học Mới";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<!-- SweetAlert2 -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
-
-<div class="min-h-screen flex justify-center items-center bg-gray-100 py-10">
-    <div class="bg-white w-full max-w-3xl p-8 rounded-2xl shadow-lg">
-        <h2 class="text-3xl font-bold text-center text-red-600 mb-8">Thêm khóa học</h2>
-
-        @using (Html.BeginForm("Create", "QuanLyKhoaHoc", FormMethod.Post, new { enctype = "multipart/form-data" }))
-        {
-            @Html.AntiForgeryToken()
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- ID Khoá học -->
-        <div>
-            <label class="block text-sm font-semibold text-gray-700">ID khóa học</label>
-            @Html.TextBoxFor(m => m.IDKhoaHoc, new
-            {
-                @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2",
-                placeholder = "Nhập ID khóa học"
-            })
-        </div>
-
-        <!-- Tên khóa học -->
-        <div>
-            <label class="block text-sm font-semibold text-gray-700">Tên khóa học</label>
-            @Html.TextBoxFor(m => m.TenKhoaHoc, new
-            {
-                @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2",
-                placeholder = "Nhập tên khóa học"
-            })
-        </div>
-
-        <!-- Danh mục -->
-        <div>
-            <label class="block text-sm font-semibold text-gray-700">Danh mục</label>
-            @{
-                var danhMucList = ViewBag.DanhMucList as List<string> ?? new List<string> { "TOEIC", "IELTS" };
-            }
-            @Html.DropDownListFor(m => m.DanhMuc,
-                new SelectList(danhMucList),
-                "-- Chọn danh mục --",
-                new { @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2" })
-        </div>
-
-
-        <!-- Học phí -->
-        <div>
-            <label class="block text-sm font-semibold text-gray-700">Học phí</label>
-            @Html.TextBoxFor(m => m.HocPhi, new
-            {
-                @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2",
-                placeholder = "Nhập học phí"
-            })
-        </div>
-
-        <!-- Mô tả -->
-        <div >
-            <label class="block text-sm font-semibold text-gray-700">Mô tả</label>
-            @Html.TextAreaFor(m => m.MoTa, new
-            {
-                @class = "mt-1 w-full bg-gray-100 rounded-lg shadow-sm p-2",
-                rows = 3,
-                placeholder = "Mô tả ngắn gọn về khóa học"
-            })
-        </div>
-
-        <!-- Hình Ảnh -->
-        <div>
-            <label class="block text-sm font-semibold text-gray-700">Hình ảnh</label>
-
-            <div class="flex items-center gap-4 mt-1">
-                <!-- TextBox hiển thị tên file -->
-                @Html.TextBoxFor(m => m.HinhAnhKH, new
-                {
-                    @class = "w-1/2 bg-gray-100 rounded-lg shadow-sm p-2",
-                    @readonly = "readonly",
-                    @placeholder = "Tên hình ảnh"
-                })
-
-                <!-- Input file ẩn -->
-                <input type="file" id="ImageFile" name="ImageFile"
-                       accept="image/*"
-                       class="hidden" onchange="updateFileName()" />
-
-                <!-- Nút tải lên (rộng hơn) -->
-                <button type="button" onclick="document.getElementById('ImageFile').click();"
-                        class="w-1/2 bg-gray-300 hover:bg-gray-200 text-black font-medium py-2 px-4 rounded-lg shadow">
-                    Tải lên
-                </button>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="mt-8 flex justify-center gap-4">
-        <button type="submit"
-                class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg shadow">
-            Thêm
-        </button>
-    </div>
-        }
-    </div>
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800 font-weight-bold">THÊM KHÓA HỌC MỚI</h1>
+    <a href="@Url.Action("QuanLyKhoaHoc")" class="btn btn-secondary btn-sm shadow-sm">
+        <i class="fas fa-arrow-left fa-sm mr-1"></i> Quay lại danh sách
+    </a>
 </div>
 
-<script src="~/Scripts/JSThongBao.js"></script>
 @if (ViewBag.ThongBao != null)
 {
-    <script>
-        showAlert('@Html.Raw(ViewBag.ThongBao)');
-    </script>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
 }
-<script>
-    function updateFileName() {
-        const input = document.getElementById("ImageFile");
-        const fileName = input.files[0]?.name;
-        if (fileName) {
-            document.querySelector('input[name="HinhAnhKH"]').value = fileName;
-        }
-    }
-</script>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-plus-circle mr-1"></i> Thông Tin Khóa Học Mới</h6>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Create", "QuanLyKhoaHoc", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Mã Khóa Học <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.IDKhoaHoc, new { @class = "form-control", placeholder = "Ví dụ: CSHARP01, MVC2026...", required = "required" })
+                            <small class="form-text text-muted">Mã duy nhất, viết hoa, không dấu cách.</small>
+                        </div>
+
+                        <div class="form-group col-md-8">
+                            <label class="font-weight-bold text-gray-700">Tên Khóa Học <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.TenKhoaHoc, new { @class = "form-control", placeholder = "Nhập tên khóa học...", required = "required" })
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Danh Mục Khóa Học</label>
+                            @Html.DropDownList("IDDanhMuc", null, "-- Chọn danh mục --", new { @class = "form-control" })
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Giảng Viên Phụ Trách</label>
+                            @Html.DropDownList("IDGiangVien", null, "-- Phân công giảng viên --", new { @class = "form-control" })
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold text-gray-700">Học Phí (VNĐ)</label>
+                            @Html.TextBoxFor(m => m.HocPhi, new { @class = "form-control", type = "number", min = "0", step = "1000", placeholder = "0 nếu miễn phí" })
+                            <small class="form-text text-muted">Để 0 cho khóa học miễn phí.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Hình Ảnh Đại Diện Khóa Học</label>
+                            <input type="file" name="ImageFile" class="form-control-file border rounded p-1" accept="image/*" />
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label class="font-weight-bold text-gray-700">Trạng Thái Hiển Thị</label>
+                            <select name="TrangThai" class="form-control">
+                                <option value="Hiển thị" selected>Hiển thị công khai</option>
+                                <option value="Ẩn">Ẩn khóa học</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Mô Tả Ngắn</label>
+                        @Html.TextAreaFor(m => m.MoTa, new { @class = "form-control", rows = "3", placeholder = "Tóm tắt ngắn gọn mục tiêu và đối tượng của khóa học..." })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold text-gray-700">Nội Dung Giới Thiệu Chi Tiết</label>
+                        @Html.TextAreaFor(m => m.NoiDung, new { @class = "form-control", rows = "5", placeholder = "Nội dung đề cương, kiến thức thu được sau khóa học (hỗ trợ mã HTML)..." })
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-end">
+                        <a href="@Url.Action("QuanLyKhoaHoc")" class="btn btn-secondary mr-2">
+                            <i class="fas fa-times mr-1"></i> Hủy Bỏ
+                        </a>
+                        <button type="submit" class="btn btn-primary font-weight-bold shadow-sm">
+                            <i class="fas fa-save mr-1"></i> Lưu Khóa Học
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

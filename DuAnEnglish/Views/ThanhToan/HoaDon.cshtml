@@ -1,77 +1,81 @@
-﻿@model DuAnEnglish.Models.ThanhToan
-
+@model DuAnEnglish.Models.ThanhToan
 @{
-    Layout = "~/Views/Shared/_LayoutHocVien.cshtml";
-    ViewBag.Title = "Hóa đơn thanh toán";
-    var ngayThanhToan = DateTime.Now;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Thanh Toán Đơn Hàng #" + Model.IDThanhToan + " - TikiCourse";
 }
 
-<div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="w-full max-w-2xl p-8 bg-white rounded-lg shadow-lg">
-        <h2 class="mb-8 text-center text-3xl font-bold text-red-600">Thông tin hóa đơn</h2>
+<!-- Breadcrumbs (Tiki Style) -->
+<nav class="flex items-center gap-2 text-xs text-[#808089] mb-4">
+    <a href="@Url.Action("Index", "Home")" class="hover:text-[#1a94ff] transition">Trang chủ</a>
+    <span>&rsaquo;</span>
+    <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="hover:text-[#1a94ff] transition">Khóa học</a>
+    <span>&rsaquo;</span>
+    <span class="text-[#27272a] font-medium">Thanh toán đơn hàng #@Model.IDThanhToan</span>
+</nav>
 
-        @using (Html.BeginForm("ProcessPayment", "ThanhToan", FormMethod.Post))
-        {
-            @Html.AntiForgeryToken()
+<div class="max-w-2xl mx-auto py-4">
+    <!-- Invoice Card (Tiki Checkout Style) -->
+    <div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm overflow-hidden">
+        <!-- Header -->
+        <div class="bg-[#1a94ff] p-6 text-white">
+            <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-bold uppercase tracking-wider">
+                    Hóa Đơn Mua Khóa Học
+                </span>
+                <span class="font-mono text-xs opacity-90">Mã giao dịch: #@Model.IDThanhToan</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-black">Xác Nhận &amp; Thanh Toán Khóa Học</h2>
+            <p class="text-blue-100 text-xs mt-1">Cổng thanh toán điện tử VNPay bảo mật tiêu chuẩn quốc tế.</p>
+        </div>
 
-            <!-- Các hidden field cần thiết -->
-            @Html.HiddenFor(m => m.IDThanhToan)
-            <input type="hidden" name="ngayThanhToan" value="@ngayThanhToan.ToString("yyyy-MM-dd HH:mm:ss")" />
-
-            <div class="table-responsive">
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Mã Hóa Đơn:</strong></label>
-                    <div class="pl-2 w-2/3">@Model.IDThanhToan</div>
+        <!-- Body -->
+        <div class="p-6 space-y-5">
+            <div class="p-4 bg-[#fafafa] rounded-xl border border-[#ebebf0] space-y-3">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-[#808089]">Khóa học đăng ký:</span>
+                    <span class="font-bold text-[#27272a] text-right">@(Model.KhoaHoc != null ? Model.KhoaHoc.TenKhoaHoc : (ViewBag.TenKhoaHoc ?? Model.IDKhoaHoc))</span>
                 </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Mã Lớp Học:</strong></label>
-                    <div class="pl-2 w-2/3">@Model.IDLopHoc</div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-[#808089]">Mã khóa học:</span>
+                    <span class="font-mono text-[#27272a]">@Model.IDKhoaHoc</span>
                 </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Tên Lớp Học:</strong></label>
-                    <div class="pl-2 w-2/3">@ViewBag.TenLop</div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-[#808089]">Học viên đăng ký:</span>
+                    <span class="font-bold text-[#27272a]">@(ViewBag.TenHocVien ?? Model.TenDangNhap)</span>
                 </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Mã Khóa Học:</strong></label>
-                    <div class="pl-2 w-2/3">@Model.IDKhoaHoc</div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-[#808089]">Phương thức thanh toán:</span>
+                    <span class="font-semibold text-[#0b74e5] flex items-center gap-1.5">
+                        <i class="fas fa-qrcode"></i> VNPay QR &bull; Thẻ ATM &bull; Visa/Mastercard
+                    </span>
                 </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Tên Khóa Học:</strong></label>
-                    <div class="pl-2 w-2/3">@ViewBag.TenKhoaHoc</div>
-                </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Tên Học Viên:</strong></label>
-                    <div class="pl-2 w-2/3">@ViewBag.TenHocVien</div>
-                </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Số tiền:</strong></label>
-                    <div class="pl-2 w-2/3">@(Model.SoTien.HasValue ? Model.SoTien.Value.ToString("N0") + " VNĐ" : "0 VNĐ")</div>
-                </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Ngày thanh toán:</strong></label>
-                    <div class="pl-2 w-2/3">@ngayThanhToan.ToString("dd/MM/yyyy HH:mm:ss")</div>
-                </div>
-
-                <div class="form-group mb-6 flex justify-between">
-                    <label class="block font-medium w-1/3"><strong>Phương thức thanh toán:</strong></label>
-                    <div class="pl-2 w-2/3">Thanh toán Vnpay</div>
+                <div class="pt-3 border-t border-[#ebebf0] flex justify-between items-center">
+                    <span class="font-bold text-[#27272a] text-sm">Tổng số tiền thanh toán:</span>
+                    <span class="font-black text-2xl text-[#ff424e]">
+                        @(Model.SoTien.HasValue ? string.Format("{0:N0} ₫", Model.SoTien.Value) : "0 ₫")
+                    </span>
                 </div>
             </div>
 
-            <div class="flex justify-center mt-6">
-                <a href="@Url.Action("ThanhToanVNPay", "ThanhToan", new { id = Model.IDThanhToan })"
-                   target="_blank"
-                   class="inline-block py-3 px-6 text-lg font-semibold rounded-lg bg-gradient-to-r from-green-400 via-green-500 to-green-600 bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out text-white shadow-md">
-                    Xác nhận thanh toán
+            <!-- Notes -->
+            <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed flex items-start gap-2.5">
+                <i class="fas fa-shield-alt text-amber-500 text-sm mt-0.5"></i>
+                <div>
+                    Sau khi bấm nút <strong>"Tiến Hành Thanh Toán VNPay"</strong>, bạn sẽ được chuyển hướng sang cổng thanh toán bảo mật VNPay Sandbox để hoàn tất giao dịch. Khóa học sẽ tự động được kích hoạt ngay lập tức khi thanh toán thành công!
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                <a href="@Url.Action("ChiTietKhoaHoc", "KhoaHoc", new { id = Model.IDKhoaHoc })" 
+                   class="w-full sm:w-1/3 py-2.5 rounded-lg border border-[#ebebf0] hover:bg-gray-50 text-center font-bold text-xs text-[#808089] transition">
+                    Hủy giao dịch
+                </a>
+                <a href="@Url.Action("Payment", "ThanhToan", new { idThanhToan = Model.IDThanhToan })" 
+                   class="w-full sm:w-2/3 py-2.5 rounded-lg bg-[#ff424e] hover:bg-red-600 text-center font-bold text-xs text-white shadow transition flex items-center justify-center gap-2">
+                    <i class="fas fa-lock"></i> Tiến Hành Thanh Toán VNPay
                 </a>
             </div>
-        }
+        </div>
     </div>
 </div>

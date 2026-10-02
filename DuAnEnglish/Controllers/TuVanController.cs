@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Configuration;
@@ -105,7 +105,7 @@ namespace DuAnEnglish.Controllers
         {
             try
             {
-                string url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
+                string url = string.Format("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={0}", apiKey);
 
                 var requestBody = new
                 {
@@ -117,8 +117,8 @@ namespace DuAnEnglish.Controllers
                             {
                                 new {
                                     text =
-                                    "Bạn là chatbot tư vấn cho Trung tâm Anh ngữ FIVESTARS. Chỉ trả lời về khóa học, học phí, lịch học, giảng viên, ưu đãi. " +
-                                    "Nếu được hỏi ngoài phạm vi, hãy nói 'Tôi chỉ hỗ trợ thông tin về các khóa học của trung tâm.'\n\n" +
+                                    "Bạn là chatbot tư vấn cho website khóa học trực tuyến. Chỉ trả lời về khóa học, học phí, bài giảng, giảng viên, ưu đãi. " +
+                                    "Nếu được hỏi ngoài phạm vi, hãy nói 'Tôi chỉ hỗ trợ thông tin về các khóa học trên hệ thống.'\n\n" +
                                     "Câu hỏi: " + inputText
                                 }
                             }
@@ -131,7 +131,7 @@ namespace DuAnEnglish.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     string errorDetails = await response.Content.ReadAsStringAsync();
-                    return $"Lỗi gọi Gemini API: {errorDetails}";
+                    return string.Format("Lỗi gọi Gemini API: {0}", errorDetails);
                 }
 
                 var responseJson = await response.Content.ReadAsStringAsync();
@@ -148,7 +148,7 @@ namespace DuAnEnglish.Controllers
             }
             catch (Exception ex)
             {
-                return $"Lỗi trong quá trình gọi API: {ex.Message}";
+                return string.Format("Lỗi trong quá trình gọi API: {0}", ex.Message);
             }
         }
 

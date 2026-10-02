@@ -1,0 +1,272 @@
+@model DuAnEnglish.Models.KhoaHoc
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Title = "Soạn giáo trình - " + Model.TenKhoaHoc;
+    var dsChuong = Model.ChuongHocs != null ? Model.ChuongHocs.OrderBy(c => c.ThuTu).ToList() : new List<DuAnEnglish.Models.ChuongHoc>();
+}
+
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800 font-weight-bold">SOẠN GIÁO TRÌNH KHÓA HỌC</h1>
+        <p class="text-muted mb-0">Khóa học: <span class="font-weight-bold text-primary">@Model.TenKhoaHoc</span> (Mã: @Model.IDKhoaHoc)</p>
+    </div>
+    <div>
+        <a href="@Url.Action("SuaKhoaHoc", new { id = Model.IDKhoaHoc })" class="btn btn-outline-primary btn-sm shadow-sm mr-2">
+            <i class="fas fa-edit mr-1"></i> Sửa thông tin chung
+        </a>
+        <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left mr-1"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+@if (ViewBag.ThongBao != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle mr-2"></i> @ViewBag.ThongBao
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+}
+
+<div class="row">
+    <!-- Cột bên trái: Danh sách Chương và Bài học -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-sitemap mr-1"></i> Khung Chương Trình (@dsChuong.Count chương)
+                </h6>
+                <button type="button" class="btn btn-primary btn-sm font-weight-bold" data-toggle="modal" data-target="#modalThemChuong">
+                    <i class="fas fa-folder-plus mr-1"></i> Thêm Chương Mới
+                </button>
+            </div>
+            <div class="card-body">
+                @if (dsChuong.Any())
+                {
+                    int idxChuong = 1;
+                    foreach (var chuong in dsChuong)
+                    {
+                        var dsBai = chuong.BaiHocs != null ? chuong.BaiHocs.OrderBy(b => b.ThuTu).ToList() : new List<DuAnEnglish.Models.BaiHoc>();
+                        <div class="card mb-3 border-left-primary shadow-sm">
+                            <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge badge-primary mr-2 font-weight-bold">Chương @idxChuong</span>
+                                    <strong class="text-gray-900 h6 mb-0">@chuong.TenChuong</strong>
+                                    <span class="small text-muted ml-2">(@dsBai.Count bài học)</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <button type="button" class="btn btn-outline-success btn-sm py-0 px-2 mr-2 font-weight-bold" 
+                                            onclick="openThemBaiModal(@chuong.IDChuong, '@Html.Raw(HttpUtility.JavaScriptStringEncode(chuong.TenChuong))')">
+                                        <i class="fas fa-plus-circle fa-sm mr-1"></i> Thêm bài
+                                    </button>
+                                    @using (Html.BeginForm("XoaChuong", "GiangVienKhoaHoc", FormMethod.Post, new { @class = "d-inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idChuong" value="@chuong.IDChuong" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" 
+                                                onclick="return confirm('Bạn có chắc muốn xóa chương này và tất cả các bài học bên trong?');"
+                                                title="Xóa chương">
+                                            <i class="fas fa-trash-alt fa-sm"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                            <div class="card-body p-2 bg-light">
+                                @if (dsBai.Any())
+                                {
+                                    <ul class="list-group list-group-flush rounded">
+                                        @{ int idxBai = 1; }
+                                        @foreach (var bai in dsBai)
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                                <div>
+                                                    <i class="fas fa-play-circle text-primary mr-2"></i>
+                                                    <span class="font-weight-bold text-gray-800">Bài @idxBai: @bai.TenBaiHoc</span>
+                                                    @if (bai.ChoXemThu == true)
+                                                    {
+                                                        <span class="badge badge-success ml-2"><i class="fas fa-eye mr-1"></i> Học thử miễn phí</span>
+                                                    }
+                                                    <div class="small text-muted mt-1 ml-4">
+                                                        <i class="far fa-clock mr-1"></i> @(bai.ThoiLuong ?? 10) phút
+                                                        @if (!string.IsNullOrEmpty(bai.VideoUrl))
+                                                        {
+                                                            <span class="ml-2 text-info"><i class="fas fa-video mr-1"></i> Có Video</span>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(bai.TaiLieuUrl))
+                                                        {
+                                                            <span class="ml-2 text-warning"><i class="fas fa-paperclip mr-1"></i> Có Tài liệu</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    @using (Html.BeginForm("XoaBaiHoc", "GiangVienKhoaHoc", FormMethod.Post, new { @class = "d-inline" }))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="idBaiHoc" value="@bai.IDBaiHoc" />
+                                                        <button type="submit" class="btn btn-light btn-sm text-danger" 
+                                                                onclick="return confirm('Bạn có chắc muốn xóa bài học này?');"
+                                                                title="Xóa bài học">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </li>
+                                            idxBai++;
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <div class="text-center py-2 text-muted small">
+                                        <i class="fas fa-info-circle mr-1"></i> Chưa có bài học nào trong chương này. Nhấn "+ Thêm bài" để bổ sung bài giảng.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        idxChuong++;
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-folder-open fa-3x mb-3 text-gray-400 d-block"></i>
+                        <h5>Chưa có chương học nào</h5>
+                        <p class="mb-3">Hãy tạo cấu trúc chương trình học đầu tiên cho khóa học của bạn.</p>
+                        <button type="button" class="btn btn-primary font-weight-bold" data-toggle="modal" data-target="#modalThemChuong">
+                            <i class="fas fa-plus mr-1"></i> Thêm Chương Học Đầu Tiên
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột bên phải: Tóm tắt thông tin & Hướng dẫn -->
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-info-circle mr-1"></i> Hướng Dẫn Soạn Bài</h6>
+            </div>
+            <div class="card-body">
+                <h6 class="font-weight-bold text-gray-800"><i class="fab fa-youtube text-danger mr-1"></i> Nhập link Video:</h6>
+                <p class="small text-muted">Hỗ trợ link YouTube định dạng chuẩn hoặc dạng chia sẻ ngắn (hệ thống sẽ tự động chuyển đổi sang mã nhúng an toàn):</p>
+                <code class="small d-block mb-3 p-2 bg-light rounded text-dark">https://www.youtube.com/watch?v=...<br />hoặc: https://youtu.be/...</code>
+
+                <h6 class="font-weight-bold text-gray-800"><i class="fas fa-link text-info mr-1"></i> Nhập tài liệu học:</h6>
+                <p class="small text-muted mb-3">Bạn có thể dán liên kết Google Drive, OneDrive, GitHub hoặc tài liệu PDF trực tuyến để học viên có thể xem và tải về.</p>
+
+                <h6 class="font-weight-bold text-gray-800"><i class="fas fa-check-circle text-success mr-1"></i> Bài học cho học thử:</h6>
+                <p class="small text-muted mb-0">Tích chọn "Cho học thử miễn phí" đối với các bài học mở đầu để thu hút học viên mới đăng ký khóa học.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Chương Học -->
+<div class="modal fade" id="modalThemChuong" tabindex="-1" role="dialog" aria-labelledby="modalThemChuongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            @using (Html.BeginForm("ThemChuong", "GiangVienKhoaHoc", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idKhoaHoc" value="@Model.IDKhoaHoc" />
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold text-primary" id="modalThemChuongTitle">
+                        <i class="fas fa-folder-plus mr-1"></i> Thêm Chương Học Mới
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Tên chương học <span class="text-danger">*</span></label>
+                        <input type="text" name="tenChuong" class="form-control" placeholder="VD: Chương 1: Giới thiệu kiến trúc MVC" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Thứ tự hiển thị</label>
+                        <input type="number" name="thuTu" class="form-control" value="@(dsChuong.Count + 1)" min="1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Mô tả chương (không bắt buộc)</label>
+                        <textarea name="moTa" rows="2" class="form-control" placeholder="Tóm tắt nội dung trọng tâm của chương..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold">Lưu Chương Học</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Bài Học -->
+<div class="modal fade" id="modalThemBaiHoc" tabindex="-1" role="dialog" aria-labelledby="modalThemBaiTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            @using (Html.BeginForm("ThemBaiHoc", "GiangVienKhoaHoc", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="modalIdChuong" name="idChuong" value="" />
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold text-primary" id="modalThemBaiTitle">
+                        <i class="fas fa-video mr-1"></i> Thêm Bài Học Vào: <span id="modalTenChuongText" class="text-dark"></span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-8">
+                            <label class="font-weight-bold">Tên bài học <span class="text-danger">*</span></label>
+                            <input type="text" name="tenBaiHoc" class="form-control" placeholder="VD: Bài 1: Cấu trúc thư mục trong ASP.NET MVC" required />
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="font-weight-bold">Thời lượng (phút)</label>
+                            <input type="number" name="thoiLuong" class="form-control" value="15" min="1" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">URL Video bài giảng (YouTube Embed / Link)</label>
+                        <input type="text" name="videoUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">URL Tài liệu học tập (Google Drive, GitHub, PDF...)</label>
+                        <input type="text" name="taiLieuUrl" class="form-control" placeholder="https://drive.google.com/..." />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Mô tả bài học / Ghi chú</label>
+                        <textarea name="moTa" rows="3" class="form-control" placeholder="Ghi chú nội dung cần lưu ý của bài học này..."></textarea>
+                    </div>
+
+                    <div class="form-group form-check">
+                        <input type="checkbox" name="choXemThu" value="true" class="form-check-input" id="checkChoXemThu" />
+                        <label class="form-check-label font-weight-bold text-success" for="checkChoXemThu">
+                            <i class="fas fa-check mr-1"></i> Cho phép học thử miễn phí (khách có thể xem bài này mà chưa cần đăng ký mua)
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary font-weight-bold">Lưu Bài Học</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function openThemBaiModal(idChuong, tenChuong) {
+        document.getElementById('modalIdChuong').value = idChuong;
+        document.getElementById('modalTenChuongText').innerText = tenChuong;
+        $('#modalThemBaiHoc').modal('show');
+    }
+</script>

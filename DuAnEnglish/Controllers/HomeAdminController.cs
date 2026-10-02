@@ -1,37 +1,80 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
+using DuAnEnglish.Models;
+using DuAnEnglish.Security;
+using DuAnEnglish.ViewModels;
 
 namespace DuAnEnglish.Controllers
 {
+    [AuthorizeRole("admin")]
     public class HomeAdminController : Controller
     {
+        private trungtamtienganhEntities db = new trungtamtienganhEntities();
+
         // GET: HomeAdmin
         public ActionResult Index()
         {
-            //// Kiểm tra xem session có lưu đúng giá trị role không
-            //if (Session["User"] != null)
-            //{
-            //    System.Diagnostics.Debug.WriteLine("User in session: " + Session["User"]);
-            //}
-            //else
-            //{
-            //    System.Diagnostics.Debug.WriteLine("No user found in session.");
-            //}
+            int tongHocVien = db.HocViens.Count();
+            int tongGiangVien = db.GiangViens.Count();
+            int tongKhoaHoc = db.KhoaHocs.Count();
+            int khoaHocHoatDong = db.KhoaHocs.Count(k => k.TrangThai == "Hiển thị" || k.TrangThai == null);
+            int tongDangKy = db.DangKyKhoaHocs.Count();
+            decimal tongDoanhThu = db.ThanhToans
+                                     .Where(t => t.TrangThai == "Đã thanh toán")
+                                     .Sum(t => (decimal?)t.SoTien) ?? 0;
 
-            //if (Session["Role"] != null)
-            //{
-            //    System.Diagnostics.Debug.WriteLine("Role in session: " + Session["Role"]);
-            //}
-            //else
-            //{
-            //    System.Diagnostics.Debug.WriteLine("No role found in session.");
-            //}
+            // Top các khóa học có nhiều học viên nhất
+            var topKhoaHoc = db.KhoaHocs
+                               .Include(k => k.DanhMucKhoaHoc)
+                               .Include(k => k.GiangVien)
+                               .Include(k => k.DangKyKhoaHocs)
+                               .ToList()
+                               .Select(k => new KhoaHocThongKeItem
+                               {
+                                   IDKhoaHoc = k.IDKhoaHoc,
+                                   TenKhoaHoc = k.TenKhoaHoc,
+                                   TenDanhMuc = k.DanhMucKhoaHoc != null ? k.DanhMucKhoaHoc.TenDanhMuc : k.DanhMuc,
+                                   TenGiangVien = k.GiangVien != null ? k.GiangVien.TenGV : "Chưa phân công",
+                                   HocPhi = k.HocPhi ?? 0,
+                                   SoHocVien = k.DangKyKhoaHocs.Count,
+                                   DoanhThu = (k.HocPhi ?? 0) * k.DangKyKhoaHocs.Count(d => d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành")
+                               })
+                               .OrderByDescending(k => k.SoHocVien)
+                               .Take(5)
+                               .ToList();
 
-            // Còn lại phần xử lý logic của HomeAdmin nếu cần
-            return View();
+            // Các giao dịch thanh toán mới nhất
+            var giaoDichMoi = db.ThanhToans
+                                .Include(t => t.KhoaHoc)
+                                .OrderByDescending(t => t.IDThanhToan)
+                                .Take(5)
+                                .ToList();
+
+            var viewModel = new ThongKeDashboardViewModel
+            {
+                TongSoHocVien = tongHocVien,
+                TongSoGiangVien = tongGiangVien,
+                TongSoKhoaHoc = tongKhoaHoc,
+                SoKhoaHocHoatDong = khoaHocHoatDong,
+                TongSoLuotDangKy = tongDangKy,
+                TongDoanhThu = tongDoanhThu,
+                TopKhoaHoc = topKhoaHoc,
+                GiaoDichMoiNhat = giaoDichMoi
+            };
+
+            return View(viewModel);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

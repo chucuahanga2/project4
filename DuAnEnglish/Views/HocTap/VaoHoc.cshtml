@@ -1,0 +1,278 @@
+@model DuAnEnglish.ViewModels.VaoHocViewModel
+@{
+    Layout = null; // Giao diện phòng học toàn màn hình chuyên nghiệp (như Coursera / Udemy / F8)
+    var kh = Model.KhoaHoc;
+    var bai = Model.BaiHocHienTai;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(bai != null ? bai.TenBaiHoc : "Phòng học") - @kh.TenKhoaHoc</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-gray-850 bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-4">
+            <a href="@Url.Action("KhoaHocCuaToi", "HocTap")" class="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition" title="Quay lại khóa học của tôi">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="text-sm font-bold text-white truncate max-w-xs md:max-w-md">@kh.TenKhoaHoc</h1>
+            </div>
+        </div>
+
+        <!-- Overall Progress -->
+        <div class="flex items-center space-x-4">
+            <div class="hidden sm:flex items-center space-x-3 text-xs">
+                <span class="text-gray-400">Tiến độ:</span>
+                <span id="txtTienDoProgress" class="font-extrabold text-emerald-400">@Model.SoBaiDaHoanThanh/@Model.TongSoBai bài (@Model.PhanTramTienDo%)</span>
+                <div class="w-24 bg-gray-800 rounded-full h-2 overflow-hidden border border-gray-700">
+                    <div id="barTienDo" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: @Model.PhanTramTienDo%;"></div>
+                </div>
+            </div>
+            <a href="@Url.Action("Index", "Home")" class="text-xs text-gray-400 hover:text-white transition">
+                Về trang chủ
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Learning Layout -->
+    <div class="flex-grow flex flex-col lg:flex-row overflow-hidden">
+        <!-- Cột Trái (70%): Màn hình bài giảng & Video -->
+        <div class="w-full lg:w-3/4 flex flex-col overflow-y-auto bg-black p-4 md:p-8">
+            <!-- Video Container -->
+            <div class="w-full max-w-5xl mx-auto">
+                <div class="aspect-video w-full bg-gray-950 rounded-2xl overflow-hidden shadow-2xl border border-gray-800 relative mb-6">
+                    @if (bai != null && !string.IsNullOrEmpty(bai.VideoUrl))
+                    {
+                        if (bai.VideoUrl.Contains("embed") || bai.VideoUrl.Contains("youtube"))
+                        {
+                            <iframe src="@bai.VideoUrl" 
+                                    class="w-full h-full border-0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen>
+                            </iframe>
+                        }
+                        else
+                        {
+                            <video controls class="w-full h-full object-contain">
+                                <source src="@bai.VideoUrl" type="video/mp4">
+                                Trình duyệt của bạn không hỗ trợ thẻ video.
+                            </video>
+                        }
+                    }
+                    else
+                    {
+                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-500 p-8 text-center">
+                            <i class="fas fa-play-circle text-5xl mb-3 text-gray-600"></i>
+                            <h4 class="text-lg font-bold text-gray-300">Bài học này chưa có video bài giảng</h4>
+                            <p class="text-xs text-gray-500 max-w-md mt-1">Giảng viên đang hoàn thiện video hoặc bài học tập trung vào tài liệu đọc và bài tập thực hành.</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Lesson Header & Actions -->
+                <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-800">
+                        <div>
+                            <span class="text-xs text-blue-400 font-bold uppercase tracking-wider">Bài học đang chọn</span>
+                            <h2 class="text-xl md:text-2xl font-black text-white mt-1">
+                                @(bai != null ? bai.TenBaiHoc : "Chưa chọn bài học")
+                            </h2>
+                            <div class="flex items-center text-xs text-gray-400 mt-2 gap-4">
+                                <span><i class="far fa-clock mr-1 text-emerald-400"></i> @(bai != null && bai.ThoiLuong.HasValue ? bai.ThoiLuong.Value : 15) phút</span>
+                                @if (bai != null && bai.ChoXemThu == true)
+                                {
+                                    <span class="text-emerald-400 font-bold"><i class="fas fa-unlock mr-1"></i> Cho phép học thử</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Mark Complete Button (AJAX) -->
+                        <div>
+                            @if (bai != null)
+                            {
+                                <button type="button" id="btnHoanThanh" 
+                                        onclick="toggleHoanThanh(@bai.IDBaiHoc)"
+                                        class="px-5 py-3 rounded-xl font-bold text-sm transition duration-200 shadow-lg flex items-center gap-2 @(Model.DaHoanThanhBaiHienTai ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700")">
+                                    <i id="iconHoanThanh" class="fas @(Model.DaHoanThanhBaiHienTai ? "fa-check-circle text-white" : "fa-circle-notch")"></i>
+                                    <span id="lblHoanThanh">@(Model.DaHoanThanhBaiHienTai ? "Đã hoàn thành bài này" : "Đánh dấu đã hoàn thành")</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Material Download Link & Notes -->
+                    @if (bai != null && !string.IsNullOrEmpty(bai.TaiLieuUrl))
+                    {
+                        <div class="mt-6 p-4 rounded-xl bg-gray-850 bg-gray-800/60 border border-gray-700/60 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                                    <i class="fas fa-file-download"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-sm text-white">Tài liệu học tập & Mã nguồn đính kèm</div>
+                                    <div class="text-xs text-gray-400">Xem hoặc tải tài nguyên bổ trợ cho bài học này</div>
+                                </div>
+                            </div>
+                            <a href="@bai.TaiLieuUrl" target="_blank" rel="noopener noreferrer" 
+                               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition shadow">
+                                <i class="fas fa-external-link-alt mr-1"></i> Mở tài liệu
+                            </a>
+                        </div>
+                    }
+
+                    <!-- Lesson Notes -->
+                    @if (bai != null && !string.IsNullOrEmpty(bai.MoTa))
+                    {
+                        <div class="mt-6">
+                            <h4 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">Ghi chú & Hướng dẫn bài học</h4>
+                            <div class="text-gray-400 text-sm leading-relaxed whitespace-pre-line bg-gray-950 p-4 rounded-xl border border-gray-800">
+                                @bai.MoTa
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Prev / Next Navigation -->
+                    <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-800">
+                        @if (Model.BaiHocTruoc != null)
+                        {
+                            <a href="@Url.Action("VaoHoc", new { id = kh.IDKhoaHoc, baiId = Model.BaiHocTruoc.IDBaiHoc })" 
+                               class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-2">
+                                <i class="fas fa-chevron-left text-[10px]"></i>
+                                <span>Bài trước: @Model.BaiHocTruoc.TenBaiHoc</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <div></div>
+                        }
+
+                        @if (Model.BaiHocSau != null)
+                        {
+                            <a href="@Url.Action("VaoHoc", new { id = kh.IDKhoaHoc, baiId = Model.BaiHocSau.IDBaiHoc })" 
+                               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-2">
+                                <span>Bài kế tiếp: @Model.BaiHocSau.TenBaiHoc</span>
+                                <i class="fas fa-chevron-right text-[10px]"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột Phải (30%): Danh sách Chương & Bài học -->
+        <div class="w-full lg:w-1/4 bg-gray-900 border-t lg:border-t-0 lg:border-l border-gray-800 flex flex-col h-auto lg:h-[calc(100vh-57px)]">
+            <div class="p-4 border-b border-gray-800 bg-gray-900 sticky top-0 z-10">
+                <h3 class="font-extrabold text-sm text-white uppercase tracking-wider">Nội dung khóa học</h3>
+                <p class="text-xs text-gray-400 mt-0.5">@Model.DanhSachChuong.Count chương &bull; @Model.TongSoBai bài giảng</p>
+            </div>
+
+            <div class="flex-grow overflow-y-auto divide-y divide-gray-800">
+                @{ int chIdx = 1; }
+                @foreach (var ch in Model.DanhSachChuong)
+                {
+                    <div class="p-3">
+                        <div class="text-xs font-bold text-gray-400 mb-2 flex items-center justify-between">
+                            <span>Chương @chIdx: @ch.Chuong.TenChuong</span>
+                            <span class="text-[10px] text-gray-500 font-normal">@ch.DanhSachBai.Count bài</span>
+                        </div>
+                        <div class="space-y-1">
+                            @{ int bIdx = 1; }
+                            @foreach (var bItem in ch.DanhSachBai)
+                            {
+                                bool isCurrent = bai != null && bai.IDBaiHoc == bItem.Bai.IDBaiHoc;
+                                <a href="@Url.Action("VaoHoc", new { id = kh.IDKhoaHoc, baiId = bItem.Bai.IDBaiHoc })" 
+                                   class="flex items-center justify-between p-2.5 rounded-xl text-xs transition duration-150 @(isCurrent ? "bg-blue-600/20 text-blue-400 font-bold border border-blue-500/40" : "hover:bg-gray-800/70 text-gray-300")">
+                                    <div class="flex items-center gap-2.5 truncate mr-2">
+                                        <i class="fas @(bItem.DaHoanThanh ? "fa-check-circle text-emerald-400" : (isCurrent ? "fa-play-circle text-blue-400" : "fa-circle-notch text-gray-600")) text-sm shrink-0" id="iconBai_@bItem.Bai.IDBaiHoc"></i>
+                                        <span class="truncate">@bIdx. @bItem.Bai.TenBaiHoc</span>
+                                    </div>
+                                    <span class="text-[10px] text-gray-500 shrink-0">@(bItem.Bai.ThoiLuong ?? 10)p</span>
+                                </a>
+                                bIdx++;
+                            }
+                        </div>
+                    </div>
+                    chIdx++;
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Script AJAX Toggle Hoàn thành -->
+    <script>
+        function toggleHoanThanh(idBaiHoc) {
+            var btn = document.getElementById('btnHoanThanh');
+            var icon = document.getElementById('iconHoanThanh');
+            var lbl = document.getElementById('lblHoanThanh');
+            var sidebarIcon = document.getElementById('iconBai_' + idBaiHoc);
+
+            btn.disabled = true;
+
+            fetch('@Url.Action("DanhDauHoanThanh", "HocTap")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'idBaiHoc=' + encodeURIComponent(idBaiHoc)
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                btn.disabled = false;
+                if (data.success) {
+                    if (data.daHoanThanh) {
+                        btn.className = "px-5 py-3 rounded-xl font-bold text-sm transition duration-200 shadow-lg flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white";
+                        icon.className = "fas fa-check-circle text-white";
+                        lbl.innerText = "Đã hoàn thành bài này";
+                        if (sidebarIcon) {
+                            sidebarIcon.className = "fas fa-check-circle text-emerald-400 text-sm shrink-0";
+                        }
+                    } else {
+                        btn.className = "px-5 py-3 rounded-xl font-bold text-sm transition duration-200 shadow-lg flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700";
+                        icon.className = "fas fa-circle-notch text-gray-400";
+                        lbl.innerText = "Đánh dấu đã hoàn thành";
+                        if (sidebarIcon) {
+                            sidebarIcon.className = "fas fa-play-circle text-blue-400 text-sm shrink-0";
+                        }
+                    }
+
+                    // Cập nhật thanh tiến độ tổng thể
+                    var txtProgress = document.getElementById('txtTienDoProgress');
+                    var barTienDo = document.getElementById('barTienDo');
+                    if (txtProgress) {
+                        txtProgress.innerText = data.soBaiHoanThanh + '/' + data.tongSoBai + ' bài (' + data.phanTram + '%)';
+                    }
+                    if (barTienDo) {
+                        barTienDo.style.width = data.phanTram + '%';
+                    }
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra khi cập nhật tiến độ!');
+                }
+            })
+            .catch(function(err) {
+                btn.disabled = false;
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>

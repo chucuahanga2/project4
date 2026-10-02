@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -75,7 +75,7 @@ namespace DuAnEnglish.Controllers
             var phong = db.PhongHocs.FirstOrDefault(p => p.IDPhongHoc == lop.IDPhongHoc);
             if (phong != null && lop.Slot > phong.SucChua)
             {
-                ViewBag.ThongBao = $"Phòng chỉ tối đa {phong.SucChua} học viên vui lòng điều chỉnh lại.";
+                ViewBag.ThongBao = string.Format("Phòng chỉ tối đa {0} học viên vui lòng điều chỉnh lại.", phong.SucChua);
                 return View(lop);
             }
 
@@ -144,7 +144,7 @@ namespace DuAnEnglish.Controllers
             var phong = db.PhongHocs.FirstOrDefault(p => p.IDPhongHoc == lop.IDPhongHoc);
             if (phong != null && lop.Slot > phong.SucChua)
             {
-                ViewBag.ThongBao = $"Phòng chỉ tối đa {phong.SucChua} học viên. Vui lòng điều chỉnh lại.";
+                ViewBag.ThongBao = string.Format("Phòng chỉ tối đa {0} học viên. Vui lòng điều chỉnh lại.", phong.SucChua);
                 return View(lop);
             }
 

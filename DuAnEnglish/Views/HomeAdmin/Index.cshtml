@@ -1,24 +1,216 @@
-﻿@{
+@model DuAnEnglish.ViewModels.ThongKeDashboardViewModel
+@{
+    ViewBag.Title = "Bảng điều khiển Quản trị";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
-@{
-    ViewBag.Title = "Home Admin";
-}
 
-<!-- Main Content -->
-<main class="min-h-screen">
-    <div class="relative h-screen w-full overflow-hidden">
-        <!-- Hình nền -->
-        <div class="absolute inset-0 bg-[url('https://img.freepik.com/free-vector/hand-drawn-english-lessons-youtube-channel-art-template_23-2149293394.jpg')] bg-cover bg-center bg-no-repeat transition-all duration-500 hover:scale-105">
-            <!-- Lớp phủ (Overlay) -->
-            <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-        </div>
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800 font-weight-bold">TỔNG QUAN HỆ THỐNG</h1>
+    <a href="@Url.Action("BaoCaoThongKe", "QLBaoCaoThongKe")" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-download fa-sm text-white-50 mr-1"></i> Báo cáo doanh thu chi tiết
+    </a>
+</div>
 
-        <!-- Nội dung banner -->
-        <div class="relative z-10 flex h-full items-center justify-center text-center px-4">
-            <div class="max-w-4xl space-y-6 text-white">
-                <h1 class="text-4xl md:text-9xl font-bold drop-shadow-lg">MY ADMIN</h1>
+<!-- Content Row: Statistics Cards -->
+<div class="row">
+
+    <!-- Card Doanh thu -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Tổng Doanh Thu Thực Tế
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @string.Format("{0:N0} đ", Model.TongDoanhThu)
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</main>
+
+    <!-- Card Khóa học -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Tổng Số Khóa Học
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @Model.TongSoKhoaHoc <small class="text-muted font-weight-normal">(@Model.SoKhoaHocHoatDong đang mở)</small>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-book-open fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Học viên -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Tổng Số Học Viên
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @Model.TongSoHocVien <small class="text-muted font-weight-normal">học viên</small>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Lượt đăng ký -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Tổng Lượt Đăng Ký Học
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @Model.TongSoLuotDangKy <small class="text-muted font-weight-normal">lượt</small>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Row: 2 Tables -->
+<div class="row">
+    <!-- Top Khóa học nhiều học viên -->
+    <div class="col-lg-7 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-fire mr-1 text-danger"></i> Top Khóa Học Thịnh Hành</h6>
+                <a href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc")" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0" width="100%" cellspacing="0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 50px;">STT</th>
+                                <th>Khóa học</th>
+                                <th>Danh mục</th>
+                                <th style="width: 110px;">Học viên</th>
+                                <th style="width: 130px;">Học phí</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.TopKhoaHoc != null && Model.TopKhoaHoc.Count > 0)
+                            {
+                                int idx = 1;
+                                foreach (var item in Model.TopKhoaHoc)
+                                {
+                                    <tr>
+                                        <td class="text-center font-weight-bold text-muted">@idx</td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "QuanLyKhoaHoc", new { id = item.IDKhoaHoc })" class="font-weight-bold text-dark text-decoration-none">
+                                                @item.TenKhoaHoc
+                                            </a>
+                                            <div class="small text-muted">GV: @item.TenGiangVien</div>
+                                        </td>
+                                        <td><span class="badge badge-light p-2">@item.TenDanhMuc</span></td>
+                                        <td class="text-center font-weight-bold text-primary">@item.SoHocVien</td>
+                                        <td class="font-weight-bold text-success">
+                                            @(item.HocPhi == 0 ? "Miễn phí" : string.Format("{0:N0} đ", item.HocPhi))
+                                        </td>
+                                    </tr>
+                                    idx++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-3 text-muted">Chưa có dữ liệu thống kê khóa học.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Giao dịch thanh toán mới nhất -->
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-history mr-1"></i> Giao Dịch Mới Nhất</h6>
+                <a href="@Url.Action("QuanLyThanhToan", "QuanLyThanhToan")" class="btn btn-sm btn-outline-primary">Tất cả GD</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0" width="100%" cellspacing="0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Mã HĐ</th>
+                                <th>Người nộp</th>
+                                <th>Số tiền</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.GiaoDichMoiNhat != null && Model.GiaoDichMoiNhat.Count > 0)
+                            {
+                                foreach (var gd in Model.GiaoDichMoiNhat)
+                                {
+                                    <tr>
+                                        <td class="font-weight-bold">
+                                            <a href="@Url.Action("ChiTiet", "QuanLyThanhToan", new { id = gd.IDThanhToan })">
+                                                #@gd.IDThanhToan
+                                            </a>
+                                        </td>
+                                        <td>@gd.TenDangNhap</td>
+                                        <td class="font-weight-bold text-success">@string.Format("{0:N0} đ", gd.SoTien ?? 0)</td>
+                                        <td>
+                                            @if (gd.TrangThai == "Đã thanh toán")
+                                            {
+                                                <span class="badge badge-status-active">Thành công</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-status-pending">@gd.TrangThai</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-3 text-muted">Chưa có giao dịch thanh toán nào.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

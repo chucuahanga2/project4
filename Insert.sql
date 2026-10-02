@@ -1,4 +1,4 @@
-﻿-- insert Loaitaikhoan ----
+-- insert Loaitaikhoan ----
 INSERT INTO LoaiTaiKhoan (LoaiTK) VALUES ('admin');
 INSERT INTO LoaiTaiKhoan (LoaiTK) VALUES ('giangvien');
 INSERT INTO LoaiTaiKhoan (LoaiTK) VALUES ('hocvien');
@@ -72,7 +72,7 @@ INSERT INTO PhongHoc (IDPhongHoc, TenPhong, SucChua) VALUES
 -- Insert LopHoc
 INSERT INTO LopHoc(IDLopHoc, IDPhongHoc, IDKhoaHoc, IDGiangVien, TenLop, Slot, ThuTrongTuan, GioHocBD, GioHocKT)
 VALUES 
-('LH007', 301, 'IEA2026', NULL, N'IEA2', 20, N'Thứ 3, Thứ 5', '18:30:00', '20:30:00');
+('LH007', 301, 'IEA2026', NULL, N'IEA2', 20, N'Thứ 3, Thứ 5', '18:30:00', '20:30:00'),
 
 ('LH001', NULL, 'TIA2025', NULL, N'TIA1', 0, N'Thứ 2, Thứ 4', '08:00:00', '10:00:00'),
 
