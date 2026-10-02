@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewBag.Title = "_LayoutHocVien";
 }
 <!DOCTYPE html>
@@ -21,12 +21,11 @@
 
             <!-- Navigation -->
             <nav class="flex flex-col space-y-4 text-sm font-medium">
-                <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="hover:text-gray-200">XEM CÁC KHÓA HỌC</a>
-                <a href="@Url.Action("ThongTinHocVien", "ThongTinHocVien")" class="hover:text-gray-200">THÔNG TIN CÁ NHÂN</a>
-                <a href="@Url.Action("DanhSachHoaDon", "ThanhToan")" class="hover:text-gray-200">THANH TOÁN</a>
-                <a href="@Url.Action("XemLop", "HocTap")" class="hover:text-gray-200">HỌC TẬP</a>
-                <a href="@Url.Action("DanhSachThongBao", "XemThongBao")" class="hover:text-gray-200">THÔNG BÁO</a>
-                <a href="@Url.Action("Doimatkhau", "DoiMatKhau")" class="hover:text-gray-200">ĐỔI MẬT KHẨU</a>
+                <a href="@Url.Action("KhoaHocCuaToi", "HocTap")" class="hover:text-gray-200"><i class="fas fa-book-reader mr-1"></i> KHÓA HỌC CỦA TÔI</a>
+                <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="hover:text-gray-200"><i class="fas fa-th-large mr-1"></i> TÌM KIẾM KHÓA HỌC</a>
+                <a href="@Url.Action("DanhSachHoaDon", "ThanhToan")" class="hover:text-gray-200"><i class="fas fa-receipt mr-1"></i> HÓA ĐƠN &amp; THANH TOÁN</a>
+                <a href="@Url.Action("ThongTinCaNhan", "HocTap")" class="hover:text-gray-200"><i class="fas fa-user mr-1"></i> THÔNG TIN CÁ NHÂN</a>
+                <a href="@Url.Action("Doimatkhau", "DoiMatKhau")" class="hover:text-gray-200"><i class="fas fa-key mr-1"></i> ĐỔI MẬT KHẨU</a>
             </nav>
 
             <!-- Logout -->

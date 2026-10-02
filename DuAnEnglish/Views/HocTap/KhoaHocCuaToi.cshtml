@@ -19,11 +19,17 @@
         </h1>
         <p class="text-xs text-[#808089] mt-0.5">Quản lý và tiếp tục lộ trình học tập của bạn tại TikiCourse.</p>
     </div>
-    <div class="flex items-center gap-3">
-        <div class="px-3.5 py-1.5 rounded-lg bg-[#e5f2ff] text-[#0b74e5] text-xs font-bold">
-            Tổng cộng: @(Model != null ? Model.Count : 0) khóa học đã đăng ký
+    <div class="flex flex-wrap items-center gap-2">
+        <div class="px-3 py-1.5 rounded-lg bg-[#e5f2ff] text-[#0b74e5] text-xs font-bold">
+            <i class="fas fa-book-open mr-1"></i> Đã đăng ký: @(Model != null ? Model.Count : 0)
         </div>
-        <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="px-3.5 py-1.5 rounded-lg bg-[#1a94ff] hover:bg-blue-600 text-white text-xs font-bold transition shadow-sm">
+        <div class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200">
+            <i class="fas fa-spinner mr-1"></i> Đang học: @(Model != null ? Model.Count(x => x.PhanTramTienDo < 100) : 0)
+        </div>
+        <div class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+            <i class="fas fa-check-circle mr-1"></i> Hoàn thành: @(Model != null ? Model.Count(x => x.PhanTramTienDo == 100) : 0)
+        </div>
+        <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="px-3.5 py-1.5 rounded-lg bg-[#1a94ff] hover:bg-blue-600 text-white text-xs font-bold transition shadow-sm ml-1">
             <i class="fas fa-plus"></i> Khám phá thêm
         </a>
     </div>
@@ -88,9 +94,9 @@
 
                 <!-- Footer Action -->
                 <div class="p-4 pt-0">
-                    <a href="@Url.Action("VaoHoc", "HocTap", new { idKhoaHoc = item.IDKhoaHoc })" 
+                    <a href="@Url.Action("VaoHoc", "HocTap", new { id = item.IDKhoaHoc, baiId = item.IDBaiHocTiepTheo })" 
                        class="w-full block text-center py-2.5 rounded-lg @(item.PhanTramTienDo == 100 ? "bg-emerald-50 text-[#00ab56] hover:bg-[#00ab56] hover:text-white" : "bg-[#e5f2ff] text-[#0b74e5] hover:bg-[#1a94ff] hover:text-white") font-bold text-xs transition">
-                        <i class="fas fa-play mr-1"></i> @(item.PhanTramTienDo == 100 ? "Ôn tập lại" : "Tiếp tục bài học")
+                        <i class="fas fa-play mr-1"></i> @(item.PhanTramTienDo == 100 ? "Ôn tập lại (100%)" : "Tiếp tục bài học")
                     </a>
                 </div>
             </div>

@@ -94,7 +94,7 @@ namespace DuAnEnglish.Controllers
                 var taiKhoanMoi = new TaiKhoan
                 {
                     TenDangNhap = TenDangNhap,
-                    MatKhau = MatKhau,
+                    MatKhau = DuAnEnglish.Security.PasswordHelper.HashPassword(MatKhau),
                     Email = string.IsNullOrEmpty(Email) ? null : Email,
                     SDT = string.IsNullOrEmpty(SDT) ? null : SDT,
                     LoaiTK = "hocvien",

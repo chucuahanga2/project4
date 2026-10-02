@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -138,7 +138,7 @@ namespace DuAnEnglish.Controllers
             }
             else
             {
-                var giangVien = thongBao.TaiKhoan?.GiangViens?.FirstOrDefault();
+                var giangVien = (thongBao.TaiKhoan != null && thongBao.TaiKhoan.GiangViens != null) ? thongBao.TaiKhoan.GiangViens.FirstOrDefault() : null;
                 tenNguoiGui = giangVien != null ? giangVien.TenGV : "Không rõ";
             }
 
@@ -172,7 +172,8 @@ namespace DuAnEnglish.Controllers
             }
             else
             {
-                var giangVien = db.TaiKhoans.Find(thongBaoCu.IDNguoiGui)?.GiangViens?.FirstOrDefault();
+                var tkNguoiGui = db.TaiKhoans.Find(thongBaoCu.IDNguoiGui);
+                var giangVien = (tkNguoiGui != null && tkNguoiGui.GiangViens != null) ? tkNguoiGui.GiangViens.FirstOrDefault() : null;
                 tenNguoiGui = giangVien != null ? giangVien.TenGV : "Không rõ";
             }
 

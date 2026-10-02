@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -22,15 +22,22 @@ namespace DuAnEnglish.Controllers
             return View();
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Doimatkhau(string TenDangNhap, string MatKhauCu, string MatKhauMoi, string XacNhanMatKhauMoi)
         {
-            if (string.IsNullOrEmpty(TenDangNhap))
+            if (Session["User"] == null)
             {
-                ViewBag.ThongBao = "Không xác định được tài khoản.";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            string currentUser = Session["User"].ToString();
+            if (string.IsNullOrEmpty(TenDangNhap) || currentUser != TenDangNhap)
+            {
+                ViewBag.ThongBao = "Không có quyền đổi mật khẩu cho tài khoản này.";
                 return View();
             }
 
-            ViewBag.TenDangNhap = TenDangNhap; // Giữ lại để hiển thị sau khi submit
+            ViewBag.TenDangNhap = TenDangNhap;
 
             var taiKhoan = db.TaiKhoans.FirstOrDefault(t => t.TenDangNhap == TenDangNhap);
             if (taiKhoan == null)
@@ -39,13 +46,13 @@ namespace DuAnEnglish.Controllers
                 return View();
             }
 
-            if (taiKhoan.MatKhau != MatKhauCu)
+            if (!DuAnEnglish.Security.PasswordHelper.VerifyPassword(MatKhauCu, taiKhoan.MatKhau))
             {
                 ViewBag.ThongBao = "Mật khẩu cũ không chính xác.";
                 return View();
             }
 
-            if (MatKhauMoi.Length < 3 || MatKhauMoi.Length > 20)
+            if (string.IsNullOrWhiteSpace(MatKhauMoi) || MatKhauMoi.Length < 3 || MatKhauMoi.Length > 20)
             {
                 ViewBag.ThongBao = "Mật khẩu mới phải từ 3 đến 20 ký tự.";
                 return View();
@@ -57,8 +64,8 @@ namespace DuAnEnglish.Controllers
                 return View();
             }
 
-            // Cập nhật mật khẩu
-            taiKhoan.MatKhau = MatKhauMoi;
+            // Cập nhật mật khẩu băm
+            taiKhoan.MatKhau = DuAnEnglish.Security.PasswordHelper.HashPassword(MatKhauMoi);
             db.SaveChanges();
 
             ViewBag.ThongBao = "Đổi mật khẩu thành công!";

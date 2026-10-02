@@ -54,6 +54,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // POST: Khóa hoặc Mở khóa tài khoản học viên
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult KhoaMoTaiKhoan(int id)
         {
             var hocVien = db.HocViens.Include(h => h.TaiKhoan).FirstOrDefault(h => h.IDHocVien == id);

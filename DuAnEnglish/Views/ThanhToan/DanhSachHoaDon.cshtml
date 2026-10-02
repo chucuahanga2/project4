@@ -80,17 +80,25 @@
                             <td class="py-3 px-4 text-center">
                                 @if (item.TrangThai == "Đã thanh toán")
                                 {
-                                    <a href="@Url.Action("VaoHoc", "HocTap", new { idKhoaHoc = item.IDKhoaHoc })" 
-                                       class="px-3 py-1 rounded-lg bg-[#e5f2ff] hover:bg-[#1a94ff] text-[#0b74e5] hover:text-white font-bold transition">
-                                        Vào học ngay
+                                    <a href="@Url.Action("VaoHoc", "HocTap", new { id = item.IDKhoaHoc })" 
+                                       class="px-3 py-1.5 rounded-lg bg-[#e5f2ff] hover:bg-[#1a94ff] text-[#0b74e5] hover:text-white font-bold transition inline-block">
+                                        <i class="fas fa-play mr-1"></i> Vào học
                                     </a>
                                 }
                                 else
                                 {
-                                    <a href="@Url.Action("HoaDon", "ThanhToan", new { idThanhToan = item.IDThanhToan })" 
-                                       class="px-3 py-1 rounded-lg bg-[#ff424e] hover:bg-red-600 text-white font-bold transition shadow-sm">
-                                        Thanh toán lại
-                                    </a>
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <a href="@Url.Action("HoaDon", "ThanhToan", new { id = item.IDThanhToan })" 
+                                           class="px-3 py-1.5 rounded-lg bg-[#ff424e] hover:bg-red-600 text-white font-bold transition shadow-sm inline-block">
+                                            Thanh toán
+                                        </a>
+                                        <form method="post" action="@Url.Action("XoaHoaDon", "ThanhToan", new { id = item.IDThanhToan })" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy hóa đơn này?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium transition" title="Hủy hóa đơn">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 }
                             </td>
                         </tr>

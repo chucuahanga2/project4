@@ -22,14 +22,16 @@ namespace DuAnEnglish.Controllers
 
             var myCourses = db.KhoaHocs
                               .Include(k => k.DangKyKhoaHocs)
-                              .Include(k => k.ChuongHocs)
+                              .Include(k => k.ChuongHocs.Select(c => c.BaiHocs))
                               .Where(k => k.IDGiangVien == gv.IDGiangVien)
+                              .OrderByDescending(k => k.NgayTao)
                               .ToList();
 
             ViewBag.GiangVien = gv;
             ViewBag.TongSoKhoaHoc = myCourses.Count;
             ViewBag.TongSoHocVien = myCourses.Sum(k => k.DangKyKhoaHocs.Count);
             ViewBag.TongSoChuong = myCourses.Sum(k => k.ChuongHocs.Count);
+            ViewBag.TongSoBaiHoc = myCourses.Sum(k => k.ChuongHocs.Sum(c => c.BaiHocs.Count));
 
             return View(myCourses);
         }

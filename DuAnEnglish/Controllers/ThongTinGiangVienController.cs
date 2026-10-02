@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -146,10 +146,8 @@ namespace DuAnEnglish.Controllers
             }
 
             // Cập nhật thông tin tài khoản
-            taiKhoan.Email = model.TaiKhoan?.Email;
-            taiKhoan.SDT = model.TaiKhoan?.SDT;
-            //taiKhoan.Email = hocVien.TaiKhoan?.Email;  // Sử dụng toán tử ? để tránh lỗi nếu TaiKhoan là null
-            //taiKhoan.SDT = hocVien.TaiKhoan?.SDT;      // Sử dụng toán tử ? để tránh lỗi nếu TaiKhoan là null
+            taiKhoan.Email = model.TaiKhoan != null ? model.TaiKhoan.Email : null;
+            taiKhoan.SDT = model.TaiKhoan != null ? model.TaiKhoan.SDT : null;
             db.SaveChanges(); // Lưu tất cả thay đổi vào cơ sở dữ liệu
 
             ViewBag.ThongBao = "Thông tin giảng viên đã được cập nhật thành công.";

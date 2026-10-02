@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -14,7 +14,7 @@ namespace DuAnEnglish.Controllers
         public ActionResult QuanLyDiemSo(string idLop)
         {
             // Lấy tên đăng nhập từ session
-            string tenDangNhap = Session["User"]?.ToString();
+            string tenDangNhap = Session["User"] != null ? Session["User"].ToString() : null;
             if (string.IsNullOrEmpty(tenDangNhap))
             {
                 TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập để đăng ký khóa học";
@@ -65,7 +65,7 @@ namespace DuAnEnglish.Controllers
                 {
                     IDHocVien = item.IDHocVien,
                     IDLopHoc = item.IDLopHoc,
-                    DanhMuc = khoaHoc?.DanhMuc?.Trim().ToLower(),
+                    DanhMuc = (khoaHoc != null && khoaHoc.DanhMuc != null) ? khoaHoc.DanhMuc.Trim().ToLower() : null,
                     DiemNgheIELTS = item.DiemNghe,
                     DiemNoiIELTS = item.DiemNoi,
                     DiemDocIELTS = item.DiemDoc,
@@ -87,7 +87,7 @@ namespace DuAnEnglish.Controllers
                 {
                     IDHocVien = item.IDHocVien,
                     IDLopHoc = item.IDLopHoc,
-                    DanhMuc = khoaHoc?.DanhMuc?.Trim().ToLower(),
+                    DanhMuc = (khoaHoc != null && khoaHoc.DanhMuc != null) ? khoaHoc.DanhMuc.Trim().ToLower() : null,
                     DiemNgheTOEIC = item.DiemNghe,
                     DiemNoiTOEIC = item.DiemNoi,
                     DiemDocTOEIC = item.DiemDoc,
@@ -102,7 +102,7 @@ namespace DuAnEnglish.Controllers
         // hiển thị gợi ý lớp
         public JsonResult GetLopHocAutocomplete(string term)
         {
-            string tenDangNhap = Session["User"]?.ToString();
+            string tenDangNhap = Session["User"] != null ? Session["User"].ToString() : null;
             if (string.IsNullOrEmpty(tenDangNhap))
             {
                 return Json(new List<string>(), JsonRequestBehavior.AllowGet);

@@ -209,6 +209,7 @@
     <Compile Include="Controllers\QuanLyDanhMucController.cs" />
     <Compile Include="Controllers\GiangVienKhoaHocController.cs" />
     <Compile Include="Security\AuthorizeRoleAttribute.cs" />
+    <Compile Include="Security\PasswordHelper.cs" />
     <Compile Include="ViewModels\HocTapViewModel.cs" />
     <Compile Include="ViewModels\ChiTietKhoaHocViewModel.cs" />
     <Compile Include="ViewModels\ThongKeDashboardViewModel.cs" />
@@ -287,10 +288,6 @@
   <ItemGroup>
     <Content Include="Views\web.config" />
     <Content Include="Images\banner.avif" />
-    <EntityDeploy Include="Models\Model1.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>Model1.Designer.cs</LastGenOutput>
-    </EntityDeploy>
     <Content Include="Models\Model1.edmx.diagram">
       <DependentUpon>Model1.edmx</DependentUpon>
     </Content>

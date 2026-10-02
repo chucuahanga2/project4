@@ -13,13 +13,27 @@ namespace DuAnEnglish.Controllers
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
         // GET: KhoaHoc/KhoaHoc
-        public ActionResult KhoaHoc(string danhmuc = "all", string search = "", string gia = "all", string sort = "newest")
+        public ActionResult KhoaHoc(string danhmuc = "all", string category = null, string search = "", string searchString = null, string gia = "all", string priceFilter = null, string sort = "newest")
         {
-            // Chỉ lấy các khóa học có trạng thái Hiển thị
+            // Hỗ trợ các tên tham số đồng nghĩa từ URL/Form
+            if (!string.IsNullOrEmpty(category) && (string.IsNullOrEmpty(danhmuc) || danhmuc == "all"))
+            {
+                danhmuc = category;
+            }
+            if (!string.IsNullOrEmpty(searchString) && string.IsNullOrEmpty(search))
+            {
+                search = searchString;
+            }
+            if (!string.IsNullOrEmpty(priceFilter) && (string.IsNullOrEmpty(gia) || gia == "all"))
+            {
+                gia = priceFilter;
+            }
+
+            // Chỉ lấy các khóa học công khai (không ở trạng thái Ẩn)
             var query = db.KhoaHocs
                           .Include(k => k.DanhMucKhoaHoc)
                           .Include(k => k.GiangVien)
-                          .Where(k => k.TrangThai == "Hiển thị" || k.TrangThai == null);
+                          .Where(k => k.TrangThai != "Ẩn" || k.TrangThai == null);
 
             // 1. Lọc theo danh mục
             if (!string.IsNullOrEmpty(danhmuc) && danhmuc != "all")
@@ -101,6 +115,33 @@ namespace DuAnEnglish.Controllers
                 return HttpNotFound("Không tìm thấy khóa học yêu cầu.");
             }
 
+            // Kiểm tra trạng thái khóa học ẩn: chỉ Admin hoặc Giảng viên sở hữu mới được xem
+            if (khoaHoc.TrangThai == "Ẩn")
+            {
+                bool coQuyenXem = false;
+                if (Session["User"] != null && Session["Role"] != null)
+                {
+                    string role = Session["Role"].ToString().ToLower();
+                    if (role == "admin")
+                    {
+                        coQuyenXem = true;
+                    }
+                    else if (role == "giangvien")
+                    {
+                        string username = Session["User"].ToString();
+                        var gv = db.GiangViens.FirstOrDefault(g => g.IDTenDangNhap == username);
+                        if (gv != null && khoaHoc.IDGiangVien == gv.IDGiangVien)
+                        {
+                            coQuyenXem = true;
+                        }
+                    }
+                }
+                if (!coQuyenXem)
+                {
+                    return HttpNotFound("Khóa học hiện không khả dụng hoặc đang bị ẩn.");
+                }
+            }
+
             // Sắp xếp chương và bài
             var dsChuongItem = new List<ChuongHocItem>();
             int tongSoBai = 0;
@@ -175,9 +216,78 @@ namespace DuAnEnglish.Controllers
             return View(viewModel);
         }
 
-        // GET & POST: KhoaHoc/DangKyKhoaHoc
+        // GET: KhoaHoc/DangKyKhoaHoc/5 - Trang xác nhận thông tin đăng ký
+        [HttpGet]
         public ActionResult DangKyKhoaHoc(string id)
         {
+            if (Session["User"] == null)
+            {
+                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để đăng ký khóa học!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            string role = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "";
+            if (role != "hocvien")
+            {
+                TempData["ThongBao"] = "Tài khoản hiện tại không phải học viên. Vui lòng đăng nhập bằng tài khoản học viên để đăng ký!";
+                return RedirectToAction("ChiTietKhoaHoc", new { id = id });
+            }
+
+            string tenDangNhap = Session["User"].ToString();
+            var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
+            if (hocVien == null)
+            {
+                TempData["ThongBaoDangNhap"] = "Không tìm thấy hồ sơ học viên!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            var khoaHoc = db.KhoaHocs.Include(k => k.GiangVien).Include(k => k.DanhMucKhoaHoc).FirstOrDefault(k => k.IDKhoaHoc == id);
+            if (khoaHoc == null)
+            {
+                return HttpNotFound("Không tìm thấy khóa học.");
+            }
+
+            if (khoaHoc.TrangThai == "Ẩn")
+            {
+                TempData["ThongBao"] = "Khóa học hiện đang tạm ẩn, không thể đăng ký.";
+                return RedirectToAction("KhoaHoc");
+            }
+
+            // Kiểm tra đã đăng ký trước đó chưa
+            var dangKyTonTai = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && d.IDKhoaHoc == id);
+            if (dangKyTonTai != null)
+            {
+                if (dangKyTonTai.TrangThai == "Đã kích hoạt" || dangKyTonTai.TrangThai == "Đã hoàn thành")
+                {
+                    TempData["ThongBao"] = "Bạn đã đăng ký và kích hoạt khóa học này. Hãy tiếp tục học tập!";
+                    return RedirectToAction("VaoHoc", "HocTap", new { id = id });
+                }
+                else
+                {
+                    // Tìm hóa đơn chưa thanh toán tương ứng
+                    var hoaDonCu = db.ThanhToans.FirstOrDefault(t => t.IDDangKy == dangKyTonTai.IDDangKy && t.TrangThai == "Chưa thanh toán");
+                    if (hoaDonCu != null)
+                    {
+                        TempData["ThongBao"] = "Bạn đã có hóa đơn chờ thanh toán cho khóa học này. Vui lòng hoàn tất thanh toán!";
+                        return RedirectToAction("HoaDon", "ThanhToan", new { id = hoaDonCu.IDThanhToan });
+                    }
+                }
+            }
+
+            ViewBag.TenHocVien = hocVien.TenHV;
+            return View(khoaHoc);
+        }
+
+        // POST: KhoaHoc/DangKyKhoaHoc - Xử lý tạo đăng ký an toàn chống CSRF và trùng lặp
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DangKyKhoaHoc(string id, string idKhoaHoc = null)
+        {
+            if (string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(idKhoaHoc))
+            {
+                id = idKhoaHoc;
+            }
+
             if (Session["User"] == null)
             {
                 TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để đăng ký khóa học!";
@@ -205,7 +315,13 @@ namespace DuAnEnglish.Controllers
                 return HttpNotFound("Không tìm thấy khóa học.");
             }
 
-            // 1. Kiểm tra đã có bản ghi đăng ký chưa
+            if (khoaHoc.TrangThai == "Ẩn")
+            {
+                TempData["ThongBao"] = "Khóa học hiện đang tạm ẩn, không thể đăng ký.";
+                return RedirectToAction("KhoaHoc");
+            }
+
+            // 1. Kiểm tra đã có bản ghi đăng ký chưa (ngăn ngừa double click hoặc gửi lặp)
             var dangKyTonTai = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && d.IDKhoaHoc == id);
             if (dangKyTonTai != null)
             {
@@ -216,7 +332,12 @@ namespace DuAnEnglish.Controllers
                 }
                 else
                 {
-                    TempData["ThongBao"] = "Khóa học đang chờ thanh toán. Vui lòng hoàn tất thanh toán để vào học!";
+                    var hoaDonCho = db.ThanhToans.FirstOrDefault(t => t.IDDangKy == dangKyTonTai.IDDangKy && t.TrangThai == "Chưa thanh toán");
+                    if (hoaDonCho != null)
+                    {
+                        TempData["ThongBao"] = "Khóa học đang chờ thanh toán. Vui lòng hoàn tất thanh toán để vào học!";
+                        return RedirectToAction("HoaDon", "ThanhToan", new { id = hoaDonCho.IDThanhToan });
+                    }
                     return RedirectToAction("DanhSachHoaDon", "ThanhToan");
                 }
             }
@@ -240,7 +361,7 @@ namespace DuAnEnglish.Controllers
                 return RedirectToAction("VaoHoc", "HocTap", new { id = id });
             }
 
-            // 3. Nếu là khóa học CÓ PHÍ -> Tạo bản ghi đăng ký chờ duyệt + tạo hóa đơn thanh toán
+            // 3. Nếu là khóa học CÓ PHÍ -> Tạo đăng ký chờ kích hoạt + tạo hóa đơn thanh toán duy nhất
             var dangKyChoTT = new DangKyKhoaHoc
             {
                 IDHocVien = hocVien.IDHocVien,

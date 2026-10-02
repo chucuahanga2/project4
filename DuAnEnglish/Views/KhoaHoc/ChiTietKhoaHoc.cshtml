@@ -166,7 +166,7 @@
                                 <span>Bạn đã sở hữu khóa học này! Tiến độ: <strong>@Model.PhanTramTienDo%</strong></span>
                             </div>
                         </div>
-                        <a href="@Url.Action("VaoHoc", "HocTap", new { idKhoaHoc = kh.IDKhoaHoc })" 
+                        <a href="@Url.Action("VaoHoc", "HocTap", new { id = kh.IDKhoaHoc })" 
                            class="w-full py-3.5 bg-[#00ab56] hover:bg-emerald-600 text-white font-bold text-sm rounded-xl text-center shadow transition flex items-center justify-center gap-2">
                             <i class="fas fa-play"></i> VÀO HỌC NGAY
                         </a>
@@ -174,9 +174,9 @@
                 }
                 else
                 {
-                    <form method="post" action="@Url.Action("DangKy", "KhoaHoc")">
+                    <form method="post" action="@Url.Action("DangKyKhoaHoc", "KhoaHoc")">
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="idKhoaHoc" value="@kh.IDKhoaHoc" />
+                        <input type="hidden" name="id" value="@kh.IDKhoaHoc" />
 
                         @if (isFree)
                         {
@@ -243,9 +243,10 @@
                                 <div class="flex items-center gap-2">
                                     @if (bh.ChoXemThu == true)
                                     {
-                                        <span class="px-2 py-0.5 rounded bg-blue-100 text-[#0b74e5] text-[10px] font-bold">
-                                            Học thử
-                                        </span>
+                                        <a href="@Url.Action("VaoHoc", "HocTap", new { id = kh.IDKhoaHoc, baiId = bh.IDBaiHoc })" 
+                                           class="px-2.5 py-1 rounded bg-[#e5f2ff] hover:bg-[#1a94ff] text-[#0b74e5] hover:text-white text-[11px] font-bold transition flex items-center gap-1">
+                                            <i class="fas fa-play text-[9px]"></i> Học thử
+                                        </a>
                                     }
                                 </div>
                             </div>

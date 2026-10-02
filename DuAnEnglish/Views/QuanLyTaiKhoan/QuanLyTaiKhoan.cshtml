@@ -148,38 +148,38 @@
 
                                     @if (item.TenDangNhap.ToLower() != "admin")
                                     {
-                                        if (item.TrangThai == "Khóa")
+                                        using (Html.BeginForm("KhoaMoTaiKhoan", "QuanLyTaiKhoan", new { id = item.TenDangNhap }, FormMethod.Post, new { @class = "d-inline ml-1" }))
                                         {
-                                            <a href="@Url.Action("KhoaMoTaiKhoan", new { id = item.TenDangNhap })" 
-                                               class="btn btn-success btn-sm shadow-sm ml-1" 
-                                               onclick="return confirm('Mở khóa cho tài khoản @item.TenDangNhap?');"
-                                               title="Mở khóa tài khoản">
-                                                <i class="fas fa-unlock"></i>
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <a href="@Url.Action("KhoaMoTaiKhoan", new { id = item.TenDangNhap })" 
-                                               class="btn btn-warning btn-sm shadow-sm ml-1" 
-                                               onclick="return confirm('Khóa tài khoản @item.TenDangNhap?');"
-                                               title="Khóa tài khoản">
-                                                <i class="fas fa-lock"></i>
-                                            </a>
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" 
+                                                    class="btn @(item.TrangThai == "Khóa" ? "btn-success" : "btn-warning") btn-sm shadow-sm" 
+                                                    onclick="return confirm('@(item.TrangThai == "Khóa" ? "Mở khóa" : "Khóa") tài khoản @item.TenDangNhap?');"
+                                                    title="@(item.TrangThai == "Khóa" ? "Mở khóa tài khoản" : "Khóa tài khoản")">
+                                                <i class="fas @(item.TrangThai == "Khóa" ? "fa-unlock" : "fa-lock")"></i>
+                                            </button>
                                         }
 
-                                        <a href="@Url.Action("ResetMatKhau", new { id = item.TenDangNhap })" 
-                                           class="btn btn-secondary btn-sm shadow-sm ml-1" 
-                                           onclick="return confirm('Đặt lại mật khẩu cho tài khoản @item.TenDangNhap về mặc định (123456)?');"
-                                           title="Reset Mật khẩu">
-                                            <i class="fas fa-key"></i>
-                                        </a>
+                                        using (Html.BeginForm("ResetMatKhau", "QuanLyTaiKhoan", new { id = item.TenDangNhap }, FormMethod.Post, new { @class = "d-inline ml-1" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" 
+                                                    class="btn btn-secondary btn-sm shadow-sm" 
+                                                    onclick="return confirm('Đặt lại mật khẩu cho tài khoản @item.TenDangNhap về mặc định (123456)?');"
+                                                    title="Reset Mật khẩu">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                        }
 
-                                        <a href="@Url.Action("Delete", new { id = item.TenDangNhap })" 
-                                           class="btn btn-danger btn-sm shadow-sm ml-1" 
-                                           onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản @item.TenDangNhap?');"
-                                           title="Xóa tài khoản">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
+                                        using (Html.BeginForm("Delete", "QuanLyTaiKhoan", new { id = item.TenDangNhap }, FormMethod.Post, new { @class = "d-inline ml-1" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" 
+                                                    class="btn btn-danger btn-sm shadow-sm" 
+                                                    onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản @item.TenDangNhap?');"
+                                                    title="Xóa tài khoản">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        }
                                     }
                                     else
                                     {

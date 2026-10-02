@@ -49,6 +49,35 @@ namespace DuAnEnglish.Controllers
             return View(dsKhoaHoc);
         }
 
+        private bool IsValidImageFile(HttpPostedFileBase file, out string errorMessage)
+        {
+            errorMessage = null;
+            if (file == null || file.ContentLength == 0) return true;
+
+            if (file.ContentLength > 5 * 1024 * 1024)
+            {
+                errorMessage = "Dung lượng ảnh bìa không được vượt quá 5MB!";
+                return false;
+            }
+
+            string ext = Path.GetExtension(file.FileName).ToLower();
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            if (!allowedExtensions.Contains(ext))
+            {
+                errorMessage = "Chỉ chấp nhận các tệp ảnh hợp lệ (.jpg, .jpeg, .png, .webp)!";
+                return false;
+            }
+
+            var allowedMimes = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowedMimes.Contains(file.ContentType.ToLower()))
+            {
+                errorMessage = "Định dạng MIME của tệp tin không hợp lệ!";
+                return false;
+            }
+
+            return true;
+        }
+
         // GET: GiangVienKhoaHoc/ThemKhoaHoc
         public ActionResult ThemKhoaHoc()
         {
@@ -79,10 +108,18 @@ namespace DuAnEnglish.Controllers
                 return View(kh);
             }
 
+            // Kiểm tra tính hợp lệ của tệp ảnh
+            string imgError;
+            if (!IsValidImageFile(HinhAnhFile, out imgError))
+            {
+                ViewBag.ThongBao = imgError;
+                return View(kh);
+            }
+
             // Xử lý upload ảnh bìa
             if (HinhAnhFile != null && HinhAnhFile.ContentLength > 0)
             {
-                string ext = Path.GetExtension(HinhAnhFile.FileName);
+                string ext = Path.GetExtension(HinhAnhFile.FileName).ToLower();
                 string fileName = "kh_" + Guid.NewGuid().ToString().Substring(0, 8) + ext;
                 string dir = Server.MapPath("~/Images/");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
@@ -144,10 +181,18 @@ namespace DuAnEnglish.Controllers
                 return View(kh);
             }
 
+            // Kiểm tra tính hợp lệ của tệp ảnh
+            string imgError;
+            if (!IsValidImageFile(HinhAnhFile, out imgError))
+            {
+                ViewBag.ThongBao = imgError;
+                return View(kh);
+            }
+
             // Xử lý upload ảnh mới nếu có
             if (HinhAnhFile != null && HinhAnhFile.ContentLength > 0)
             {
-                string ext = Path.GetExtension(HinhAnhFile.FileName);
+                string ext = Path.GetExtension(HinhAnhFile.FileName).ToLower();
                 string fileName = "kh_" + Guid.NewGuid().ToString().Substring(0, 8) + ext;
                 string dir = Server.MapPath("~/Images/");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
@@ -220,7 +265,38 @@ namespace DuAnEnglish.Controllers
             return RedirectToAction("ChiTietNoiDung", new { id = idKhoaHoc });
         }
 
-        // POST: Xóa chương học
+        // POST: Sửa chương học
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult SuaChuong(int idChuong, string tenChuong, string moTa, int? thuTu)
+        {
+            var gv = GetCurrentGiangVien();
+            var chuong = db.ChuongHocs.Include(c => c.KhoaHoc).FirstOrDefault(c => c.IDChuong == idChuong);
+            if (chuong == null || chuong.KhoaHoc.IDGiangVien != gv.IDGiangVien)
+            {
+                TempData["ThongBao"] = "Không tìm thấy chương học hoặc bạn không có quyền!";
+                return RedirectToAction("Index");
+            }
+
+            if (string.IsNullOrWhiteSpace(tenChuong))
+            {
+                TempData["ThongBao"] = "Tên chương học không được để trống!";
+                return RedirectToAction("ChiTietNoiDung", new { id = chuong.IDKhoaHoc });
+            }
+
+            chuong.TenChuong = tenChuong.Trim();
+            chuong.MoTa = moTa;
+            if (thuTu.HasValue && thuTu.Value >= 1)
+            {
+                chuong.ThuTu = thuTu.Value;
+            }
+
+            db.SaveChanges();
+            TempData["ThongBao"] = "Cập nhật chương học thành công!";
+            return RedirectToAction("ChiTietNoiDung", new { id = chuong.IDKhoaHoc });
+        }
+
+        // POST: Xóa chương học (Bảo vệ tiến độ học viên)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult XoaChuong(int idChuong)
@@ -234,6 +310,15 @@ namespace DuAnEnglish.Controllers
             }
 
             string idKhoaHoc = chuong.IDKhoaHoc;
+
+            // Kiểm tra xem đã có học viên học và ghi nhận tiến độ trong chương này chưa
+            bool coTienDo = db.TienDoHocs.Any(t => t.BaiHoc.IDChuong == idChuong);
+            if (coTienDo)
+            {
+                TempData["ThongBao"] = "Không thể xóa chương học này vì đã có học viên học và ghi nhận tiến độ! Vui lòng chỉnh sửa nội dung thay vì xóa.";
+                return RedirectToAction("ChiTietNoiDung", new { id = idKhoaHoc });
+            }
+
             db.ChuongHocs.Remove(chuong);
             db.SaveChanges();
             TempData["ThongBao"] = "Đã xóa chương học thành công!";
@@ -243,7 +328,7 @@ namespace DuAnEnglish.Controllers
         // POST: Thêm bài học
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult ThemBaiHoc(int idChuong, string tenBaiHoc, string videoUrl, string taiLieuUrl, string moTa, int? thoiLuong, bool? choXemThu, int? thuTu)
+        public ActionResult ThemBaiHoc(int idChuong, string tenBaiHoc, string videoUrl, string taiLieuUrl, string moTa, string noiDung, int? thoiLuong, bool? choXemThu, int? thuTu)
         {
             var gv = GetCurrentGiangVien();
             var chuong = db.ChuongHocs.Include(c => c.KhoaHoc).FirstOrDefault(c => c.IDChuong == idChuong);
@@ -272,6 +357,7 @@ namespace DuAnEnglish.Controllers
                     VideoUrl = formattedVideo,
                     TaiLieuUrl = taiLieuUrl,
                     MoTa = moTa,
+                    NoiDung = noiDung,
                     ThoiLuong = thoiLuong ?? 10,
                     ChoXemThu = choXemThu ?? false,
                     ThuTu = thuTu ?? (chuong.BaiHocs.Count + 1)
@@ -284,7 +370,57 @@ namespace DuAnEnglish.Controllers
             return RedirectToAction("ChiTietNoiDung", new { id = chuong.IDKhoaHoc });
         }
 
-        // POST: Xóa bài học
+        // POST: Sửa bài học
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult SuaBaiHoc(int idBaiHoc, string tenBaiHoc, string videoUrl, string taiLieuUrl, string moTa, string noiDung, int? thoiLuong, bool? choXemThu, int? thuTu)
+        {
+            var gv = GetCurrentGiangVien();
+            var bai = db.BaiHocs.Include(b => b.ChuongHoc.KhoaHoc).FirstOrDefault(b => b.IDBaiHoc == idBaiHoc);
+            if (bai == null || bai.ChuongHoc.KhoaHoc.IDGiangVien != gv.IDGiangVien)
+            {
+                TempData["ThongBao"] = "Không tìm thấy bài học hoặc bạn không có quyền!";
+                return RedirectToAction("Index");
+            }
+
+            if (string.IsNullOrWhiteSpace(tenBaiHoc))
+            {
+                TempData["ThongBao"] = "Tên bài học không được để trống!";
+                return RedirectToAction("ChiTietNoiDung", new { id = bai.ChuongHoc.IDKhoaHoc });
+            }
+
+            // Chuẩn hóa link YouTube nếu người dùng paste link xem thông thường
+            string formattedVideo = videoUrl;
+            if (!string.IsNullOrEmpty(formattedVideo) && formattedVideo.Contains("youtube.com/watch?v="))
+            {
+                formattedVideo = formattedVideo.Replace("watch?v=", "embed/");
+            }
+            else if (!string.IsNullOrEmpty(formattedVideo) && formattedVideo.Contains("youtu.be/"))
+            {
+                formattedVideo = formattedVideo.Replace("youtu.be/", "www.youtube.com/embed/");
+            }
+
+            bai.TenBaiHoc = tenBaiHoc.Trim();
+            bai.VideoUrl = formattedVideo;
+            bai.TaiLieuUrl = taiLieuUrl;
+            bai.MoTa = moTa;
+            bai.NoiDung = noiDung;
+            if (thoiLuong.HasValue && thoiLuong.Value >= 0)
+            {
+                bai.ThoiLuong = thoiLuong.Value;
+            }
+            bai.ChoXemThu = choXemThu ?? false;
+            if (thuTu.HasValue && thuTu.Value >= 1)
+            {
+                bai.ThuTu = thuTu.Value;
+            }
+
+            db.SaveChanges();
+            TempData["ThongBao"] = "Cập nhật bài học thành công!";
+            return RedirectToAction("ChiTietNoiDung", new { id = bai.ChuongHoc.IDKhoaHoc });
+        }
+
+        // POST: Xóa bài học (Bảo vệ tiến độ học viên)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult XoaBaiHoc(int idBaiHoc)
@@ -298,6 +434,15 @@ namespace DuAnEnglish.Controllers
             }
 
             string idKhoaHoc = bai.ChuongHoc.IDKhoaHoc;
+
+            // Kiểm tra xem đã có học viên học và ghi nhận tiến độ bài này chưa
+            bool coTienDo = db.TienDoHocs.Any(t => t.IDBaiHoc == idBaiHoc);
+            if (coTienDo)
+            {
+                TempData["ThongBao"] = "Không thể xóa bài học này vì đã có học viên học và ghi nhận tiến độ! Vui lòng chỉnh sửa nội dung bài học.";
+                return RedirectToAction("ChiTietNoiDung", new { id = idKhoaHoc });
+            }
+
             db.BaiHocs.Remove(bai);
             db.SaveChanges();
             TempData["ThongBao"] = "Đã xóa bài học thành công!";

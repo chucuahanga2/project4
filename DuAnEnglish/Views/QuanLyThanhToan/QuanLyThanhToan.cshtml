@@ -151,12 +151,15 @@
                                         }
                                     }
 
-                                    <a href="@Url.Action("Delete", new { id = item.IDThanhToan })" 
-                                       class="btn btn-danger btn-sm shadow-sm ml-1" 
-                                       onclick="return confirm('Bạn có chắc muốn xóa hóa đơn #@item.IDThanhToan?');"
-                                       title="Xóa hóa đơn">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </a>
+                                    @using (Html.BeginForm("Delete", "QuanLyThanhToan", new { id = item.IDThanhToan }, FormMethod.Post, new { @class = "d-inline ml-1" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-sm shadow-sm" 
+                                                onclick="return confirm('Bạn có chắc muốn xóa hóa đơn #@item.IDThanhToan?');"
+                                                title="Xóa hóa đơn">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }

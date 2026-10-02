@@ -138,6 +138,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // POST: Khóa / Mở khóa tài khoản
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult KhoaMoTaiKhoan(string id)
         {
             var tk = db.TaiKhoans.Find(id);
@@ -164,20 +166,24 @@ namespace DuAnEnglish.Controllers
             return RedirectToAction("QuanLyTaiKhoan");
         }
 
-        // POST: Đặt lại mật khẩu về mặc định
+        // POST: Đặt lại mật khẩu về mặc định (được băm an toàn)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult ResetMatKhau(string id)
         {
             var tk = db.TaiKhoans.Find(id);
             if (tk == null) return HttpNotFound();
 
-            tk.MatKhau = "123456";
+            tk.MatKhau = PasswordHelper.HashPassword("123456");
             db.SaveChanges();
 
-            TempData["ThongBao"] = string.Format("Đã đặt lại mật khẩu tài khoản '{0}' về '123456'!", tk.TenDangNhap);
+            TempData["ThongBao"] = string.Format("Đã đặt lại mật khẩu tài khoản '{0}' về '123456' an toàn!", tk.TenDangNhap);
             return RedirectToAction("QuanLyTaiKhoan");
         }
 
         // POST: Xóa tài khoản an toàn
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(string id)
         {
             var tk = db.TaiKhoans.Find(id);

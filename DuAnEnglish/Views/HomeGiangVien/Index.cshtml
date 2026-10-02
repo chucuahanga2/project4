@@ -6,6 +6,7 @@
     int tongKhoaHoc = ViewBag.TongSoKhoaHoc ?? 0;
     int tongHocVien = ViewBag.TongSoHocVien ?? 0;
     int tongChuong = ViewBag.TongSoChuong ?? 0;
+    int tongBaiHoc = ViewBag.TongSoBaiHoc ?? 0;
 }
 
 <!-- Page Heading -->
@@ -19,16 +20,16 @@
     </a>
 </div>
 
-<!-- 3 KPI Cards (SB Admin 2 format) -->
+<!-- 4 KPI Cards (SB Admin 2 format) -->
 <div class="row">
     <!-- Tổng khóa học -->
-    <div class="col-xl-4 col-md-6 mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Khóa Học Đang Phụ Trách
+                            Khóa Học Phụ Trách
                         </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">@tongKhoaHoc khóa học</div>
                     </div>
@@ -41,13 +42,13 @@
     </div>
 
     <!-- Tổng học viên -->
-    <div class="col-xl-4 col-md-6 mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-success shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Tổng Lượt Học Viên Đăng Ký
+                            Lượt Học Viên Đăng Ký
                         </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">@tongHocVien học viên</div>
                     </div>
@@ -59,19 +60,38 @@
         </div>
     </div>
 
-    <!-- Tổng chương bài học -->
-    <div class="col-xl-4 col-md-6 mb-4">
+    <!-- Tổng chương học -->
+    <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-left-info shadow h-100 py-2">
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Chương Học Đã Biên Soạn
+                            Chương Đã Biên Soạn
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@tongChuong chương học</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@tongChuong chương</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-layer-group fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tổng bài học -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Bài Giảng & Video
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@tongBaiHoc bài học</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-video fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>

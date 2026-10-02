@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -55,7 +55,7 @@ namespace DuAnEnglish.Controllers
             }
             else
             {
-                var giangVien = thongBao.TaiKhoan?.GiangViens?.FirstOrDefault();
+                var giangVien = (thongBao.TaiKhoan != null && thongBao.TaiKhoan.GiangViens != null) ? thongBao.TaiKhoan.GiangViens.FirstOrDefault() : null;
                 tenNguoiGui = giangVien != null ? giangVien.TenGV : "Không rõ";
             }
 

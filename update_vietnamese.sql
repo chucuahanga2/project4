@@ -104,10 +104,13 @@ BEGIN
 END
 
 -- Cập nhật khóa học Tiếng Anh
+DECLARE @idDM_NN INT;
+SELECT TOP 1 @idDM_NN = IDDanhMuc FROM DanhMucKhoaHoc WHERE TenDanhMuc LIKE N'%Ngoại ngữ%' OR TenDanhMuc LIKE N'%Tiếng Anh%';
+
 UPDATE KhoaHoc SET 
     TenKhoaHoc = N'Luyện Thi IELTS Cấp Tốc - Mục Tiêu 6.5+ Toàn Diện',
     IDGiangVien = 100,
-    IDDanhMuc = 4,
+    IDDanhMuc = ISNULL(@idDM_NN, IDDanhMuc),
     DanhMuc = N'Ngoại ngữ & Tiếng Anh',
     MoTa = N'Chiến lược làm bài thi IELTS 4 kỹ năng Nghe - Nói - Đọc - Viết cùng bộ đề thi cập nhật mới nhất kèm lời giải chi tiết.',
     HocPhi = 1200000,
@@ -117,7 +120,7 @@ WHERE IDKhoaHoc = 'TIA2025';
 UPDATE KhoaHoc SET 
     TenKhoaHoc = N'Luyện Thi TOEIC Đột Phá 750+ Điểm Trong 60 Ngày',
     IDGiangVien = 100,
-    IDDanhMuc = 4,
+    IDDanhMuc = ISNULL(@idDM_NN, IDDanhMuc),
     DanhMuc = N'Ngoại ngữ & Tiếng Anh',
     MoTa = N'Tổng hợp mẹo tránh bẫy Part 1-7, mở rộng 1200 từ vựng cốt lõi và chiến thuật phân bổ thời gian phòng thi đỉnh cao.',
     HocPhi = 650000,

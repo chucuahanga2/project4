@@ -60,6 +60,35 @@ namespace DuAnEnglish.Controllers
             return View(dsKhoaHoc);
         }
 
+        private bool IsValidImageFile(HttpPostedFileBase file, out string errorMessage)
+        {
+            errorMessage = null;
+            if (file == null || file.ContentLength == 0) return true;
+
+            if (file.ContentLength > 5 * 1024 * 1024)
+            {
+                errorMessage = "Dung lượng ảnh bìa không được vượt quá 5MB!";
+                return false;
+            }
+
+            string ext = Path.GetExtension(file.FileName).ToLower();
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            if (!allowedExtensions.Contains(ext))
+            {
+                errorMessage = "Chỉ chấp nhận các tệp ảnh hợp lệ (.jpg, .jpeg, .png, .webp)!";
+                return false;
+            }
+
+            var allowedMimes = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowedMimes.Contains(file.ContentType.ToLower()))
+            {
+                errorMessage = "Định dạng MIME của tệp tin không hợp lệ!";
+                return false;
+            }
+
+            return true;
+        }
+
         // GET: Create
         public ActionResult Create()
         {
@@ -89,10 +118,18 @@ namespace DuAnEnglish.Controllers
                 return View(khoaHoc);
             }
 
+            // Kiểm tra tính hợp lệ của tệp ảnh
+            string imgError;
+            if (!IsValidImageFile(ImageFile, out imgError))
+            {
+                ViewBag.ThongBao = imgError;
+                return View(khoaHoc);
+            }
+
             // Xử lý upload ảnh
             if (ImageFile != null && ImageFile.ContentLength > 0)
             {
-                string ext = Path.GetExtension(ImageFile.FileName);
+                string ext = Path.GetExtension(ImageFile.FileName).ToLower();
                 string fileName = "kh_" + Guid.NewGuid().ToString().Substring(0, 8) + ext;
                 string dir = Server.MapPath("~/Images/");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
@@ -147,9 +184,17 @@ namespace DuAnEnglish.Controllers
             var existing = db.KhoaHocs.Find(kh.IDKhoaHoc);
             if (existing == null) return HttpNotFound();
 
+            // Kiểm tra tính hợp lệ của tệp ảnh
+            string imgError;
+            if (!IsValidImageFile(ImageFile, out imgError))
+            {
+                ViewBag.ThongBao = imgError;
+                return View(kh);
+            }
+
             if (ImageFile != null && ImageFile.ContentLength > 0)
             {
-                string ext = Path.GetExtension(ImageFile.FileName);
+                string ext = Path.GetExtension(ImageFile.FileName).ToLower();
                 string fileName = "kh_" + Guid.NewGuid().ToString().Substring(0, 8) + ext;
                 string dir = Server.MapPath("~/Images/");
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
@@ -177,6 +222,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // POST: Delete / Chuyển trạng thái Ẩn
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(string id)
         {
             var kh = db.KhoaHocs.Find(id);

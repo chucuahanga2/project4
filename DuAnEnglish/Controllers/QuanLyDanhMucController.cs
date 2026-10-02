@@ -119,6 +119,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // POST: QuanLyDanhMuc/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
             var dm = db.DanhMucKhoaHocs.Find(id);

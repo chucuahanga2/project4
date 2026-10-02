@@ -15,19 +15,23 @@ using System.Linq;
 
 namespace DuAnEnglish.Controllers
 {
+    public class ChatHistoryItem
+    {
+        public string CauHoi { get; set; }
+        public string TraLoi { get; set; }
+    }
+
     public class TuVanController : Controller
     {
         private static readonly HttpClient httpClient = new HttpClient();
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
-
-
         // GET: TuVan
         public ActionResult TuVan()
         {
             // Lấy lịch sử chat từ Session nếu có
-            var chatHistory = Session["ChatHistory"] as List<(string CauHoi, string TraLoi)>;
-            if (chatHistory == null) chatHistory = new List<(string, string)>();
+            var chatHistory = Session["ChatHistory"] as List<ChatHistoryItem>;
+            if (chatHistory == null) chatHistory = new List<ChatHistoryItem>();
 
             ViewBag.ChatHistory = chatHistory;
             return View();
@@ -37,8 +41,8 @@ namespace DuAnEnglish.Controllers
         [HttpPost]
         public async Task<ActionResult> TuVan(string cauHoi)
         {
-            var chatHistory = Session["ChatHistory"] as List<(string CauHoi, string TraLoi)>;
-            if (chatHistory == null) chatHistory = new List<(string, string)>();
+            var chatHistory = Session["ChatHistory"] as List<ChatHistoryItem>;
+            if (chatHistory == null) chatHistory = new List<ChatHistoryItem>();
 
             string cauTraLoi = "";
             // Chuẩn hóa câu hỏi người dùng
@@ -69,7 +73,7 @@ namespace DuAnEnglish.Controllers
 
 
             // Lưu lịch sử chat
-            chatHistory.Add((cauHoi, cauTraLoi));
+            chatHistory.Add(new ChatHistoryItem { CauHoi = cauHoi, TraLoi = cauTraLoi });
             Session["ChatHistory"] = chatHistory;
 
             ViewBag.ChatHistory = chatHistory;

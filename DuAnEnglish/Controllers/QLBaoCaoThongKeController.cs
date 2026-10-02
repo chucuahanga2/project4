@@ -21,29 +21,27 @@ namespace DuAnEnglish.Controllers
 
             var query = db.ThanhToans
                           .Include(t => t.KhoaHoc)
-                          .Where(t => t.TrangThai == "Đã thanh toán");
+                          .Where(t => t.TrangThai == "Đã thanh toán" && (t.NgayXacNhan.HasValue || t.NgayThanhToan.HasValue));
 
             if (thang.HasValue)
             {
-                query = query.Where(t => t.NgayThanhToan.HasValue &&
-                                         t.NgayThanhToan.Value.Month == thang.Value &&
-                                         t.NgayThanhToan.Value.Year == currentYear);
+                query = query.Where(t => (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month == thang.Value &&
+                                         (t.NgayXacNhan ?? t.NgayThanhToan).Value.Year == currentYear);
             }
             else if (quy.HasValue)
             {
                 int startMonth = (quy.Value - 1) * 3 + 1;
                 int endMonth = startMonth + 2;
-                query = query.Where(t => t.NgayThanhToan.HasValue &&
-                                         t.NgayThanhToan.Value.Month >= startMonth &&
-                                         t.NgayThanhToan.Value.Month <= endMonth &&
-                                         t.NgayThanhToan.Value.Year == currentYear);
+                query = query.Where(t => (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month >= startMonth &&
+                                         (t.NgayXacNhan ?? t.NgayThanhToan).Value.Month <= endMonth &&
+                                         (t.NgayXacNhan ?? t.NgayThanhToan).Value.Year == currentYear);
             }
             else
             {
-                query = query.Where(t => t.NgayThanhToan.HasValue && t.NgayThanhToan.Value.Year == currentYear);
+                query = query.Where(t => (t.NgayXacNhan ?? t.NgayThanhToan).Value.Year == currentYear);
             }
 
-            var danhSach = query.OrderByDescending(t => t.NgayThanhToan).ToList();
+            var danhSach = query.OrderByDescending(t => t.NgayXacNhan ?? t.NgayThanhToan).ToList();
             decimal tongTien = danhSach.Sum(t => t.SoTien ?? 0);
 
             ViewBag.SelectedThang = thang;

@@ -132,6 +132,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // POST: Xóa hóa đơn
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
             var item = db.ThanhToans.Find(id);

@@ -105,30 +105,16 @@ namespace DuAnEnglish.Controllers
         }
 
         // GET: HocTap/VaoHoc/MVC2026?baiId=1
-        public ActionResult VaoHoc(string id, int? baiId)
+        public ActionResult VaoHoc(string id, int? baiId, string idKhoaHoc = null)
         {
-            if (Session["User"] == null)
+            if (string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(idKhoaHoc))
             {
-                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để vào học!";
-                return RedirectToAction("DangNhap", "DangNhap");
+                id = idKhoaHoc;
             }
 
-            string tenDangNhap = Session["User"].ToString();
-            var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
-            if (hocVien == null)
+            if (string.IsNullOrEmpty(id))
             {
-                TempData["ThongBaoDangNhap"] = "Không tìm thấy thông tin học viên!";
-                return RedirectToAction("DangNhap", "DangNhap");
-            }
-
-            // 1. Kiểm tra quyền truy cập khóa học
-            var dangKy = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && 
-                                                               d.IDKhoaHoc == id && 
-                                                               (d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành"));
-            if (dangKy == null)
-            {
-                TempData["ThongBao"] = "Bạn chưa đăng ký hoặc chưa hoàn tất thanh toán khóa học này!";
-                return RedirectToAction("ChiTietKhoaHoc", "KhoaHoc", new { id = id });
+                return RedirectToAction("KhoaHocCuaToi");
             }
 
             var khoaHoc = db.KhoaHocs
@@ -141,17 +127,86 @@ namespace DuAnEnglish.Controllers
                 return HttpNotFound("Không tìm thấy khóa học.");
             }
 
+            // 1. Kiểm tra quyền truy cập khóa học & hỗ trợ xem thử (ChoXemThu)
+            bool coQuyenHoc = false;
+            bool isHocThu = false;
+            HocVien hocVien = null;
+
+            if (Session["User"] != null)
+            {
+                string tenDangNhap = Session["User"].ToString();
+                string role = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "";
+
+                if (role == "admin")
+                {
+                    coQuyenHoc = true;
+                }
+                else if (role == "giangvien")
+                {
+                    var gv = db.GiangViens.FirstOrDefault(g => g.IDTenDangNhap == tenDangNhap);
+                    if (gv != null && khoaHoc.IDGiangVien == gv.IDGiangVien)
+                    {
+                        coQuyenHoc = true;
+                    }
+                }
+                else if (role == "hocvien")
+                {
+                    hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
+                    if (hocVien != null)
+                    {
+                        var dangKy = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && 
+                                                                           d.IDKhoaHoc == id && 
+                                                                           (d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành"));
+                        if (dangKy != null)
+                        {
+                            coQuyenHoc = true;
+                        }
+                    }
+                }
+            }
+
+            // Nếu không có quyền chính thức -> Kiểm tra xem bài yêu cầu có ChoXemThu hay không
+            if (!coQuyenHoc)
+            {
+                if (baiId.HasValue)
+                {
+                    var baiThu = db.BaiHocs.Include(b => b.ChuongHoc).FirstOrDefault(b => b.IDBaiHoc == baiId.Value && b.ChuongHoc.IDKhoaHoc == id);
+                    if (baiThu != null && baiThu.ChoXemThu == true)
+                    {
+                        isHocThu = true;
+                    }
+                }
+
+                if (!isHocThu)
+                {
+                    if (Session["User"] == null)
+                    {
+                        TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để vào học bài giảng!";
+                        return RedirectToAction("DangNhap", "DangNhap");
+                    }
+                    TempData["ThongBao"] = "Bạn chưa đăng ký hoặc chưa hoàn tất thanh toán khóa học này!";
+                    return RedirectToAction("ChiTietKhoaHoc", "KhoaHoc", new { id = id });
+                }
+            }
+
+            ViewBag.IsHocThu = isHocThu;
+            ViewBag.CoQuyenToanKhoa = coQuyenHoc;
+
             // Danh sách toàn bộ bài học theo thứ tự chương và bài
             var allBaiHocs = new List<BaiHoc>();
             var dsChuongItems = new List<ChuongHocItem>();
 
-            // Lấy danh sách ID các bài học mà học viên đã hoàn thành
-            var completedBaiIds = db.TienDoHocs
+            // Lấy danh sách ID các bài học mà học viên đã hoàn thành (nếu đã đăng nhập học viên)
+            var completedBaiIds = new List<int>();
+            if (hocVien != null)
+            {
+                completedBaiIds = db.TienDoHocs
                                     .Where(t => t.IDHocVien == hocVien.IDHocVien && 
                                                 t.DaHoanThanh == true && 
                                                 t.BaiHoc.ChuongHoc.IDKhoaHoc == id)
                                     .Select(t => t.IDBaiHoc)
                                     .ToList();
+            }
 
             var dsChuongSorted = khoaHoc.ChuongHocs.OrderBy(c => c.ThuTu).ToList();
             foreach (var ch in dsChuongSorted)
@@ -188,14 +243,17 @@ namespace DuAnEnglish.Controllers
 
             if (baiHienTai == null)
             {
-                // Lấy bài học gần nhất đã xem
-                var tienDoGanNhat = db.TienDoHocs
-                                      .Where(t => t.IDHocVien == hocVien.IDHocVien && t.BaiHoc.ChuongHoc.IDKhoaHoc == id)
-                                      .OrderByDescending(t => t.ThoiDiemXemGanNhat)
-                                      .FirstOrDefault();
-                if (tienDoGanNhat != null)
+                if (hocVien != null)
                 {
-                    baiHienTai = allBaiHocs.FirstOrDefault(b => b.IDBaiHoc == tienDoGanNhat.IDBaiHoc);
+                    // Lấy bài học gần nhất đã xem
+                    var tienDoGanNhat = db.TienDoHocs
+                                          .Where(t => t.IDHocVien == hocVien.IDHocVien && t.BaiHoc.ChuongHoc.IDKhoaHoc == id)
+                                          .OrderByDescending(t => t.ThoiDiemXemGanNhat)
+                                          .FirstOrDefault();
+                    if (tienDoGanNhat != null)
+                    {
+                        baiHienTai = allBaiHocs.FirstOrDefault(b => b.IDBaiHoc == tienDoGanNhat.IDBaiHoc);
+                    }
                 }
             }
 
@@ -203,6 +261,13 @@ namespace DuAnEnglish.Controllers
             {
                 // Mặc định lấy bài đầu tiên
                 baiHienTai = allBaiHocs.FirstOrDefault();
+            }
+
+            // Nếu người dùng đang học thử mà cố tình mở bài không cho xem thử -> chặn lại
+            if (isHocThu && baiHienTai.ChoXemThu != true)
+            {
+                TempData["ThongBao"] = "Bài học này không thuộc danh sách học thử miễn phí. Vui lòng đăng ký khóa học để tiếp tục!";
+                return RedirectToAction("ChiTietKhoaHoc", "KhoaHoc", new { id = id });
             }
 
             // Cập nhật trạng thái 'DangHoc' trong danh sách
@@ -217,24 +282,27 @@ namespace DuAnEnglish.Controllers
                 }
             }
 
-            // 3. Ghi nhận thời điểm xem gần nhất vào TienDoHoc
-            var tienDoRecord = db.TienDoHocs.FirstOrDefault(t => t.IDHocVien == hocVien.IDHocVien && t.IDBaiHoc == baiHienTai.IDBaiHoc);
-            if (tienDoRecord == null)
+            // 3. Ghi nhận thời điểm xem gần nhất vào TienDoHoc (nếu là học viên chính thức)
+            if (hocVien != null && coQuyenHoc)
             {
-                tienDoRecord = new TienDoHoc
+                var tienDoRecord = db.TienDoHocs.FirstOrDefault(t => t.IDHocVien == hocVien.IDHocVien && t.IDBaiHoc == baiHienTai.IDBaiHoc);
+                if (tienDoRecord == null)
                 {
-                    IDHocVien = hocVien.IDHocVien,
-                    IDBaiHoc = baiHienTai.IDBaiHoc,
-                    DaHoanThanh = false,
-                    ThoiDiemXemGanNhat = DateTime.Now
-                };
-                db.TienDoHocs.Add(tienDoRecord);
+                    tienDoRecord = new TienDoHoc
+                    {
+                        IDHocVien = hocVien.IDHocVien,
+                        IDBaiHoc = baiHienTai.IDBaiHoc,
+                        DaHoanThanh = false,
+                        ThoiDiemXemGanNhat = DateTime.Now
+                    };
+                    db.TienDoHocs.Add(tienDoRecord);
+                }
+                else
+                {
+                    tienDoRecord.ThoiDiemXemGanNhat = DateTime.Now;
+                }
+                db.SaveChanges();
             }
-            else
-            {
-                tienDoRecord.ThoiDiemXemGanNhat = DateTime.Now;
-            }
-            db.SaveChanges();
 
             // 4. Xác định bài trước và bài sau
             int currentIndex = allBaiHocs.FindIndex(b => b.IDBaiHoc == baiHienTai.IDBaiHoc);
@@ -258,32 +326,49 @@ namespace DuAnEnglish.Controllers
             return View(viewModel);
         }
 
-        // POST: HocTap/DanhDauHoanThanh (AJAX)
+        // POST: HocTap/DanhDauHoanThanh (AJAX - Kiểm tra quyền và CSRF Token)
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult DanhDauHoanThanh(int idBaiHoc)
         {
             if (Session["User"] == null)
             {
-                return Json(new { success = false, message = "Chưa đăng nhập" });
+                return Json(new { success = false, message = "Vui lòng đăng nhập để ghi nhận tiến độ học tập!" });
+            }
+
+            string role = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "";
+            if (role != "hocvien")
+            {
+                return Json(new { success = false, message = "Chỉ học viên mới có thể ghi nhận tiến độ học tập!" });
             }
 
             string tenDangNhap = Session["User"].ToString();
             var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
             if (hocVien == null)
             {
-                return Json(new { success = false, message = "Không tìm thấy học viên" });
+                return Json(new { success = false, message = "Không tìm thấy hồ sơ học viên!" });
             }
 
             var baiHoc = db.BaiHocs.Include(b => b.ChuongHoc).FirstOrDefault(b => b.IDBaiHoc == idBaiHoc);
-            if (baiHoc == null)
+            if (baiHoc == null || baiHoc.ChuongHoc == null)
             {
-                return Json(new { success = false, message = "Bài học không tồn tại" });
+                return Json(new { success = false, message = "Bài học không tồn tại!" });
             }
 
             string idKhoaHoc = baiHoc.ChuongHoc.IDKhoaHoc;
 
+            // Kiểm tra quyền: học viên bắt buộc phải có bản ghi DangKyKhoaHoc ở trạng thái Đã kích hoạt hoặc Đã hoàn thành
+            var dangKy = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && 
+                                                               d.IDKhoaHoc == idKhoaHoc && 
+                                                               (d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành"));
+            if (dangKy == null)
+            {
+                return Json(new { success = false, message = "Bạn chưa đăng ký khóa học này hoặc khóa học chưa được kích hoạt." });
+            }
+
             // Tìm hoặc tạo mới bản ghi tiến độ
             var tienDo = db.TienDoHocs.FirstOrDefault(t => t.IDHocVien == hocVien.IDHocVien && t.IDBaiHoc == idBaiHoc);
+            bool daHoanThanhMoi = true;
             if (tienDo == null)
             {
                 tienDo = new TienDoHoc
@@ -298,8 +383,9 @@ namespace DuAnEnglish.Controllers
             }
             else
             {
-                tienDo.DaHoanThanh = true;
-                tienDo.NgayHoanThanh = DateTime.Now;
+                tienDo.DaHoanThanh = !(tienDo.DaHoanThanh ?? false);
+                daHoanThanhMoi = tienDo.DaHoanThanh.Value;
+                tienDo.NgayHoanThanh = daHoanThanhMoi ? (DateTime?)DateTime.Now : null;
                 tienDo.ThoiDiemXemGanNhat = DateTime.Now;
             }
 
@@ -314,25 +400,30 @@ namespace DuAnEnglish.Controllers
             int phanTram = tongSoBai > 0 ? (int)Math.Round((double)soBaiHoanThanh / tongSoBai * 100) : 0;
 
             // Nếu hoàn thành 100% -> Cập nhật trạng thái khóa học đã hoàn thành
-            if (phanTram == 100)
+            if (phanTram >= 100)
             {
-                var dangKy = db.DangKyKhoaHocs.FirstOrDefault(d => d.IDHocVien == hocVien.IDHocVien && d.IDKhoaHoc == idKhoaHoc);
-                if (dangKy != null)
+                dangKy.TrangThai = "Đã hoàn thành";
+                if (!dangKy.NgayHoanThanh.HasValue)
                 {
-                    dangKy.TrangThai = "Đã hoàn thành";
                     dangKy.NgayHoanThanh = DateTime.Now;
-                    db.SaveChanges();
                 }
+                db.SaveChanges();
+            }
+            else if (dangKy.TrangThai == "Đã hoàn thành")
+            {
+                // Nếu chưa đủ 100% (ví dụ bỏ tick hoặc giảng viên vừa thêm bài mới) -> hoàn lại trạng thái Đã kích hoạt
+                dangKy.TrangThai = "Đã kích hoạt";
+                db.SaveChanges();
             }
 
             return Json(new
             {
                 success = true,
-                daHoanThanh = true,
+                daHoanThanh = daHoanThanhMoi,
                 soBaiHoanThanh = soBaiHoanThanh,
                 tongSoBai = tongSoBai,
                 phanTram = phanTram,
-                message = "Đã hoàn thành bài học!"
+                message = daHoanThanhMoi ? "Đã đánh dấu hoàn thành bài học!" : "Đã hủy đánh dấu hoàn thành bài học!"
             });
         }
 

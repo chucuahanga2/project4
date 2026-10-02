@@ -3,6 +3,21 @@
     Layout = null; // Giao diện phòng học toàn màn hình chuyên nghiệp (như Coursera / Udemy / F8)
     var kh = Model.KhoaHoc;
     var bai = Model.BaiHocHienTai;
+    bool isHocThu = ViewBag.IsHocThu == true;
+    
+    // Chuẩn hóa link YouTube Embed
+    string formattedVideoUrl = bai != null ? bai.VideoUrl : null;
+    if (!string.IsNullOrEmpty(formattedVideoUrl))
+    {
+        if (formattedVideoUrl.Contains("watch?v="))
+        {
+            formattedVideoUrl = formattedVideoUrl.Replace("watch?v=", "embed/");
+        }
+        else if (formattedVideoUrl.Contains("youtu.be/"))
+        {
+            formattedVideoUrl = formattedVideoUrl.Replace("youtu.be/", "www.youtube.com/embed/");
+        }
+    }
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -24,6 +39,7 @@
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
+    @Html.AntiForgeryToken()
 
     <!-- Top Navigation Bar -->
     <header class="bg-gray-850 bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
@@ -41,13 +57,22 @@
 
         <!-- Overall Progress -->
         <div class="flex items-center space-x-4">
-            <div class="hidden sm:flex items-center space-x-3 text-xs">
-                <span class="text-gray-400">Tiến độ:</span>
-                <span id="txtTienDoProgress" class="font-extrabold text-emerald-400">@Model.SoBaiDaHoanThanh/@Model.TongSoBai bài (@Model.PhanTramTienDo%)</span>
-                <div class="w-24 bg-gray-800 rounded-full h-2 overflow-hidden border border-gray-700">
-                    <div id="barTienDo" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: @Model.PhanTramTienDo%;"></div>
+            @if (!isHocThu)
+            {
+                <div class="hidden sm:flex items-center space-x-3 text-xs">
+                    <span class="text-gray-400">Tiến độ:</span>
+                    <span id="txtTienDoProgress" class="font-extrabold text-emerald-400">@Model.SoBaiDaHoanThanh/@Model.TongSoBai bài (@Model.PhanTramTienDo%)</span>
+                    <div class="w-24 bg-gray-800 rounded-full h-2 overflow-hidden border border-gray-700">
+                        <div id="barTienDo" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: @Model.PhanTramTienDo%;"></div>
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <span class="px-2.5 py-1 rounded bg-blue-500/20 text-blue-400 text-xs font-bold border border-blue-500/30">
+                    <i class="fas fa-eye mr-1"></i> Chế độ học thử
+                </span>
+            }
             <a href="@Url.Action("Index", "Home")" class="text-xs text-gray-400 hover:text-white transition">
                 Về trang chủ
             </a>
@@ -58,14 +83,34 @@
     <div class="flex-grow flex flex-col lg:flex-row overflow-hidden">
         <!-- Cột Trái (70%): Màn hình bài giảng & Video -->
         <div class="w-full lg:w-3/4 flex flex-col overflow-y-auto bg-black p-4 md:p-8">
-            <!-- Video Container -->
             <div class="w-full max-w-5xl mx-auto">
+                <!-- Trial Mode Notification Banner -->
+                @if (isHocThu)
+                {
+                    <div class="mb-5 p-4 rounded-xl bg-gradient-to-r from-blue-900/80 to-indigo-950 border border-blue-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/30 text-blue-400 flex items-center justify-center text-lg shrink-0">
+                                <i class="fas fa-unlock-alt"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm text-white">Bạn đang xem bài học thử miễn phí</div>
+                                <div class="text-xs text-blue-200">Đăng ký trọn gói khóa học để mở khóa toàn bộ bài giảng và lưu tiến độ học tập!</div>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("DangKyKhoaHoc", "KhoaHoc", new { id = kh.IDKhoaHoc })" 
+                           class="px-4 py-2.5 bg-[#ff424e] hover:bg-red-600 text-white font-bold text-xs rounded-xl shadow transition text-center whitespace-nowrap">
+                            <i class="fas fa-bolt mr-1"></i> Đăng Ký Học Ngay
+                        </a>
+                    </div>
+                }
+
+                <!-- Video Container -->
                 <div class="aspect-video w-full bg-gray-950 rounded-2xl overflow-hidden shadow-2xl border border-gray-800 relative mb-6">
-                    @if (bai != null && !string.IsNullOrEmpty(bai.VideoUrl))
+                    @if (bai != null && !string.IsNullOrEmpty(formattedVideoUrl))
                     {
-                        if (bai.VideoUrl.Contains("embed") || bai.VideoUrl.Contains("youtube"))
+                        if (formattedVideoUrl.Contains("embed") || formattedVideoUrl.Contains("youtube"))
                         {
-                            <iframe src="@bai.VideoUrl" 
+                            <iframe src="@formattedVideoUrl" 
                                     class="w-full h-full border-0" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                     allowfullscreen>
@@ -74,7 +119,7 @@
                         else
                         {
                             <video controls class="w-full h-full object-contain">
-                                <source src="@bai.VideoUrl" type="video/mp4">
+                                <source src="@formattedVideoUrl" type="video/mp4">
                                 Trình duyệt của bạn không hỗ trợ thẻ video.
                             </video>
                         }
@@ -106,16 +151,25 @@
                             </div>
                         </div>
 
-                        <!-- Mark Complete Button (AJAX) -->
+                        <!-- Mark Complete Button (AJAX) or Trial Notice -->
                         <div>
-                            @if (bai != null)
+                            @if (!isHocThu)
                             {
-                                <button type="button" id="btnHoanThanh" 
-                                        onclick="toggleHoanThanh(@bai.IDBaiHoc)"
-                                        class="px-5 py-3 rounded-xl font-bold text-sm transition duration-200 shadow-lg flex items-center gap-2 @(Model.DaHoanThanhBaiHienTai ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700")">
-                                    <i id="iconHoanThanh" class="fas @(Model.DaHoanThanhBaiHienTai ? "fa-check-circle text-white" : "fa-circle-notch")"></i>
-                                    <span id="lblHoanThanh">@(Model.DaHoanThanhBaiHienTai ? "Đã hoàn thành bài này" : "Đánh dấu đã hoàn thành")</span>
-                                </button>
+                                if (bai != null)
+                                {
+                                    <button type="button" id="btnHoanThanh" 
+                                            onclick="toggleHoanThanh(@bai.IDBaiHoc)"
+                                            class="px-5 py-3 rounded-xl font-bold text-sm transition duration-200 shadow-lg flex items-center gap-2 @(Model.DaHoanThanhBaiHienTai ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700")">
+                                        <i id="iconHoanThanh" class="fas @(Model.DaHoanThanhBaiHienTai ? "fa-check-circle text-white" : "fa-circle-notch")"></i>
+                                        <span id="lblHoanThanh">@(Model.DaHoanThanhBaiHienTai ? "Đã hoàn thành bài này" : "Đánh dấu đã hoàn thành")</span>
+                                    </button>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-xs text-amber-400 font-semibold bg-amber-400/10 px-3 py-2 rounded-xl border border-amber-400/20 inline-flex items-center">
+                                    <i class="fas fa-info-circle mr-1.5"></i> Chế độ học thử (Tiến độ không lưu)
+                                </span>
                             }
                         </div>
                     </div>
@@ -129,7 +183,7 @@
                                     <i class="fas fa-file-download"></i>
                                 </div>
                                 <div>
-                                    <div class="font-bold text-sm text-white">Tài liệu học tập & Mã nguồn đính kèm</div>
+                                    <div class="font-bold text-sm text-white">Tài liệu học tập &amp; Mã nguồn đính kèm</div>
                                     <div class="text-xs text-gray-400">Xem hoặc tải tài nguyên bổ trợ cho bài học này</div>
                                 </div>
                             </div>
@@ -144,7 +198,7 @@
                     @if (bai != null && !string.IsNullOrEmpty(bai.MoTa))
                     {
                         <div class="mt-6">
-                            <h4 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">Ghi chú & Hướng dẫn bài học</h4>
+                            <h4 class="text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">Ghi chú &amp; Hướng dẫn bài học</h4>
                             <div class="text-gray-400 text-sm leading-relaxed whitespace-pre-line bg-gray-950 p-4 rounded-xl border border-gray-800">
                                 @bai.MoTa
                             </div>
@@ -153,7 +207,7 @@
 
                     <!-- Prev / Next Navigation -->
                     <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-800">
-                        @if (Model.BaiHocTruoc != null)
+                        @if (Model.BaiHocTruoc != null && (!isHocThu || Model.BaiHocTruoc.ChoXemThu == true))
                         {
                             <a href="@Url.Action("VaoHoc", new { id = kh.IDKhoaHoc, baiId = Model.BaiHocTruoc.IDBaiHoc })" 
                                class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-2">
@@ -166,7 +220,7 @@
                             <div></div>
                         }
 
-                        @if (Model.BaiHocSau != null)
+                        @if (Model.BaiHocSau != null && (!isHocThu || Model.BaiHocSau.ChoXemThu == true))
                         {
                             <a href="@Url.Action("VaoHoc", new { id = kh.IDKhoaHoc, baiId = Model.BaiHocSau.IDBaiHoc })" 
                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-2">
@@ -200,14 +254,29 @@
                             @foreach (var bItem in ch.DanhSachBai)
                             {
                                 bool isCurrent = bai != null && bai.IDBaiHoc == bItem.Bai.IDBaiHoc;
-                                <a href="@Url.Action("VaoHoc", new { id = kh.IDKhoaHoc, baiId = bItem.Bai.IDBaiHoc })" 
-                                   class="flex items-center justify-between p-2.5 rounded-xl text-xs transition duration-150 @(isCurrent ? "bg-blue-600/20 text-blue-400 font-bold border border-blue-500/40" : "hover:bg-gray-800/70 text-gray-300")">
-                                    <div class="flex items-center gap-2.5 truncate mr-2">
-                                        <i class="fas @(bItem.DaHoanThanh ? "fa-check-circle text-emerald-400" : (isCurrent ? "fa-play-circle text-blue-400" : "fa-circle-notch text-gray-600")) text-sm shrink-0" id="iconBai_@bItem.Bai.IDBaiHoc"></i>
-                                        <span class="truncate">@bIdx. @bItem.Bai.TenBaiHoc</span>
+                                bool canAccess = !isHocThu || bItem.Bai.ChoXemThu == true;
+
+                                if (canAccess)
+                                {
+                                    <a href="@Url.Action("VaoHoc", new { id = kh.IDKhoaHoc, baiId = bItem.Bai.IDBaiHoc })" 
+                                       class="flex items-center justify-between p-2.5 rounded-xl text-xs transition duration-150 @(isCurrent ? "bg-blue-600/20 text-blue-400 font-bold border border-blue-500/40" : "hover:bg-gray-800/70 text-gray-300")">
+                                        <div class="flex items-center gap-2.5 truncate mr-2">
+                                            <i class="fas @(bItem.DaHoanThanh ? "fa-check-circle text-emerald-400" : (isCurrent ? "fa-play-circle text-blue-400" : "fa-circle-notch text-gray-600")) text-sm shrink-0" id="iconBai_@bItem.Bai.IDBaiHoc"></i>
+                                            <span class="truncate">@bIdx. @bItem.Bai.TenBaiHoc</span>
+                                        </div>
+                                        <span class="text-[10px] text-gray-500 shrink-0">@(bItem.Bai.ThoiLuong ?? 10)p</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="flex items-center justify-between p-2.5 rounded-xl text-xs text-gray-500 cursor-not-allowed bg-gray-950/40 opacity-60" title="Đăng ký khóa học để mở khóa bài học này">
+                                        <div class="flex items-center gap-2.5 truncate mr-2">
+                                            <i class="fas fa-lock text-gray-600 text-sm shrink-0"></i>
+                                            <span class="truncate">@bIdx. @bItem.Bai.TenBaiHoc</span>
+                                        </div>
+                                        <span class="text-[10px] text-gray-600 shrink-0">Khóa</span>
                                     </div>
-                                    <span class="text-[10px] text-gray-500 shrink-0">@(bItem.Bai.ThoiLuong ?? 10)p</span>
-                                </a>
+                                }
                                 bIdx++;
                             }
                         </div>
@@ -225,6 +294,8 @@
             var icon = document.getElementById('iconHoanThanh');
             var lbl = document.getElementById('lblHoanThanh');
             var sidebarIcon = document.getElementById('iconBai_' + idBaiHoc);
+            var tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            var token = tokenInput ? tokenInput.value : '';
 
             btn.disabled = true;
 
@@ -233,7 +304,7 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'idBaiHoc=' + encodeURIComponent(idBaiHoc)
+                body: 'idBaiHoc=' + encodeURIComponent(idBaiHoc) + '&__RequestVerificationToken=' + encodeURIComponent(token)
             })
             .then(function(res) { return res.json(); })
             .then(function(data) {

@@ -74,7 +74,13 @@ GO
 UPDATE KhoaHoc SET TrangThai = N'Hiển thị' WHERE TrangThai IS NULL;
 UPDATE KhoaHoc SET NgayTao = GETDATE() WHERE NgayTao IS NULL;
 -- Gán IDDanhMuc ngoại ngữ cho các khóa học cũ nếu chưa có
-UPDATE KhoaHoc SET IDDanhMuc = 4 WHERE IDDanhMuc IS NULL;
+DECLARE @idDM_NgoaiNgu INT;
+SELECT TOP 1 @idDM_NgoaiNgu = IDDanhMuc FROM DanhMucKhoaHoc WHERE TenDanhMuc LIKE N'%Ngoại ngữ%' OR TenDanhMuc LIKE N'%Tiếng Anh%';
+IF (@idDM_NgoaiNgu IS NULL)
+    SELECT TOP 1 @idDM_NgoaiNgu = IDDanhMuc FROM DanhMucKhoaHoc;
+IF (@idDM_NgoaiNgu IS NOT NULL)
+    UPDATE KhoaHoc SET IDDanhMuc = @idDM_NgoaiNgu WHERE IDDanhMuc IS NULL;
+
 -- Gán giảng viên mặc định cho các khóa học cũ
 DECLARE @firstGV INT;
 SELECT TOP 1 @firstGV = IDGiangVien FROM GiangVien;

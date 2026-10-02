@@ -41,13 +41,24 @@ namespace DuAnEnglish.Controllers
             TenDangNhap = TenDangNhap.Trim();
             var user = db.TaiKhoans.FirstOrDefault(t => t.TenDangNhap == TenDangNhap);
 
-            if (user == null || user.MatKhau != MatKhau)
+            if (user == null || !DuAnEnglish.Security.PasswordHelper.VerifyPassword(MatKhau, user.MatKhau))
             {
                 ViewBag.ThongBao = "Sai tên đăng nhập hoặc mật khẩu!";
                 return View();
             }
 
-            if (user.TrangThai == "Khóa")
+            // Tự động nâng cấp mật khẩu cũ dạng plain text sang mã băm SHA-256
+            if (DuAnEnglish.Security.PasswordHelper.IsLegacyPassword(user.MatKhau))
+            {
+                try
+                {
+                    user.MatKhau = DuAnEnglish.Security.PasswordHelper.HashPassword(MatKhau);
+                    db.SaveChanges();
+                }
+                catch { }
+            }
+
+            if (user.TrangThai == "Khóa" || (user.TrangThai != null && (user.TrangThai.IndexOf("khóa", StringComparison.OrdinalIgnoreCase) >= 0 || user.TrangThai.IndexOf("lock", StringComparison.OrdinalIgnoreCase) >= 0 || user.TrangThai.IndexOf("kha", StringComparison.OrdinalIgnoreCase) >= 0 || user.TrangThai.IndexOf("khã", StringComparison.OrdinalIgnoreCase) >= 0)))
             {
                 ViewBag.ThongBao = "Tài khoản của bạn đã bị khóa! Vui lòng liên hệ ban quản trị.";
                 return View();

@@ -58,16 +58,22 @@
                                     <span class="small text-muted ml-2">(@dsBai.Count bài học)</span>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                    <button type="button" class="btn btn-outline-success btn-sm py-0 px-2 mr-2 font-weight-bold" 
-                                            onclick="openThemBaiModal(@chuong.IDChuong, '@Html.Raw(HttpUtility.JavaScriptStringEncode(chuong.TenChuong))')">
+                                    <button type="button" class="btn btn-outline-success btn-sm py-0 px-2 mr-1 font-weight-bold" 
+                                            onclick="openThemBaiModal(@chuong.IDChuong, '@Html.Raw(HttpUtility.JavaScriptStringEncode(chuong.TenChuong))')"
+                                            title="Thêm bài học vào chương">
                                         <i class="fas fa-plus-circle fa-sm mr-1"></i> Thêm bài
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm py-0 px-2 mr-1"
+                                            onclick="openSuaChuongModal(@chuong.IDChuong, '@Html.Raw(HttpUtility.JavaScriptStringEncode(chuong.TenChuong))', '@Html.Raw(HttpUtility.JavaScriptStringEncode(chuong.MoTa ?? ""))', @(chuong.ThuTu ?? idxChuong))"
+                                            title="Chỉnh sửa chương học">
+                                        <i class="fas fa-edit fa-sm"></i>
                                     </button>
                                     @using (Html.BeginForm("XoaChuong", "GiangVienKhoaHoc", FormMethod.Post, new { @class = "d-inline" }))
                                     {
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="idChuong" value="@chuong.IDChuong" />
                                         <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2" 
-                                                onclick="return confirm('Bạn có chắc muốn xóa chương này và tất cả các bài học bên trong?');"
+                                                onclick="return confirm('Bạn có chắc muốn xóa chương này? (Lưu ý: Không thể xóa nếu đã có học viên học bài trong chương)');"
                                                 title="Xóa chương">
                                             <i class="fas fa-trash-alt fa-sm"></i>
                                         </button>
@@ -93,23 +99,28 @@
                                                         <i class="far fa-clock mr-1"></i> @(bai.ThoiLuong ?? 10) phút
                                                         @if (!string.IsNullOrEmpty(bai.VideoUrl))
                                                         {
-                                                            <span class="ml-2 text-info"><i class="fas fa-video mr-1"></i> Có Video</span>
+                                                            <span class="ml-2 text-info"><i class="fas fa-video mr-1"></i> Video</span>
                                                         }
                                                         @if (!string.IsNullOrEmpty(bai.TaiLieuUrl))
                                                         {
-                                                            <span class="ml-2 text-warning"><i class="fas fa-paperclip mr-1"></i> Có Tài liệu</span>
+                                                            <span class="ml-2 text-warning"><i class="fas fa-paperclip mr-1"></i> Tài liệu</span>
                                                         }
                                                     </div>
                                                 </div>
-                                                <div>
+                                                <div class="d-flex align-items-center">
+                                                    <button type="button" class="btn btn-light btn-sm text-primary mr-1"
+                                                            onclick="openSuaBaiModal(@bai.IDBaiHoc, '@Html.Raw(HttpUtility.JavaScriptStringEncode(bai.TenBaiHoc))', '@Html.Raw(HttpUtility.JavaScriptStringEncode(bai.VideoUrl ?? ""))', '@Html.Raw(HttpUtility.JavaScriptStringEncode(bai.TaiLieuUrl ?? ""))', '@Html.Raw(HttpUtility.JavaScriptStringEncode(bai.MoTa ?? ""))', '@Html.Raw(HttpUtility.JavaScriptStringEncode(bai.NoiDung ?? ""))', @(bai.ThoiLuong ?? 10), @(bai.ChoXemThu == true ? "true" : "false"), @(bai.ThuTu ?? idxBai))"
+                                                            title="Chỉnh sửa bài học">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
                                                     @using (Html.BeginForm("XoaBaiHoc", "GiangVienKhoaHoc", FormMethod.Post, new { @class = "d-inline" }))
                                                     {
                                                         @Html.AntiForgeryToken()
                                                         <input type="hidden" name="idBaiHoc" value="@bai.IDBaiHoc" />
                                                         <button type="submit" class="btn btn-light btn-sm text-danger" 
-                                                                onclick="return confirm('Bạn có chắc muốn xóa bài học này?');"
+                                                                onclick="return confirm('Bạn có chắc muốn xóa bài học này? (Lưu ý: Không thể xóa nếu đã có học viên học)');"
                                                                 title="Xóa bài học">
-                                                            <i class="fas fa-times"></i>
+                                                            <i class="fas fa-trash-alt"></i>
                                                         </button>
                                                     }
                                                 </div>
@@ -204,6 +215,45 @@
     </div>
 </div>
 
+<!-- Modal Sửa Chương Học -->
+<div class="modal fade" id="modalSuaChuong" tabindex="-1" role="dialog" aria-labelledby="modalSuaChuongTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            @using (Html.BeginForm("SuaChuong", "GiangVienKhoaHoc", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editChuongId" name="idChuong" value="" />
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold text-info" id="modalSuaChuongTitle">
+                        <i class="fas fa-edit mr-1"></i> Chỉnh Sửa Chương Học
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Tên chương học <span class="text-danger">*</span></label>
+                        <input type="text" id="editChuongTen" name="tenChuong" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Thứ tự hiển thị</label>
+                        <input type="number" id="editChuongThuTu" name="thuTu" class="form-control" min="1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Mô tả chương</label>
+                        <textarea id="editChuongMoTa" name="moTa" rows="2" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-info font-weight-bold">Cập Nhật Chương</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
 <!-- Modal Thêm Bài Học -->
 <div class="modal fade" id="modalThemBaiHoc" tabindex="-1" role="dialog" aria-labelledby="modalThemBaiTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -263,10 +313,93 @@
     </div>
 </div>
 
+<!-- Modal Sửa Bài Học -->
+<div class="modal fade" id="modalSuaBaiHoc" tabindex="-1" role="dialog" aria-labelledby="modalSuaBaiTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            @using (Html.BeginForm("SuaBaiHoc", "GiangVienKhoaHoc", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editBaiId" name="idBaiHoc" value="" />
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold text-info" id="modalSuaBaiTitle">
+                        <i class="fas fa-edit mr-1"></i> Chỉnh Sửa Bài Học
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-8">
+                            <label class="font-weight-bold">Tên bài học <span class="text-danger">*</span></label>
+                            <input type="text" id="editBaiTen" name="tenBaiHoc" class="form-control" required />
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label class="font-weight-bold">Thời lượng (p)</label>
+                            <input type="number" id="editBaiThoiLuong" name="thoiLuong" class="form-control" min="0" />
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label class="font-weight-bold">Thứ tự</label>
+                            <input type="number" id="editBaiThuTu" name="thuTu" class="form-control" min="1" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">URL Video bài giảng</label>
+                        <input type="text" id="editBaiVideo" name="videoUrl" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">URL Tài liệu học tập</label>
+                        <input type="text" id="editBaiTaiLieu" name="taiLieuUrl" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Mô tả bài học</label>
+                        <textarea id="editBaiMoTa" name="moTa" rows="3" class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-group form-check">
+                        <input type="checkbox" name="choXemThu" value="true" class="form-check-input" id="editCheckChoXemThu" />
+                        <label class="form-check-label font-weight-bold text-success" for="editCheckChoXemThu">
+                            <i class="fas fa-check mr-1"></i> Cho phép học thử miễn phí
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-info font-weight-bold">Cập Nhật Bài Học</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
 <script>
     function openThemBaiModal(idChuong, tenChuong) {
         document.getElementById('modalIdChuong').value = idChuong;
         document.getElementById('modalTenChuongText').innerText = tenChuong;
         $('#modalThemBaiHoc').modal('show');
+    }
+
+    function openSuaChuongModal(idChuong, tenChuong, moTa, thuTu) {
+        document.getElementById('editChuongId').value = idChuong;
+        document.getElementById('editChuongTen').value = tenChuong;
+        document.getElementById('editChuongMoTa').value = moTa;
+        document.getElementById('editChuongThuTu').value = thuTu;
+        $('#modalSuaChuong').modal('show');
+    }
+
+    function openSuaBaiModal(idBaiHoc, tenBaiHoc, videoUrl, taiLieuUrl, moTa, noiDung, thoiLuong, choXemThu, thuTu) {
+        document.getElementById('editBaiId').value = idBaiHoc;
+        document.getElementById('editBaiTen').value = tenBaiHoc;
+        document.getElementById('editBaiVideo').value = videoUrl;
+        document.getElementById('editBaiTaiLieu').value = taiLieuUrl;
+        document.getElementById('editBaiMoTa').value = moTa;
+        document.getElementById('editBaiThoiLuong').value = thoiLuong;
+        document.getElementById('editBaiThuTu').value = thuTu;
+        document.getElementById('editCheckChoXemThu').checked = (choXemThu === true);
+        $('#modalSuaBaiHoc').modal('show');
     }
 </script>

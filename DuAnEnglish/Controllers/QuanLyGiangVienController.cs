@@ -133,6 +133,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // POST: Khóa / Mở khóa giảng viên
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult KhoaMoTaiKhoan(int id)
         {
             var gv = db.GiangViens.Include(g => g.TaiKhoan).FirstOrDefault(g => g.IDGiangVien == id);
@@ -158,6 +160,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // POST: Xóa giảng viên
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
             var gv = db.GiangViens.Include(g => g.KhoaHocs).Include(g => g.TaiKhoan).FirstOrDefault(g => g.IDGiangVien == id);
