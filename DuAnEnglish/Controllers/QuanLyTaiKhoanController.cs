@@ -74,7 +74,7 @@ namespace DuAnEnglish.Controllers
             var tk = new TaiKhoan
             {
                 TenDangNhap = TenDangNhap,
-                MatKhau = MatKhau,
+                MatKhau = PasswordHelper.HashPassword(MatKhau),
                 LoaiTK = LoaiTK,
                 Email = Email,
                 SDT = SDT,

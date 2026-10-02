@@ -23,6 +23,7 @@ namespace DuAnEnglish.Controllers
                           .Include(k => k.DanhMucKhoaHoc)
                           .Include(k => k.GiangVien)
                           .Include(k => k.DangKyKhoaHocs)
+                          .Include(k => k.ChuongHocs.Select(c => c.BaiHocs))
                           .AsQueryable();
 
             if (!string.IsNullOrEmpty(danhmuc) && danhmuc != "all")
@@ -246,6 +247,85 @@ namespace DuAnEnglish.Controllers
             db.SaveChanges();
             TempData["ThongBao"] = "Xóa khóa học thành công!";
             return RedirectToAction("QuanLyKhoaHoc");
+        }
+
+        // GET: QuanLyKhoaHoc/NoiDungKhoaHoc/MVC2026 (Quản trị & duyệt nội dung bài học)
+        public ActionResult NoiDungKhoaHoc(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            var kh = db.KhoaHocs
+                       .Include(k => k.GiangVien)
+                       .Include(k => k.DanhMucKhoaHoc)
+                       .Include(k => k.ChuongHocs.Select(c => c.BaiHocs))
+                       .FirstOrDefault(k => k.IDKhoaHoc == id);
+
+            if (kh == null) return HttpNotFound();
+
+            if (TempData["ThongBao"] != null)
+            {
+                ViewBag.ThongBao = TempData["ThongBao"];
+            }
+
+            return View(kh);
+        }
+
+        // POST: Duyệt cho phép hoặc khóa học thử của bài học
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ToggleXemThu(int idBaiHoc)
+        {
+            var bai = db.BaiHocs.Include(b => b.ChuongHoc).FirstOrDefault(b => b.IDBaiHoc == idBaiHoc);
+            if (bai == null) return HttpNotFound();
+
+            bai.ChoXemThu = !(bai.ChoXemThu == true);
+            db.SaveChanges();
+            TempData["ThongBao"] = string.Format("Đã cập nhật trạng thái học thử cho bài '{0}' thành '{1}'!", bai.TenBaiHoc, bai.ChoXemThu == true ? "Cho phép học thử" : "Khóa học thử");
+            return RedirectToAction("NoiDungKhoaHoc", new { id = bai.ChuongHoc.IDKhoaHoc });
+        }
+
+        // POST: Xóa bài học vi phạm hoặc trùng lặp
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult XoaBaiHoc(int idBaiHoc)
+        {
+            var bai = db.BaiHocs.Include(b => b.ChuongHoc).FirstOrDefault(b => b.IDBaiHoc == idBaiHoc);
+            if (bai == null) return HttpNotFound();
+
+            string idKhoaHoc = bai.ChuongHoc.IDKhoaHoc;
+            var tienDos = db.TienDoHocs.Where(t => t.IDBaiHoc == idBaiHoc).ToList();
+            if (tienDos.Any())
+            {
+                db.TienDoHocs.RemoveRange(tienDos);
+            }
+            db.BaiHocs.Remove(bai);
+            db.SaveChanges();
+            TempData["ThongBao"] = "Đã xóa bài học thành công khỏi khóa học!";
+            return RedirectToAction("NoiDungKhoaHoc", new { id = idKhoaHoc });
+        }
+
+        // POST: Xóa chương học
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult XoaChuongHoc(int idChuong)
+        {
+            var chuong = db.ChuongHocs.Include(c => c.BaiHocs).FirstOrDefault(c => c.IDChuong == idChuong);
+            if (chuong == null) return HttpNotFound();
+
+            string idKhoaHoc = chuong.IDKhoaHoc;
+            if (chuong.BaiHocs != null && chuong.BaiHocs.Any())
+            {
+                foreach (var b in chuong.BaiHocs.ToList())
+                {
+                    var tienDos = db.TienDoHocs.Where(t => t.IDBaiHoc == b.IDBaiHoc).ToList();
+                    if (tienDos.Any()) db.TienDoHocs.RemoveRange(tienDos);
+                    db.BaiHocs.Remove(b);
+                }
+            }
+            db.ChuongHocs.Remove(chuong);
+            db.SaveChanges();
+            TempData["ThongBao"] = "Đã xóa chương học và toàn bộ bài học thuộc chương!";
+            return RedirectToAction("NoiDungKhoaHoc", new { id = idKhoaHoc });
         }
 
         protected override void Dispose(bool disposing)

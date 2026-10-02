@@ -46,12 +46,16 @@
                 </div>
 
                 <div class="mt-3">
-                    <a href="@Url.Action("KhoaMoTaiKhoan", new { id = Model.IDHocVien })" 
-                       class="btn @(tt == "Khóa" ? "btn-success" : "btn-warning") btn-block shadow-sm"
-                       onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?');">
-                        <i class="fas @(tt == "Khóa" ? "fa-unlock" : "fa-lock") mr-1"></i>
-                        @(tt == "Khóa" ? "Mở Khóa Tài Khoản" : "Khóa Tài Khoản")
-                    </a>
+                    @using (Html.BeginForm("KhoaMoTaiKhoan", "QuanLyHocVien", new { id = Model.IDHocVien }, FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" 
+                                class="btn @(tt == "Khóa" ? "btn-success" : "btn-warning") btn-block shadow-sm font-weight-bold"
+                                onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản học viên này?');">
+                            <i class="fas @(tt == "Khóa" ? "fa-unlock" : "fa-lock") mr-1"></i>
+                            @(tt == "Khóa" ? "Mở Khóa Tài Khoản" : "Khóa Tài Khoản")
+                        </button>
+                    }
                 </div>
             </div>
         </div>
@@ -62,7 +66,7 @@
         <div class="card shadow mb-4">
             <div class="card-header py-3 bg-white">
                 <h6 class="m-0 font-weight-bold text-primary">
-                    <i class="fas fa-book mr-1"></i> Các Khóa Học Đã Đăng Ký (@(Model.DangKyKhoaHocs != null ? Model.DangKyKhoaHocs.Count : 0))
+                    <i class="fas fa-book-reader mr-1"></i> Khóa Học Đang Theo Học (@(Model.DangKyKhoaHocs != null ? Model.DangKyKhoaHocs.Count : 0))
                 </h6>
             </div>
             <div class="card-body p-0">
@@ -70,26 +74,71 @@
                     <table class="table table-bordered table-hover mb-0" width="100%" cellspacing="0">
                         <thead class="thead-light">
                             <tr>
-                                <th>Mã KH</th>
-                                <th>Tên Khóa Học</th>
-                                <th>Ngày Đăng Ký</th>
-                                <th>Trạng Thái Học</th>
+                                <th>Khóa Học</th>
+                                <th style="width: 110px;" class="text-center">Ngày ĐK</th>
+                                <th style="width: 150px;">Tiến Độ Học</th>
+                                <th style="width: 150px;">Điểm & Đánh Giá</th>
+                                <th style="width: 130px;" class="text-center">Trạng Thái</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (Model.DangKyKhoaHocs != null && Model.DangKyKhoaHocs.Count > 0)
                             {
+                                var tienDoDict = ViewBag.TienDoDict as System.Collections.Generic.Dictionary<int, Tuple<int, int, int>>;
                                 foreach (var dk in Model.DangKyKhoaHocs)
                                 {
+                                    int soBai = 0;
+                                    int tongBai = 0;
+                                    int phanTram = 0;
+                                    if (tienDoDict != null && tienDoDict.ContainsKey(dk.IDDangKy))
+                                    {
+                                        soBai = tienDoDict[dk.IDDangKy].Item1;
+                                        tongBai = tienDoDict[dk.IDDangKy].Item2;
+                                        phanTram = tienDoDict[dk.IDDangKy].Item3;
+                                    }
+
                                     <tr>
-                                        <td class="font-weight-bold">@dk.IDKhoaHoc</td>
                                         <td>
-                                            <span class="font-weight-bold text-primary">
+                                            <div class="font-weight-bold text-primary">
                                                 @(dk.KhoaHoc != null ? dk.KhoaHoc.TenKhoaHoc : dk.IDKhoaHoc)
-                                            </span>
+                                            </div>
+                                            <div class="small text-muted">
+                                                Mã KH: <strong>@dk.IDKhoaHoc</strong>
+                                            </div>
                                         </td>
-                                        <td>@(dk.NgayDangKy.HasValue ? dk.NgayDangKy.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")</td>
+                                        <td class="text-center small text-muted">
+                                            @(dk.NgayDangKy.HasValue ? dk.NgayDangKy.Value.ToString("dd/MM/yyyy") : "N/A")
+                                        </td>
                                         <td>
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>@soBai/@tongBai bài</span>
+                                                <span class="font-weight-bold @(phanTram == 100 ? "text-success" : "text-primary")">@phanTram%</span>
+                                            </div>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar @(phanTram == 100 ? "bg-success" : "bg-primary")" role="progressbar" style="width: @phanTram%" aria-valuenow="@phanTram" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (dk.DiemKhoaHoc != null && dk.DiemKhoaHoc.Diem.HasValue)
+                                            {
+                                                <div>
+                                                    <span class="badge badge-success font-weight-bold">
+                                                        <i class="fas fa-star mr-1"></i>@dk.DiemKhoaHoc.Diem.Value.ToString("0.0") / 10
+                                                    </span>
+                                                </div>
+                                                if (!string.IsNullOrEmpty(dk.DiemKhoaHoc.NhanXet))
+                                                {
+                                                    <div class="small text-muted mt-1 font-italic text-truncate" style="max-width: 140px;" title="@dk.DiemKhoaHoc.NhanXet">
+                                                        "@dk.DiemKhoaHoc.NhanXet"
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-light border text-muted">Chưa chấm</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
                                             @if (dk.TrangThai == "Đã hoàn thành")
                                             {
                                                 <span class="badge badge-success">Đã hoàn thành</span>
@@ -109,7 +158,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">Học viên này chưa đăng ký khóa học nào.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Học viên này chưa đăng ký khóa học nào.</td>
                                 </tr>
                             }
                         </tbody>

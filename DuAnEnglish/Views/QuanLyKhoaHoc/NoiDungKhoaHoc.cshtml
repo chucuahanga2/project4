@@ -1,0 +1,306 @@
+@model DuAnEnglish.Models.KhoaHoc
+
+@{
+    ViewBag.Title = "Kiểm Duyệt & Quản Lý Nội Dung - " + Model.TenKhoaHoc;
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    int tongChuong = Model.ChuongHocs != null ? Model.ChuongHocs.Count : 0;
+    int tongBai = Model.ChuongHocs != null ? Model.ChuongHocs.Sum(c => c.BaiHocs != null ? c.BaiHocs.Count : 0) : 0;
+    int tongPhut = Model.ChuongHocs != null ? Model.ChuongHocs.Sum(c => c.BaiHocs != null ? c.BaiHocs.Sum(b => b.ThoiLuong ?? 0) : 0) : 0;
+    int soBaiHocThu = Model.ChuongHocs != null ? Model.ChuongHocs.Sum(c => c.BaiHocs != null ? c.BaiHocs.Count(b => b.ChoXemThu == true) : 0) : 0;
+}
+
+<div class="container-fluid">
+    <!-- Breadcrumb & Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 mb-1">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Admin")">Trang Chủ</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc")">Quản Lý Khóa Học</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Nội Dung Khóa Học</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
+                <i class="fas fa-layer-group text-primary mr-2"></i>Nội Dung Giáo Trình: @Model.TenKhoaHoc
+            </h1>
+        </div>
+        <div>
+            <a href="@Url.Action("Details", "QuanLyKhoaHoc", new { id = Model.IDKhoaHoc })" class="btn btn-outline-primary btn-sm shadow-sm mr-2">
+                <i class="fas fa-edit mr-1"></i> Cấu Hình Khóa Học
+            </a>
+            <a href="@Url.Action("QuanLyKhoaHoc", "QuanLyKhoaHoc")" class="btn btn-secondary btn-sm shadow-sm">
+                <i class="fas fa-arrow-left mr-1"></i> Trở Về Danh Sách
+            </a>
+        </div>
+    </div>
+
+    @if (ViewBag.ThongBao != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-check-circle mr-1"></i> @ViewBag.ThongBao
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Stat Cards Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng Số Chương</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@tongChuong chương</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-folder fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tổng Số Bài Học</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@tongBai bài</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-play-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tổng Thời Lượng</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@tongPhut phút (~@(Math.Round((double)tongPhut / 60, 1))h)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow-sm h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Bài Mở Học Thử</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@soBaiHocThu / @tongBai bài</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-gift fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Meta Summary -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body bg-light rounded py-3">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Giảng viên phụ trách</small>
+                    <span class="font-weight-bold text-dark">
+                        <i class="fas fa-chalkboard-teacher text-info mr-1"></i>
+                        @(Model.GiangVien != null ? Model.GiangVien.TenGV : "Chưa phân công")
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Danh mục</small>
+                    <span class="font-weight-bold text-dark">
+                        <i class="fas fa-tag text-warning mr-1"></i>
+                        @(Model.DanhMucKhoaHoc != null ? Model.DanhMucKhoaHoc.TenDanhMuc : (Model.DanhMuc ?? "N/A"))
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Học phí</small>
+                    <span class="font-weight-bold @(Model.HocPhi == 0 || Model.HocPhi == null ? "text-success" : "text-danger")">
+                        @(Model.HocPhi == 0 || Model.HocPhi == null ? "Miễn phí" : string.Format("{0:N0} đ", Model.HocPhi))
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Trạng thái phát hành</small>
+                    @if (Model.TrangThai == "Hiển thị" || string.IsNullOrEmpty(Model.TrangThai))
+                    {
+                        <span class="badge badge-success px-2 py-1">Hiển thị công khai</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary px-2 py-1">Đang ẩn</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapters & Lessons Tree -->
+    @if (Model.ChuongHocs != null && Model.ChuongHocs.Any())
+    {
+        var dsChuong = Model.ChuongHocs.OrderBy(c => c.ThuTu).ToList();
+        int sttChuong = 1;
+
+        foreach (var chuong in dsChuong)
+        {
+            var dsBai = chuong.BaiHocs != null ? chuong.BaiHocs.OrderBy(b => b.ThuTu).ToList() : new List<DuAnEnglish.Models.BaiHoc>();
+            <div class="card shadow-sm mb-4 border-left-secondary">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge badge-primary mr-2 px-2 py-1">Chương @sttChuong</span>
+                        <span class="h6 font-weight-bold text-dark mb-0">@chuong.TenChuong</span>
+                        @if (!string.IsNullOrEmpty(chuong.MoTa))
+                        {
+                            <span class="text-muted small ml-2 font-italic">(@chuong.MoTa)</span>
+                        }
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge badge-light border text-muted mr-3">@dsBai.Count bài học</span>
+                        @using (Html.BeginForm("XoaChuongHoc", "QuanLyKhoaHoc", new { idChuong = chuong.IDChuong }, FormMethod.Post, new { @class = "d-inline" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('Bạn có chắc muốn xóa chương này cùng tất cả @dsBai.Count bài học bên trong?');"
+                                    title="Xóa chương này">
+                                <i class="fas fa-trash-alt mr-1"></i> Xóa Chương
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    @if (dsBai.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width: 60px;" class="text-center">#</th>
+                                        <th>Tên Bài Học</th>
+                                        <th style="width: 120px;" class="text-center">Thời Lượng</th>
+                                        <th style="width: 140px;" class="text-center">Video / Tài Liệu</th>
+                                        <th style="width: 160px;" class="text-center">Quyền Học Thử</th>
+                                        <th style="width: 150px;" class="text-center">Kiểm Duyệt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ int sttBai = 1; }
+                                    @foreach (var bai in dsBai)
+                                    {
+                                        <tr>
+                                            <td class="text-center font-weight-bold text-muted">@sttBai</td>
+                                            <td>
+                                                <div class="font-weight-bold text-dark">
+                                                    <i class="fas fa-play-circle text-primary mr-1"></i> @bai.TenBaiHoc
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(bai.MoTa))
+                                                {
+                                                    <div class="small text-muted">@bai.MoTa</div>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge badge-light border font-weight-normal">
+                                                    <i class="far fa-clock mr-1"></i> @(bai.ThoiLuong ?? 0) phút
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if (!string.IsNullOrEmpty(bai.VideoUrl))
+                                                {
+                                                    <a href="@bai.VideoUrl" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2 mr-1" title="Mở link video">
+                                                        <i class="fab fa-youtube"></i> Video
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="small text-muted">Chưa có video</span>
+                                                }
+
+                                                @if (!string.IsNullOrEmpty(bai.TaiLieuUrl))
+                                                {
+                                                    <a href="@bai.TaiLieuUrl" target="_blank" class="badge badge-info ml-1" title="@bai.TaiLieuUrl">
+                                                        <i class="fas fa-paperclip"></i>
+                                                    </a>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @if (bai.ChoXemThu == true)
+                                                {
+                                                    <span class="badge badge-success px-2 py-1">
+                                                        <i class="fas fa-unlock mr-1"></i> Cho Học Thử
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary px-2 py-1">
+                                                        <i class="fas fa-lock mr-1"></i> Khóa Học Viên
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    @using (Html.BeginForm("ToggleXemThu", "QuanLyKhoaHoc", new { idBaiHoc = bai.IDBaiHoc }, FormMethod.Post, new { @class = "d-inline mr-1" }))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" 
+                                                                class="btn btn-sm @(bai.ChoXemThu == true ? "btn-warning" : "btn-success")"
+                                                                title="@(bai.ChoXemThu == true ? "Khóa học thử bài này" : "Cho phép học thử bài này")">
+                                                            <i class="fas @(bai.ChoXemThu == true ? "fa-lock" : "fa-unlock")"></i>
+                                                        </button>
+                                                    }
+
+                                                    @using (Html.BeginForm("XoaBaiHoc", "QuanLyKhoaHoc", new { idBaiHoc = bai.IDBaiHoc }, FormMethod.Post, new { @class = "d-inline" }))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                                onclick="return confirm('Bạn có chắc muốn xóa bài học này? Mọi tiến độ học tập liên quan cũng sẽ bị xóa.');"
+                                                                title="Xóa bài học">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        sttBai++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="py-4 text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2 text-gray-300 d-block"></i>
+                            Chương này chưa có bài học nào.
+                        </div>
+                    }
+                </div>
+            </div>
+            sttChuong++;
+        }
+    }
+    else
+    {
+        <div class="card shadow-sm py-5 text-center">
+            <div class="text-muted">
+                <i class="fas fa-book-open fa-3x mb-3 text-gray-300 d-block"></i>
+                <h5>Khóa học này chưa có nội dung giáo trình</h5>
+                <p class="small text-muted mb-0">Giảng viên phụ trách chưa biên soạn chương và bài học cho khóa học này.</p>
+            </div>
+        </div>
+    }
+</div>

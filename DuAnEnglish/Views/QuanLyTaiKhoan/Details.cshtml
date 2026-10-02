@@ -76,11 +76,11 @@
                         <div>
                             @if (Model.TenDangNhap.ToLower() != "admin")
                             {
-                                <a href="@Url.Action("ResetMatKhau", new { id = Model.TenDangNhap })" 
+                                <button type="submit" form="formResetMatKhau"
                                    class="btn btn-warning shadow-sm font-weight-bold"
                                    onclick="return confirm('Bạn có chắc muốn đặt lại mật khẩu về 123456 cho @Model.TenDangNhap?');">
                                     <i class="fas fa-key mr-1"></i> Đặt lại mật khẩu (123456)
-                                </a>
+                                </button>
                             }
                         </div>
                         <div>
@@ -90,6 +90,13 @@
                             </button>
                         </div>
                     </div>
+                }
+                @if (Model.TenDangNhap.ToLower() != "admin")
+                {
+                    using (Html.BeginForm("ResetMatKhau", "QuanLyTaiKhoan", new { id = Model.TenDangNhap }, FormMethod.Post, new { id = "formResetMatKhau", style = "display:none;" }))
+                    {
+                        @Html.AntiForgeryToken()
+                    }
                 }
             </div>
         </div>

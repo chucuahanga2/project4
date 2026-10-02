@@ -46,9 +46,26 @@ namespace DuAnEnglish.Controllers
             var hocVien = db.HocViens
                             .Include(h => h.TaiKhoan)
                             .Include(h => h.DangKyKhoaHocs.Select(d => d.KhoaHoc))
+                            .Include(h => h.DangKyKhoaHocs.Select(d => d.DiemKhoaHocs))
                             .FirstOrDefault(h => h.IDHocVien == id);
 
             if (hocVien == null) return HttpNotFound();
+
+            // Tính toán tiến độ học tập cho từng khóa học đã đăng ký
+            var tienDoDict = new System.Collections.Generic.Dictionary<int, Tuple<int, int, int>>();
+            if (hocVien.DangKyKhoaHocs != null)
+            {
+                foreach (var dk in hocVien.DangKyKhoaHocs)
+                {
+                    int tongSoBai = db.BaiHocs.Count(b => b.ChuongHoc.IDKhoaHoc == dk.IDKhoaHoc);
+                    int soBaiDaHoc = db.TienDoHocs.Count(t => t.IDHocVien == hocVien.IDHocVien && t.DaHoanThanh == true && t.BaiHoc.ChuongHoc.IDKhoaHoc == dk.IDKhoaHoc);
+                    int phanTram = tongSoBai > 0 ? (int)Math.Round((double)soBaiDaHoc * 100 / tongSoBai) : 0;
+                    if (phanTram > 100) phanTram = 100;
+
+                    tienDoDict[dk.IDDangKy] = Tuple.Create(soBaiDaHoc, tongSoBai, phanTram);
+                }
+            }
+            ViewBag.TienDoDict = tienDoDict;
 
             return View(hocVien);
         }

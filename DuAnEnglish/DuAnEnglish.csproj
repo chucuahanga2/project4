@@ -348,6 +348,7 @@
     <Content Include="Views\QuanLyDiemSo\QuanLyDiemSo.cshtml" />
     <Content Include="Views\QuanLyKhoaHoc\Create.cshtml" />
     <Content Include="Views\QuanLyKhoaHoc\Details.cshtml" />
+    <Content Include="Views\QuanLyKhoaHoc\NoiDungKhoaHoc.cshtml" />
     <Content Include="Views\QuanLyChatBot\ChiTiet.cshtml" />
     <Content Include="Views\QuanLyChatBot\QuanLyChatBot.cshtml" />
     <Content Include="Views\QuanLyChatBot\Them.cshtml" />

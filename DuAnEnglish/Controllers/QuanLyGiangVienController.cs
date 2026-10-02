@@ -66,11 +66,11 @@ namespace DuAnEnglish.Controllers
                 return View(gv);
             }
 
-            // Tạo tài khoản giảng viên
+            // Tạo tài khoản giảng viên được mã hóa mật khẩu chuẩn PBKDF2
             var tk = new TaiKhoan
             {
                 TenDangNhap = TenDangNhap,
-                MatKhau = MatKhau,
+                MatKhau = PasswordHelper.HashPassword(MatKhau),
                 Email = Email,
                 SDT = SDT,
                 LoaiTK = "giangvien",
