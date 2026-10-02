@@ -1,4 +1,4 @@
-@{
+﻿@{
     string currentCtrl = ViewContext.RouteData.Values["controller"] != null ? ViewContext.RouteData.Values["controller"].ToString() : "";
     string currentAct = ViewContext.RouteData.Values["action"] != null ? ViewContext.RouteData.Values["action"].ToString() : "";
     string adminUser = Session["User"] != null ? Session["User"].ToString() : "Admin";
@@ -70,8 +70,10 @@
                 <div class="sidebar-brand-text mx-3">EDUMASTER <sup>ADMIN</sup></div>
             </a>
 
-            string userRole = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "admin";
-            if (userRole == "giangvien")
+            @{
+                string userRole = Session["Role"] != null ? Session["Role"].ToString().ToLower() : "admin";
+            }
+            @if (userRole == "giangvien")
             {
                 <!-- Divider -->
                 <hr class="sidebar-divider my-0">

@@ -22,8 +22,6 @@ namespace DuAnEnglish.Controllers
             var query = db.KhoaHocs
                           .Include(k => k.DanhMucKhoaHoc)
                           .Include(k => k.GiangVien)
-                          .Include(k => k.DangKyKhoaHocs)
-                          .Include(k => k.ChuongHocs.Select(c => c.BaiHocs))
                           .AsQueryable();
 
             if (!string.IsNullOrEmpty(danhmuc) && danhmuc != "all")
