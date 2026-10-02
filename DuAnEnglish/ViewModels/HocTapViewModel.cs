@@ -23,6 +23,9 @@ namespace DuAnEnglish.ViewModels
         }
         public int? IDBaiHocTiepTheo { get; set; }
         public string TenBaiHocTiepTheo { get; set; }
+        public decimal? Diem { get; set; }
+        public string NhanXet { get; set; }
+        public DateTime? NgayCapNhatDiem { get; set; }
     }
 
     public class VaoHocViewModel

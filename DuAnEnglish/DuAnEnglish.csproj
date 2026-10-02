@@ -275,6 +275,7 @@
     <Compile Include="Models\BaiHoc.cs" />
     <Compile Include="Models\DangKyKhoaHoc.cs" />
     <Compile Include="Models\TienDoHoc.cs" />
+    <Compile Include="Models\DiemKhoaHoc.cs" />
     <Compile Include="Models\ThanhToan.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -353,6 +354,7 @@
     <Content Include="Views\QuanLyThanhToan\Chitiet.cshtml" />
     <Content Include="Views\QuanLyThanhToan\QuanLyThanhToan.cshtml" />
     <Content Include="Views\QuanLyDiemSo\NhapDiemToeicView.cshtml" />
+    <Content Include="Views\QuanLyDiemSo\NhapDiem.cshtml" />
     <Content Include="Views\TuVan\Index.cshtml" />
     <Content Include="Views\TuVan\TuVan.cshtml" />
     <Content Include="Views\GiangVienKhoaHoc\ChiTietNoiDung.cshtml" />
@@ -363,6 +365,7 @@
     <Content Include="Views\HocTap\KhoaHocCuaToi.cshtml" />
     <Content Include="Views\HocTap\ThongTinCaNhan.cshtml" />
     <Content Include="Views\HocTap\VaoHoc.cshtml" />
+    <Content Include="Views\HocTap\XemDiem.cshtml" />
     <Content Include="Views\QuanLyDanhMuc\Create.cshtml" />
     <Content Include="Views\QuanLyDanhMuc\Edit.cshtml" />
     <Content Include="Views\QuanLyDanhMuc\Index.cshtml" />

@@ -9,6 +9,7 @@ namespace DuAnEnglish.Models
         public DangKyKhoaHoc()
         {
             this.ThanhToans = new HashSet<ThanhToan>();
+            this.DiemKhoaHocs = new HashSet<DiemKhoaHoc>();
         }
 
         public int IDDangKy { get; set; }
@@ -22,5 +23,18 @@ namespace DuAnEnglish.Models
         public virtual KhoaHoc KhoaHoc { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ThanhToan> ThanhToans { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<DiemKhoaHoc> DiemKhoaHocs { get; set; }
+        public virtual DiemKhoaHoc DiemKhoaHoc
+        {
+            get
+            {
+                if (DiemKhoaHocs != null && DiemKhoaHocs.Count > 0)
+                {
+                    return System.Linq.Enumerable.FirstOrDefault(DiemKhoaHocs);
+                }
+                return null;
+            }
+        }
     }
 }

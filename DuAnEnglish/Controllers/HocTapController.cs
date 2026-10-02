@@ -33,6 +33,7 @@ namespace DuAnEnglish.Controllers
             var dsDangKy = db.DangKyKhoaHocs
                              .Include(d => d.KhoaHoc)
                              .Include(d => d.KhoaHoc.GiangVien)
+                             .Include(d => d.DiemKhoaHocs)
                              .Where(d => d.IDHocVien == hocVien.IDHocVien && 
                                         (d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành"))
                              .OrderByDescending(d => d.NgayDangKy)
@@ -82,6 +83,8 @@ namespace DuAnEnglish.Controllers
                     }
                 }
 
+                var diemItem = dk.DiemKhoaHocs != null ? dk.DiemKhoaHocs.FirstOrDefault() : null;
+
                 ketQua.Add(new KhoaHocCuaToiItem
                 {
                     IDKhoaHoc = kh.IDKhoaHoc,
@@ -92,7 +95,10 @@ namespace DuAnEnglish.Controllers
                     TongSoBai = tongSoBai,
                     SoBaiDaHoanThanh = soBaiHoanThanh,
                     IDBaiHocTiepTheo = nextBaiId,
-                    TenBaiHocTiepTheo = nextBaiName
+                    TenBaiHocTiepTheo = nextBaiName,
+                    Diem = diemItem != null ? diemItem.Diem : null,
+                    NhanXet = diemItem != null ? diemItem.NhanXet : null,
+                    NgayCapNhatDiem = diemItem != null ? diemItem.NgayCapNhat : null
                 });
             }
 
@@ -478,6 +484,68 @@ namespace DuAnEnglish.Controllers
             }
 
             return RedirectToAction("ThongTinCaNhan");
+        }
+
+        // GET: HocTap/XemDiem
+        public ActionResult XemDiem()
+        {
+            if (Session["User"] == null)
+            {
+                TempData["ThongBaoDangNhap"] = "Vui lòng đăng nhập để xem bảng điểm!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            string tenDangNhap = Session["User"].ToString();
+            var hocVien = db.HocViens.FirstOrDefault(h => h.IDTenDangNhap == tenDangNhap);
+            if (hocVien == null)
+            {
+                TempData["ThongBaoDangNhap"] = "Không tìm thấy hồ sơ học viên!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            var dsDangKy = db.DangKyKhoaHocs
+                             .Include(d => d.KhoaHoc)
+                             .Include(d => d.KhoaHoc.GiangVien)
+                             .Include(d => d.DiemKhoaHocs)
+                             .Where(d => d.IDHocVien == hocVien.IDHocVien &&
+                                        (d.TrangThai == "Đã kích hoạt" || d.TrangThai == "Đã hoàn thành"))
+                             .OrderByDescending(d => d.NgayDangKy)
+                             .ToList();
+
+            var bangDiem = new List<DiemViewModel>();
+
+            foreach (var dk in dsDangKy)
+            {
+                var kh = dk.KhoaHoc;
+                if (kh == null) continue;
+
+                int tongSoBai = db.BaiHocs.Count(b => b.ChuongHoc.IDKhoaHoc == kh.IDKhoaHoc);
+                int soBaiHoanThanh = db.TienDoHocs.Count(t => t.IDHocVien == hocVien.IDHocVien &&
+                                                             t.DaHoanThanh == true &&
+                                                             t.BaiHoc.ChuongHoc.IDKhoaHoc == kh.IDKhoaHoc);
+                int phanTram = tongSoBai > 0 ? (int)Math.Round((double)soBaiHoanThanh / tongSoBai * 100) : 0;
+                var diemItem = dk.DiemKhoaHocs != null ? dk.DiemKhoaHocs.FirstOrDefault() : null;
+
+                bangDiem.Add(new DiemViewModel
+                {
+                    IDDangKy = dk.IDDangKy,
+                    IDHocVien = hocVien.IDHocVien,
+                    TenHocVien = hocVien.TenHV,
+                    TenDangNhap = hocVien.IDTenDangNhap,
+                    IDKhoaHoc = kh.IDKhoaHoc,
+                    TenKhoaHoc = kh.TenKhoaHoc,
+                    TongSoBaiHoc = tongSoBai,
+                    SoBaiDaHoc = soBaiHoanThanh,
+                    TienDoPhanTram = phanTram,
+                    Diem = diemItem != null ? diemItem.Diem : null,
+                    NhanXet = diemItem != null ? diemItem.NhanXet : null,
+                    NgayCapNhat = diemItem != null ? diemItem.NgayCapNhat : null,
+                    TrangThaiDangKy = dk.TrangThai
+                });
+            }
+
+            ViewBag.TenHocVien = hocVien.TenHV;
+            return View(bangDiem);
         }
 
         protected override void Dispose(bool disposing)

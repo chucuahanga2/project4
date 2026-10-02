@@ -335,14 +335,90 @@ try {
 try {
     $resGvDiem = $lecturer.Client.GetAsync("$baseUrl/QuanLyDiemSo/QuanLyDiemSo").Result
     $status = [int]$resGvDiem.StatusCode
-    Report-Result "31. Giang Vien vao duoc QuanLyDiemSo" ($status -eq 200) "Lecturer can access score management (Status 200)"
+    $content = $resGvDiem.Content.ReadAsStringAsync().Result
+    $hasGradeData = ($content -like "*QuanLyDiemSo*" -or $content -like "*MVC2026*" -or $content -like "*ASP.NET*")
+    Report-Result "31. Giang Vien vao duoc QuanLyDiemSo" ($status -eq 200 -and $hasGradeData) "Lecturer can access score management (Status 200 with course table)"
 } catch {
     Report-Result "31. Giang Vien vao duoc QuanLyDiemSo" $false $_.Exception.Message
 }
 
+# 18. Test NhapDiem GET Form
+try {
+    $resNhapDiemGet = $lecturer.Client.GetAsync("$baseUrl/QuanLyDiemSo/NhapDiem?idDangKy=1005").Result
+    $status = [int]$resNhapDiemGet.StatusCode
+    $content = $resNhapDiemGet.Content.ReadAsStringAsync().Result
+    $hasForm = ($content -like "*diem*" -or $content -like "*Diem*") -and ($content -like "*MVC2026*" -or $content -like "*idDangKy*")
+    Report-Result "32. Giang Vien mo Form NhapDiem" ($status -eq 200 -and $hasForm) "Rendered NhapDiem form for enrollment 1005 (Status 200)"
+} catch {
+    Report-Result "32. Giang Vien mo Form NhapDiem" $false $_.Exception.Message
+}
+
+# 19. Test Server-side Validation: Diem > 10 is rejected
+try {
+    $formHtml = $lecturer.Client.GetStringAsync("$baseUrl/QuanLyDiemSo/NhapDiem?idDangKy=1005").Result
+    $token = ""
+    if ($formHtml -match 'name="__RequestVerificationToken"[^>]*value="([^"]+)"') {
+        $token = $matches[1]
+    }
+    $pairs = New-Object "System.Collections.Generic.Dictionary[string,string]"
+    $pairs.Add("__RequestVerificationToken", $token)
+    $pairs.Add("idDangKy", "1005")
+    $pairs.Add("diem", "15.0")
+    $pairs.Add("nhanXet", "Invalid score test")
+    $content = New-Object System.Net.Http.FormUrlEncodedContent($pairs)
+    $resInvalid = $lecturer.Client.PostAsync("$baseUrl/QuanLyDiemSo/NhapDiem", $content).Result
+    $resContent = $resInvalid.Content.ReadAsStringAsync().Result
+    $rejected = [int]$resInvalid.StatusCode -eq 200 -and ($resContent -like "*hợp lệ*" -or $resContent -like "*NhapDiem*")
+    Report-Result "33. Server chan Diem > 10" $rejected "Score > 10 correctly blocked on server-side"
+} catch {
+    Report-Result "33. Server chan Diem > 10" $false $_.Exception.Message
+}
+
+# 20. Test POST NhapDiem: Valid Score 9.2 & Comment Saved
+try {
+    $formHtml = $lecturer.Client.GetStringAsync("$baseUrl/QuanLyDiemSo/NhapDiem?idDangKy=1005").Result
+    $token = ""
+    if ($formHtml -match 'name="__RequestVerificationToken"[^>]*value="([^"]+)"') {
+        $token = $matches[1]
+    }
+    $pairs = New-Object "System.Collections.Generic.Dictionary[string,string]"
+    $pairs.Add("__RequestVerificationToken", $token)
+    $pairs.Add("idDangKy", "1005")
+    $pairs.Add("diem", "9.2")
+    $pairs.Add("nhanXet", "Dat ket qua xuat sac trong do an web ASP.NET MVC")
+    $content = New-Object System.Net.Http.FormUrlEncodedContent($pairs)
+    $resSave = $lecturer.Client.PostAsync("$baseUrl/QuanLyDiemSo/NhapDiem", $content).Result
+    $status = [int]$resSave.StatusCode
+    Report-Result "34. Luu Diem Khoa Hoc thanh cong" ($status -eq 302) "Lecturer saved score 9.2 (Redirected $status)"
+} catch {
+    Report-Result "34. Luu Diem Khoa Hoc thanh cong" $false $_.Exception.Message
+}
+
+# 21. Test Student Views Transcript on /HocTap/XemDiem
+try {
+    $resXemDiem = $student.Client.GetAsync("$baseUrl/HocTap/XemDiem").Result
+    $status = [int]$resXemDiem.StatusCode
+    $content = $resXemDiem.Content.ReadAsStringAsync().Result
+    $hasDiem = ($content -like "*9.2*" -or $content -like "*9,2*") -and ($content -like "*MVC2026*" -or $content -like "*KhoaHoc*")
+    Report-Result "35. Hoc Vien xem Bang Diem (XemDiem)" ($status -eq 200 -and $hasDiem) "Student can view official course transcript with score (Status 200)"
+} catch {
+    Report-Result "35. Hoc Vien xem Bang Diem (XemDiem)" $false $_.Exception.Message
+}
+
+# 22. Test Student Views Score on /HocTap/KhoaHocCuaToi
+try {
+    $resMyCourses = $student.Client.GetAsync("$baseUrl/HocTap/KhoaHocCuaToi").Result
+    $status = [int]$resMyCourses.StatusCode
+    $content = $resMyCourses.Content.ReadAsStringAsync().Result
+    $hasBadge = ($content -like "*9.2*" -or $content -like "*9,2*") -and ($content -like "*MVC2026*" -or $content -like "*KhoaHocCuaToi*" -or $content -like "*cuối khóa*")
+    Report-Result "36. Hoc Vien xem Diem trong KhoaHocCuaToi" ($status -eq 200 -and $hasBadge) "Student course card displays grade badge (Status 200)"
+} catch {
+    Report-Result "36. Hoc Vien xem Diem trong KhoaHocCuaToi" $false $_.Exception.Message
+}
+
 Write-Host "========================================================================" -ForegroundColor Cyan
 if ($allPassed) {
-    Write-Host "ALL 31 END-TO-END TESTS PASSED PERFECTLY! SYSTEM IS 100% OPERATIONAL." -ForegroundColor Green
+    Write-Host "ALL 36 END-TO-END TESTS PASSED PERFECTLY! SYSTEM IS 100% OPERATIONAL." -ForegroundColor Green
 } else {
     Write-Host "SOME TESTS FAILED." -ForegroundColor Red
 }

@@ -36,5 +36,6 @@ namespace DuAnEnglish.Models
         public virtual DbSet<BaiHoc> BaiHocs { get; set; }
         public virtual DbSet<DangKyKhoaHoc> DangKyKhoaHocs { get; set; }
         public virtual DbSet<TienDoHoc> TienDoHocs { get; set; }
+        public virtual DbSet<DiemKhoaHoc> DiemKhoaHocs { get; set; }
     }
 }

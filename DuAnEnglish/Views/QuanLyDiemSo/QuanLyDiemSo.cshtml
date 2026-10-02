@@ -1,104 +1,192 @@
-﻿@model List<DuAnEnglish.ViewModels.DiemViewModel>
-
-@using System.Linq
-
+@model List<DuAnEnglish.ViewModels.DiemViewModel>
 @{
-    ViewBag.Title = "Quản Lý Điểm IELTS";
+    ViewBag.Title = "Quản Lý Điểm Khóa Học";
     Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
+    var danhSachKhoaHoc = ViewBag.DanhSachKhoaHoc as List<DuAnEnglish.Models.KhoaHoc> ?? new List<DuAnEnglish.Models.KhoaHoc>();
+    string selectedKhoaHoc = ViewBag.SelectedKhoaHoc as string ?? "";
+    string tuKhoa = ViewBag.TuKhoa as string ?? "";
 }
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
-<div class="bg-white max-w-[90%] mx-auto px-4 h-auto
-         flex flex-col items-center justify-center
-         min-h-[calc(100vh-100px)]">
-    <h2 class="text-2xl font-bold mb-4 text-red-600">Quản Lý Điểm</h2>
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Banner -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                    <span class="p-2 bg-red-100 text-red-600 rounded-xl">
+                        <i class="fas fa-graduation-cap"></i>
+                    </span>
+                    Quản Lý Điểm Khóa Học Trực Tuyến
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">Đánh giá tiến độ và chấm điểm khóa học (thang điểm 0 - 10) cho các học viên đã ghi danh.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="px-4 py-2 bg-blue-50 text-blue-700 text-sm font-bold rounded-xl border border-blue-100">
+                    <i class="fas fa-user-graduate mr-1"></i> Tổng số: @(Model != null ? Model.Count : 0) học viên
+                </span>
+            </div>
+        </div>
 
-    <!-- Sửa phần này -->
-    <form method="get" action="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")" class="mb-6 flex gap-4 items-center w-full">
-        <p class="self-center">Lớp :</p>
-        <input type="text" name="idLop" placeholder="LH005" value="@(ViewBag.TuKhoa ?? "")"
-               class="w-[150px] px-4 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <button type="submit" class="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700">
-            Tìm kiếm
-        </button>
-    </form>
+        @if (ViewBag.ThongBao != null)
+        {
+            <div class="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm flex items-center gap-2 shadow-sm">
+                <i class="fas fa-check-circle text-green-500 text-base"></i>
+                <span class="font-medium">@ViewBag.ThongBao</span>
+            </div>
+        }
 
+        <!-- Filter & Search Toolbar -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-8">
+            <form method="get" action="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                <!-- Dropdown lọc theo khóa học -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Khóa học giảng dạy:</label>
+                    <select name="idKhoaHoc" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                        <option value="">-- Tất cả khóa học của tôi --</option>
+                        @foreach (var kh in danhSachKhoaHoc)
+                        {
+                            <option value="@kh.IDKhoaHoc" @(selectedKhoaHoc == kh.IDKhoaHoc ? "selected" : "")>
+                                @kh.TenKhoaHoc (@kh.IDKhoaHoc)
+                            </option>
+                        }
+                    </select>
+                </div>
 
-    <table class="w-full border-collapse">
-        <thead>
-            <tr>
-                <!-- Thêm border-b cho viền dưới header -->
-                <th class="px-4 py-2 border-b-2 border-gray-300 text-left">ID Học Viên</th>
-                <th class="px-4 py-2 border-b-2 border-gray-300 text-left">Nghe</th>
-                <th class="px-4 py-2 border-b-2 border-gray-300 text-left">Nói</th>
-                <th class="px-4 py-2 border-b-2 border-gray-300 text-left">Đọc</th>
-                <th class="px-4 py-2 border-b-2 border-gray-300 text-left">Viết</th>
-                <th class="px-4 py-2 border-b-2 border-gray-300 text-left">Tổng Điểm</th>
-                <th class="px-4 py-2 border-b-2 border-gray-300 text-left">Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (!Model.Any())
-            {
-                <tr>
-                    <!-- colspan điều chỉnh theo số cột -->
-                    <td colspan="7" class="text-center px-4 py-2 border-b border-gray-200">
-                        Không có dữ liệu
-                    </td>
-                </tr>
-            }
-            else
-            {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <!-- Thêm border-b cho viền dưới mỗi dòng -->
-                        <td class="px-4 py-2 border-b border-gray-200">@item.IDHocVien</td>
-                        <td class="px-4 py-2 border-b border-gray-200">@item.DiemNghe</td>
-                        <td class="px-4 py-2 border-b border-gray-200">@item.DiemNoi</td>
-                        <td class="px-4 py-2 border-b border-gray-200">@item.DiemDoc</td>
-                        <td class="px-4 py-2 border-b border-gray-200">@item.DiemViet</td>
-                        <td class="px-4 py-2 border-b border-gray-200">@item.TongDiem</td>
-                        <td class="px-4 py-2 border-b border-gray-200">
-                            @if (item.DanhMuc == "ielts")
-                            {
-                                <a href="@Url.Action("NhapDiemIeltsView", "QuanLyDiemSo", new { idHocVien = item.IDHocVien })"
-                                   class="w-[120px] bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                                    Nhập điểm
-                                </a>
-                            }
-                            else if (item.DanhMuc == "toeic")
-                            {
-                                <a href="@Url.Action("NhapDiemToeicView", "QuanLyDiemSo", new { idHocVien = item.IDHocVien })"
-                                   class="w-[120px] bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                                    Nhập điểm
-                                </a>
-                            }
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
-</div>
-<script>
-    $(function () {
-        $("input[name='idLop']").autocomplete({
-            source: function (request, response) {
-                $.ajax({
-                    url: '@Url.Action("GetLopHocAutocomplete", "QuanLyDiemSo")',
-                    dataType: "json",
-                    data: {
-                        term: request.term
-                    },
-                    success: function (data) {
-                        response(data);
+                <!-- Ô tìm kiếm học viên -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Tìm học viên / tài khoản:</label>
+                    <div class="relative">
+                        <input type="text" name="tuKhoa" value="@tuKhoa" placeholder="Nhập tên học viên hoặc username..."
+                               class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                        <span class="absolute left-3 top-2.5 text-gray-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Nút thao tác -->
+                <div class="flex items-end gap-2 pt-2 md:pt-0">
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition flex items-center gap-1.5">
+                        <i class="fas fa-filter"></i> Lọc dữ liệu
+                    </button>
+                    @if (!string.IsNullOrEmpty(selectedKhoaHoc) || !string.IsNullOrEmpty(tuKhoa))
+                    {
+                        <a href="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition">
+                            <i class="fas fa-undo"></i> Bỏ lọc
+                        </a>
                     }
-                });
-            },
-            minLength: 1 // Bắt đầu gợi ý sau khi nhập 1 ký tự
-        });
-    });
-</script>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table Data -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500">
+                            <th class="py-3.5 px-4 font-bold">Học viên</th>
+                            <th class="py-3.5 px-4 font-bold">Khóa học</th>
+                            <th class="py-3.5 px-4 font-bold text-center">Tiến độ bài học</th>
+                            <th class="py-3.5 px-4 font-bold text-center">Điểm cuối khóa</th>
+                            <th class="py-3.5 px-4 font-bold">Nhận xét giảng viên</th>
+                            <th class="py-3.5 px-4 font-bold text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 text-sm">
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="py-12 text-center text-gray-400 italic">
+                                    <i class="fas fa-inbox text-3xl mb-2 block text-gray-300"></i>
+                                    Chưa có học viên nào đăng ký các khóa học bạn chọn.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <!-- Học viên -->
+                                    <td class="py-4 px-4">
+                                        <div class="font-bold text-gray-900">@item.TenHocVien</div>
+                                        <div class="text-xs text-gray-500">@@@item.TenDangNhap (Mã HV: #@item.IDHocVien)</div>
+                                    </td>
+
+                                    <!-- Khóa học -->
+                                    <td class="py-4 px-4 max-w-xs">
+                                        <div class="font-semibold text-gray-800 line-clamp-1" title="@item.TenKhoaHoc">@item.TenKhoaHoc</div>
+                                        <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600">
+                                            @item.IDKhoaHoc
+                                        </span>
+                                    </td>
+
+                                    <!-- Tiến độ bài học -->
+                                    <td class="py-4 px-4 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <div class="flex items-center gap-1.5 font-bold text-xs @(item.TienDoPhanTram == 100 ? "text-emerald-600" : "text-blue-600")">
+                                                <span>@item.TienDoPhanTram%</span>
+                                                <span class="text-gray-400 font-normal text-[11px]">(@item.SoBaiDaHoc/@item.TongSoBaiHoc bài)</span>
+                                            </div>
+                                            <div class="w-24 bg-gray-100 rounded-full h-1.5 mt-1 overflow-hidden border border-gray-200">
+                                                <div class="@(item.TienDoPhanTram == 100 ? "bg-emerald-500" : "bg-blue-500") h-1.5 rounded-full" style="width: @item.TienDoPhanTram%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Điểm cuối khóa -->
+                                    <td class="py-4 px-4 text-center">
+                                        @if (item.Diem.HasValue)
+                                        {
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-extrabold @(item.Diem >= 8.0m ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : (item.Diem >= 5.0m ? "bg-blue-100 text-blue-800 border border-blue-300" : "bg-red-100 text-red-800 border border-red-300"))">
+                                                @item.Diem.Value.ToString("0.##") / 10
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-400 italic">
+                                                Chưa có điểm
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <!-- Nhận xét -->
+                                    <td class="py-4 px-4 max-w-sm">
+                                        @if (!string.IsNullOrEmpty(item.NhanXet))
+                                        {
+                                            <div>
+                                                <p class="text-xs text-gray-700 line-clamp-2" title="@item.NhanXet">
+                                                    @item.NhanXet
+                                                </p>
+                                                @if (item.NgayCapNhat.HasValue)
+                                                {
+                                                    <span class="text-[10px] text-gray-400 block mt-0.5">
+                                                        Cập nhật: @item.NgayCapNhat.Value.ToString("dd/MM/yyyy HH:mm")
+                                                    </span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-xs text-gray-400 italic">Chưa có nhận xét</span>
+                                        }
+                                    </td>
+
+                                    <!-- Thao tác -->
+                                    <td class="py-4 px-4 text-center">
+                                        <a href="@Url.Action("NhapDiem", "QuanLyDiemSo", new { idDangKy = item.IDDangKy })"
+                                           class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm @(item.Diem.HasValue ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white")">
+                                            <i class="fas @(item.Diem.HasValue ? "fa-edit" : "fa-pen")"></i>
+                                            @(item.Diem.HasValue ? "Cập nhật" : "Nhập điểm")
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

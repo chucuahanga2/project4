@@ -1,34 +1,37 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace DuAnEnglish.ViewModels
 {
     public class DiemViewModel
     {
+        public int IDDangKy { get; set; }
         public int IDHocVien { get; set; }
-        public string IDLopHoc { get; set; }
+        public string TenHocVien { get; set; }
+        public string TenDangNhap { get; set; }
+        public string IDKhoaHoc { get; set; }
+        public string TenKhoaHoc { get; set; }
+        public int TienDoPhanTram { get; set; }
+        public int SoBaiDaHoc { get; set; }
+        public int TongSoBaiHoc { get; set; }
+        public decimal? Diem { get; set; }
+        public string NhanXet { get; set; }
+        public DateTime? NgayCapNhat { get; set; }
+        public string TrangThaiDangKy { get; set; }
+    }
 
-        public decimal? DiemNgheIELTS { get; set; }
-        public decimal? DiemNoiIELTS { get; set; }
-        public decimal? DiemDocIELTS { get; set; }
-        public decimal? DiemVietIELTS { get; set; }
-        public decimal? TongDiemIELTS { get; set; }
-
-        public int? DiemNgheTOEIC { get; set; }
-        public int? DiemDocTOEIC { get; set; }
-        public int? DiemNoiTOEIC { get; set; }
-        public int? DiemVietTOEIC { get; set; }
-        public int? TongDiemTOEIC { get; set; }
-
-        // Thuộc tính chung để View dễ dùng
-        public decimal? DiemNghe { get { return DiemNgheIELTS ?? (DiemNgheTOEIC.HasValue ? (decimal?)DiemNgheTOEIC.Value : null); } }
-        public decimal? DiemNoi { get { return DiemNoiIELTS ?? (DiemNoiTOEIC.HasValue ? (decimal?)DiemNoiTOEIC.Value : null); } }
-        public decimal? DiemDoc { get { return DiemDocIELTS ?? (DiemDocTOEIC.HasValue ? (decimal?)DiemDocTOEIC.Value : null); } }
-        public decimal? DiemViet { get { return DiemVietIELTS ?? (DiemVietTOEIC.HasValue ? (decimal?)DiemVietTOEIC.Value : null); } }
-        public decimal? TongDiem { get { return TongDiemIELTS ?? (TongDiemTOEIC.HasValue ? (decimal?)TongDiemTOEIC.Value : null); } }
-
-        public string DanhMuc { get; set; }
+    public class NhapDiemViewModel
+    {
+        public int IDDangKy { get; set; }
+        public int IDHocVien { get; set; }
+        public string TenHocVien { get; set; }
+        public string TenDangNhap { get; set; }
+        public string IDKhoaHoc { get; set; }
+        public string TenKhoaHoc { get; set; }
+        public int TienDoPhanTram { get; set; }
+        public int SoBaiDaHoc { get; set; }
+        public int TongSoBaiHoc { get; set; }
+        public decimal? Diem { get; set; }
+        public string NhanXet { get; set; }
+        public DateTime? NgayCapNhat { get; set; }
     }
 }

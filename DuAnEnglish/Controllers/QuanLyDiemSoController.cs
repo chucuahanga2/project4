@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
 using DuAnEnglish.Models;
@@ -14,254 +15,269 @@ namespace DuAnEnglish.Controllers
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
 
         // GET: QuanLyDiemSo
-        public ActionResult QuanLyDiemSo(string idLop)
+        public ActionResult QuanLyDiemSo(string idKhoaHoc, string tuKhoa)
         {
-            // Lấy tên đăng nhập từ session
             string tenDangNhap = Session["User"] != null ? Session["User"].ToString() : null;
             if (string.IsNullOrEmpty(tenDangNhap))
             {
-                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập để đăng ký khóa học";
+                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập để quản lý điểm số!";
                 return RedirectToAction("DangNhap", "DangNhap");
             }
 
-            // Tìm giảng viên theo tên đăng nhập
             var giangVien = db.GiangViens.FirstOrDefault(gv => gv.IDTenDangNhap == tenDangNhap);
             if (giangVien == null)
             {
-                TempData["ThongBao"] = "Không tìm thấy thông tin giảng viên.";
+                TempData["ThongBao"] = "Không tìm thấy thông tin giảng viên!";
                 return RedirectToAction("Index", "Home");
             }
 
-            // Lấy danh sách lớp giảng viên đang quản lý
-            var danhSachLop = db.LopHocs
-                .Where(l => l.IDGiangVien == giangVien.IDGiangVien)
-                .ToList();
+            // Danh sách các khóa học do giảng viên này phụ trách
+            var danhSachKhoaHoc = db.KhoaHocs
+                                    .Where(kh => kh.IDGiangVien == giangVien.IDGiangVien)
+                                    .OrderBy(kh => kh.TenKhoaHoc)
+                                    .ToList();
 
-            // Lọc lớp theo từ khóa nếu có
-            if (!string.IsNullOrEmpty(idLop))
+            ViewBag.DanhSachKhoaHoc = danhSachKhoaHoc;
+            ViewBag.SelectedKhoaHoc = idKhoaHoc;
+            ViewBag.TuKhoa = tuKhoa;
+
+            var khoaHocIds = danhSachKhoaHoc.Select(k => k.IDKhoaHoc).ToList();
+
+            // Truy vấn các lượt đăng ký khóa học online
+            var query = db.DangKyKhoaHocs
+                          .Include(dk => dk.HocVien)
+                          .Include(dk => dk.KhoaHoc)
+                          .Include(dk => dk.DiemKhoaHocs)
+                          .Where(dk => khoaHocIds.Contains(dk.IDKhoaHoc));
+
+            if (!string.IsNullOrEmpty(idKhoaHoc))
             {
-                idLop = idLop.Trim().ToLower();
-                danhSachLop = danhSachLop
-                    .Where(l => l.IDLopHoc.ToLower().Contains(idLop))
-                    .ToList();
+                query = query.Where(dk => dk.IDKhoaHoc == idKhoaHoc);
             }
 
-            // Lấy danh sách ID lớp
-            var lopIDs = danhSachLop.Select(l => l.IDLopHoc.Trim()).ToList();
-
-            // Gửi tên lớp đã tìm đến view để hiển thị lại
-            ViewBag.TuKhoa = idLop;
-
-            var diemTongHop = new List<DiemViewModel>();
-
-            // Điểm IELTS
-            var diemIelts = db.DiemIELTS
-                .Where(d => lopIDs.Contains(d.IDLopHoc.Trim()))
-                .ToList();
-
-            foreach (var item in diemIelts)
+            if (!string.IsNullOrWhiteSpace(tuKhoa))
             {
-                var lopHoc = db.LopHocs.FirstOrDefault(l => l.IDLopHoc.Trim() == item.IDLopHoc.Trim());
-                var khoaHoc = db.KhoaHocs.FirstOrDefault(kh => kh.IDKhoaHoc == lopHoc.IDKhoaHoc);
+                string kw = tuKhoa.Trim().ToLower();
+                query = query.Where(dk => (dk.HocVien.TenHV != null && dk.HocVien.TenHV.ToLower().Contains(kw))
+                                       || (dk.HocVien.IDTenDangNhap != null && dk.HocVien.IDTenDangNhap.ToLower().Contains(kw))
+                                       || (dk.KhoaHoc.TenKhoaHoc != null && dk.KhoaHoc.TenKhoaHoc.ToLower().Contains(kw)));
+            }
 
-                diemTongHop.Add(new DiemViewModel
+            var danhSachDangKy = query.OrderByDescending(dk => dk.NgayDangKy).ToList();
+            var danhSachDiem = new List<DiemViewModel>();
+
+            foreach (var dk in danhSachDangKy)
+            {
+                int tongSoBai = db.BaiHocs.Count(b => b.ChuongHoc.IDKhoaHoc == dk.IDKhoaHoc);
+                int soBaiDaHoc = db.TienDoHocs.Count(t => t.IDHocVien == dk.IDHocVien && t.DaHoanThanh == true && t.BaiHoc.ChuongHoc.IDKhoaHoc == dk.IDKhoaHoc);
+                int phanTram = tongSoBai > 0 ? (int)Math.Round((double)soBaiDaHoc / tongSoBai * 100) : 0;
+
+                var diemItem = dk.DiemKhoaHocs.FirstOrDefault();
+
+                danhSachDiem.Add(new DiemViewModel
                 {
-                    IDHocVien = item.IDHocVien,
-                    IDLopHoc = item.IDLopHoc,
-                    DanhMuc = (khoaHoc != null && khoaHoc.DanhMuc != null) ? khoaHoc.DanhMuc.Trim().ToLower() : null,
-                    DiemNgheIELTS = item.DiemNghe,
-                    DiemNoiIELTS = item.DiemNoi,
-                    DiemDocIELTS = item.DiemDoc,
-                    DiemVietIELTS = item.DiemViet,
-                    TongDiemIELTS = item.TongDiem
+                    IDDangKy = dk.IDDangKy,
+                    IDHocVien = dk.IDHocVien,
+                    TenHocVien = dk.HocVien != null ? dk.HocVien.TenHV : "Học viên #" + dk.IDHocVien,
+                    TenDangNhap = dk.HocVien != null ? dk.HocVien.IDTenDangNhap : "",
+                    IDKhoaHoc = dk.IDKhoaHoc,
+                    TenKhoaHoc = dk.KhoaHoc != null ? dk.KhoaHoc.TenKhoaHoc : dk.IDKhoaHoc,
+                    TongSoBaiHoc = tongSoBai,
+                    SoBaiDaHoc = soBaiDaHoc,
+                    TienDoPhanTram = phanTram,
+                    Diem = diemItem != null ? diemItem.Diem : null,
+                    NhanXet = diemItem != null ? diemItem.NhanXet : null,
+                    NgayCapNhat = diemItem != null ? diemItem.NgayCapNhat : null,
+                    TrangThaiDangKy = dk.TrangThai
                 });
             }
 
-            // Điểm TOEIC
-            var diemToeic = db.DiemTOEICs
-                .Where(d => lopIDs.Contains(d.IDLopHoc.Trim()))
-                .ToList();
-            foreach (var item in diemToeic)
+            if (TempData["ThongBao"] != null)
             {
-                var lopHoc = db.LopHocs.FirstOrDefault(l => l.IDLopHoc.Trim() == item.IDLopHoc.Trim());
-                var khoaHoc = db.KhoaHocs.FirstOrDefault(kh => kh.IDKhoaHoc == lopHoc.IDKhoaHoc);
-
-                diemTongHop.Add(new DiemViewModel
-                {
-                    IDHocVien = item.IDHocVien,
-                    IDLopHoc = item.IDLopHoc,
-                    DanhMuc = (khoaHoc != null && khoaHoc.DanhMuc != null) ? khoaHoc.DanhMuc.Trim().ToLower() : null,
-                    DiemNgheTOEIC = item.DiemNghe,
-                    DiemNoiTOEIC = item.DiemNoi,
-                    DiemDocTOEIC = item.DiemDoc,
-                    DiemVietTOEIC = item.DiemViet,
-                    TongDiemTOEIC = item.TongDiem
-                });
+                ViewBag.ThongBao = TempData["ThongBao"];
             }
 
-
-            return View(diemTongHop);
+            return View(danhSachDiem);
         }
-        // hiển thị gợi ý lớp
-        public JsonResult GetLopHocAutocomplete(string term)
+
+        // GET: QuanLyDiemSo/NhapDiem/5
+        public ActionResult NhapDiem(int idDangKy)
         {
             string tenDangNhap = Session["User"] != null ? Session["User"].ToString() : null;
             if (string.IsNullOrEmpty(tenDangNhap))
             {
-                return Json(new List<string>(), JsonRequestBehavior.AllowGet);
+                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập!";
+                return RedirectToAction("DangNhap", "DangNhap");
             }
 
             var giangVien = db.GiangViens.FirstOrDefault(gv => gv.IDTenDangNhap == tenDangNhap);
             if (giangVien == null)
             {
-                return Json(new List<string>(), JsonRequestBehavior.AllowGet);
+                TempData["ThongBao"] = "Không tìm thấy thông tin giảng viên!";
+                return RedirectToAction("Index", "Home");
             }
 
-            var lopHocList = db.LopHocs
-                .Where(l => l.IDGiangVien == giangVien.IDGiangVien && l.IDLopHoc.Contains(term))
-                .Select(l => l.IDLopHoc)
-                .Distinct()
-                .ToList();
+            var dangKy = db.DangKyKhoaHocs
+                           .Include(d => d.HocVien)
+                           .Include(d => d.KhoaHoc)
+                           .Include(d => d.DiemKhoaHocs)
+                           .FirstOrDefault(d => d.IDDangKy == idDangKy);
 
-            return Json(lopHocList, JsonRequestBehavior.AllowGet);
-        }
-
-
-
-        // View nhập điểm IELTS
-        public ActionResult NhapDiemIeltsView(int idHocVien)
-        {
-            // Tìm điểm IELTS theo idHocVien
-            var diemIelts = db.DiemIELTS.FirstOrDefault(d => d.IDHocVien == idHocVien);
-
-            // Nếu không tìm thấy thì tạo mới object điểm rỗng để truyền xuống View
-            if (diemIelts == null)
+            if (dangKy == null)
             {
-                diemIelts = new DiemIELT
-                {
-                    IDHocVien = idHocVien,
-                    DiemNghe = null,
-                    DiemNoi = null,
-                    DiemDoc = null,
-                    DiemViet = null,
-                    TongDiem = null,
-                    IDLopHoc = "" // hoặc null, tùy cấu trúc model
-                };
+                return HttpNotFound();
             }
 
-            return View(diemIelts);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult LuuDiemIelts(DiemIELT model)
-        {
-            if (ModelState.IsValid)
+            // Bảo mật: Giảng viên chỉ được nhập điểm cho khóa học do chính mình phụ trách
+            if (dangKy.KhoaHoc == null || dangKy.KhoaHoc.IDGiangVien != giangVien.IDGiangVien)
             {
-                var diemIelts = db.DiemIELTS.FirstOrDefault(d => d.IDHocVien == model.IDHocVien);
-                if (diemIelts == null)
-                {
-                    // Tạo mới
-                    db.DiemIELTS.Add(model);
-                }
-                else
-                {
-                    // Cập nhật
-                    diemIelts.DiemNghe = model.DiemNghe;
-                    diemIelts.DiemNoi = model.DiemNoi;
-                    diemIelts.DiemDoc = model.DiemDoc;
-                    diemIelts.DiemViet = model.DiemViet;
-                    diemIelts.TongDiem = model.TongDiem;
-                }
-
-                db.SaveChanges();
-                TempData["ThongBao"] = "Lưu điểm IELTS thành công!";
-                // Bạn có thể redirect về danh sách hoặc trang khác
+                TempData["ThongBao"] = "Bạn không có quyền quản lý điểm của khóa học này!";
                 return RedirectToAction("QuanLyDiemSo");
             }
 
-            // Nếu model không hợp lệ, trả lại View với dữ liệu hiện tại
-            return View("NhapDiemIeltsView", model);
-        }
+            int tongSoBai = db.BaiHocs.Count(b => b.ChuongHoc.IDKhoaHoc == dangKy.IDKhoaHoc);
+            int soBaiDaHoc = db.TienDoHocs.Count(t => t.IDHocVien == dangKy.IDHocVien && t.DaHoanThanh == true && t.BaiHoc.ChuongHoc.IDKhoaHoc == dangKy.IDKhoaHoc);
+            int phanTram = tongSoBai > 0 ? (int)Math.Round((double)soBaiDaHoc / tongSoBai * 100) : 0;
 
+            var diemItem = dangKy.DiemKhoaHocs.FirstOrDefault();
 
-        // View nhập điểm TOEIC (tạo mới)
-        public ActionResult NhapDiemToeicView(int idHocVien)
-        {
-            var diemToeic = db.DiemTOEICs.FirstOrDefault(d => d.IDHocVien == idHocVien);
-
-            if (diemToeic == null)
+            var viewModel = new NhapDiemViewModel
             {
-                diemToeic = new DiemTOEIC
-                {
-                    IDHocVien = idHocVien,
-                    Part1 = null,
-                    Part2 = null,
-                    Part3 = null,
-                    Part4 = null,
-                    Part5 = null,
-                    Part6 = null,
-                    Part7 = null,
-                    DiemNoi = null,
-                    DiemViet = null,
-                    DiemNghe = null,
-                    DiemDoc = null,
-                    TongDiem = null,
-                    IDLopHoc = "" // bạn có thể set IDLopHoc nếu có dữ liệu
-                };
-            }
+                IDDangKy = dangKy.IDDangKy,
+                IDHocVien = dangKy.IDHocVien,
+                TenHocVien = dangKy.HocVien != null ? dangKy.HocVien.TenHV : "Học viên #" + dangKy.IDHocVien,
+                TenDangNhap = dangKy.HocVien != null ? dangKy.HocVien.IDTenDangNhap : "",
+                IDKhoaHoc = dangKy.IDKhoaHoc,
+                TenKhoaHoc = dangKy.KhoaHoc != null ? dangKy.KhoaHoc.TenKhoaHoc : dangKy.IDKhoaHoc,
+                TongSoBaiHoc = tongSoBai,
+                SoBaiDaHoc = soBaiDaHoc,
+                TienDoPhanTram = phanTram,
+                Diem = diemItem != null ? diemItem.Diem : null,
+                NhanXet = diemItem != null ? diemItem.NhanXet : null,
+                NgayCapNhat = diemItem != null ? diemItem.NgayCapNhat : null
+            };
 
-            return View(diemToeic);
+            return View(viewModel);
         }
+
+        // POST: QuanLyDiemSo/NhapDiem
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult LuuDiemToeic(DiemTOEIC model)
+        public ActionResult NhapDiem(int idDangKy, string diem, string nhanXet)
         {
-            if (ModelState.IsValid)
+            string tenDangNhap = Session["User"] != null ? Session["User"].ToString() : null;
+            if (string.IsNullOrEmpty(tenDangNhap))
             {
-                // Quy đổi điểm nghe = tổng câu đúng của Part1-4 * hệ số quy đổi (ví dụ 5 điểm / câu)
-                int nghe = (model.Part1 ?? 0) + (model.Part2 ?? 0) + (model.Part3 ?? 0) + (model.Part4 ?? 0);
-                int doc = (model.Part5 ?? 0) + (model.Part6 ?? 0) + (model.Part7 ?? 0);
+                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập!";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
 
-                int diemNghe = nghe * 5; // ví dụ 1 câu đúng = 5 điểm
-                int diemDoc = doc * 5;   // tương tự
+            var giangVien = db.GiangViens.FirstOrDefault(gv => gv.IDTenDangNhap == tenDangNhap);
+            if (giangVien == null)
+            {
+                TempData["ThongBao"] = "Không tìm thấy thông tin giảng viên!";
+                return RedirectToAction("Index", "Home");
+            }
 
-                model.DiemNghe = diemNghe;
-                model.DiemDoc = diemDoc;
+            var dangKy = db.DangKyKhoaHocs
+                           .Include(d => d.KhoaHoc)
+                           .Include(d => d.HocVien)
+                           .Include(d => d.DiemKhoaHocs)
+                           .FirstOrDefault(d => d.IDDangKy == idDangKy);
 
-                // Tổng điểm = điểm nghe + điểm đọc + điểm nói + điểm viết
-                model.TongDiem = diemNghe + diemDoc + (model.DiemNoi ?? 0) + (model.DiemViet ?? 0);
+            if (dangKy == null)
+            {
+                return HttpNotFound();
+            }
 
-                var diemToeic = db.DiemTOEICs.FirstOrDefault(d => d.IDHocVien == model.IDHocVien);
-                if (diemToeic == null)
-                {
-                    db.DiemTOEICs.Add(model);
-                }
-                else
-                {
-                    diemToeic.Part1 = model.Part1;
-                    diemToeic.Part2 = model.Part2;
-                    diemToeic.Part3 = model.Part3;
-                    diemToeic.Part4 = model.Part4;
-                    diemToeic.Part5 = model.Part5;
-                    diemToeic.Part6 = model.Part6;
-                    diemToeic.Part7 = model.Part7;
-                    diemToeic.DiemNoi = model.DiemNoi;
-                    diemToeic.DiemViet = model.DiemViet;
-                    diemToeic.DiemNghe = model.DiemNghe;
-                    diemToeic.DiemDoc = model.DiemDoc;
-                    diemToeic.TongDiem = model.TongDiem;
-                    //diemToeic.IDLopHoc = model.IDLopHoc;
-                }
-
-                db.SaveChanges();
-                TempData["ThongBao"] = "Lưu điểm TOEIC thành công!";
+            // Kiểm tra phân quyền sở hữu khóa học
+            if (dangKy.KhoaHoc == null || dangKy.KhoaHoc.IDGiangVien != giangVien.IDGiangVien)
+            {
+                TempData["ThongBao"] = "Bạn không có quyền quản lý điểm của khóa học này!";
                 return RedirectToAction("QuanLyDiemSo");
             }
 
-            return View("NhapDiemToeicView", model);
+            decimal? parsedDiem = null;
+            bool isValidScore = true;
+
+            if (!string.IsNullOrWhiteSpace(diem))
+            {
+                string normalized = diem.Trim().Replace(',', '.');
+                decimal val;
+                if (decimal.TryParse(normalized, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out val))
+                {
+                    if (val < 0m || val > 10m)
+                    {
+                        isValidScore = false;
+                    }
+                    else
+                    {
+                        parsedDiem = Math.Round(val, 2);
+                    }
+                }
+                else
+                {
+                    isValidScore = false;
+                }
+            }
+
+            // Kiểm tra hợp lệ điểm số phía Server: 0 <= Diem <= 10
+            if (!isValidScore)
+            {
+                ViewBag.ThongBao = "Điểm số không hợp lệ! Vui lòng nhập điểm từ 0.0 đến 10.0.";
+
+                int tongSoBai = db.BaiHocs.Count(b => b.ChuongHoc.IDKhoaHoc == dangKy.IDKhoaHoc);
+                int soBaiDaHoc = db.TienDoHocs.Count(t => t.IDHocVien == dangKy.IDHocVien && t.DaHoanThanh == true && t.BaiHoc.ChuongHoc.IDKhoaHoc == dangKy.IDKhoaHoc);
+                int phanTram = tongSoBai > 0 ? (int)Math.Round((double)soBaiDaHoc / tongSoBai * 100) : 0;
+
+                var vm = new NhapDiemViewModel
+                {
+                    IDDangKy = dangKy.IDDangKy,
+                    IDHocVien = dangKy.IDHocVien,
+                    TenHocVien = dangKy.HocVien != null ? dangKy.HocVien.TenHV : "",
+                    TenDangNhap = dangKy.HocVien != null ? dangKy.HocVien.IDTenDangNhap : "",
+                    IDKhoaHoc = dangKy.IDKhoaHoc,
+                    TenKhoaHoc = dangKy.KhoaHoc != null ? dangKy.KhoaHoc.TenKhoaHoc : "",
+                    TongSoBaiHoc = tongSoBai,
+                    SoBaiDaHoc = soBaiDaHoc,
+                    TienDoPhanTram = phanTram,
+                    Diem = parsedDiem,
+                    NhanXet = nhanXet
+                };
+                return View(vm);
+            }
+
+            var diemItem = db.DiemKhoaHocs.FirstOrDefault(d => d.IDDangKy == idDangKy);
+            if (diemItem == null)
+            {
+                diemItem = new DiemKhoaHoc
+                {
+                    IDDangKy = idDangKy,
+                    Diem = parsedDiem,
+                    NhanXet = nhanXet,
+                    NgayCapNhat = DateTime.Now
+                };
+                db.DiemKhoaHocs.Add(diemItem);
+            }
+            else
+            {
+                diemItem.Diem = parsedDiem;
+                diemItem.NhanXet = nhanXet;
+                diemItem.NgayCapNhat = DateTime.Now;
+            }
+
+            db.SaveChanges();
+            TempData["ThongBao"] = "Lưu điểm khóa học thành công!";
+            return RedirectToAction("QuanLyDiemSo");
         }
 
-
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

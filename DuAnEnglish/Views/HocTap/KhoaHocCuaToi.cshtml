@@ -29,6 +29,9 @@
         <div class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
             <i class="fas fa-check-circle mr-1"></i> Hoàn thành: @(Model != null ? Model.Count(x => x.PhanTramTienDo == 100) : 0)
         </div>
+        <a href="@Url.Action("XemDiem", "HocTap")" class="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-sm">
+            <i class="fas fa-award mr-1"></i> Bảng điểm
+        </a>
         <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="px-3.5 py-1.5 rounded-lg bg-[#1a94ff] hover:bg-blue-600 text-white text-xs font-bold transition shadow-sm ml-1">
             <i class="fas fa-plus"></i> Khám phá thêm
         </a>
@@ -86,7 +89,28 @@
                             </div>
                         </div>
 
-                        <div class="text-[11px] text-[#808089]">
+                        <!-- Điểm cuối khóa & Nhận xét -->
+                        <div class="mt-2.5 pt-2 border-t border-[#f0f0f5] flex items-center justify-between text-xs">
+                            <span class="text-[#808089]">Điểm cuối khóa:</span>
+                            @if (item.Diem.HasValue)
+                            {
+                                <span class="px-2 py-0.5 rounded-full @(item.Diem >= 8.0m ? "bg-emerald-100 text-emerald-800" : "bg-blue-100 text-blue-800") font-black text-xs">
+                                    @item.Diem.Value.ToString("0.##") / 10
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-gray-400 italic text-[11px]">Chưa có</span>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(item.NhanXet))
+                        {
+                            <div class="mt-1.5 text-[11px] text-gray-600 bg-gray-50 p-2 rounded border border-gray-100 line-clamp-2" title="@item.NhanXet">
+                                <i class="fas fa-comment-dots text-blue-500 mr-1"></i>@item.NhanXet
+                            </div>
+                        }
+
+                        <div class="text-[11px] text-[#808089] mt-2">
                             Ngày đăng ký: @(item.NgayDangKy.HasValue ? item.NgayDangKy.Value.ToString("dd/MM/yyyy") : "N/A")
                         </div>
                     </div>

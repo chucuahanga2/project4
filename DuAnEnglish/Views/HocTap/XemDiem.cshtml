@@ -1,0 +1,134 @@
+@model List<DuAnEnglish.ViewModels.DiemViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Bảng Điểm Khóa Học - TikiCourse";
+}
+
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-xs text-[#808089] mb-4">
+    <a href="@Url.Action("Index", "Home")" class="hover:text-[#1a94ff] transition">Trang chủ</a>
+    <span>&rsaquo;</span>
+    <a href="@Url.Action("KhoaHocCuaToi", "HocTap")" class="hover:text-[#1a94ff] transition">Khóa học của tôi</a>
+    <span>&rsaquo;</span>
+    <span class="text-[#27272a] font-medium">Bảng điểm khóa học</span>
+</nav>
+
+<!-- Page Header Card -->
+<div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+        <h1 class="text-xl font-black text-[#27272a] uppercase tracking-wide flex items-center gap-2">
+            <span class="p-2 bg-amber-100 text-amber-600 rounded-xl">
+                <i class="fas fa-award"></i>
+            </span>
+            BẢNG ĐIỂM & ĐÁNH GIÁ KHÓA HỌC
+        </h1>
+        <p class="text-xs text-[#808089] mt-1">Kết quả đánh giá và nhận xét học tập chính thức từ giảng viên cho từng khóa học bạn tham gia.</p>
+    </div>
+    <div class="flex items-center gap-2">
+        <a href="@Url.Action("KhoaHocCuaToi", "HocTap")" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-[#27272a] text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fas fa-book-reader"></i> Khóa học của tôi
+        </a>
+    </div>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm p-12 text-center text-gray-500">
+        <i class="fas fa-clipboard-list text-4xl text-gray-300 mb-3 block"></i>
+        <h3 class="text-base font-bold text-gray-700">Chưa có dữ liệu bảng điểm</h3>
+        <p class="text-xs text-gray-500 mt-1">Bạn chưa đăng ký khóa học nào hoặc các khóa học chưa được kích hoạt.</p>
+        <a href="@Url.Action("KhoaHoc", "KhoaHoc")" class="mt-4 inline-block px-5 py-2.5 rounded-xl bg-[#1a94ff] text-white text-xs font-bold shadow-sm hover:bg-blue-600 transition">
+            Khám phá khóa học ngay
+        </a>
+    </div>
+}
+else
+{
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        @foreach (var item in Model)
+        {
+            <div class="bg-white rounded-xl border border-[#ebebf0] shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition duration-200">
+                <div class="p-5">
+                    <!-- Course Title & Code -->
+                    <div class="flex items-start justify-between gap-2 mb-3">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">
+                                @item.IDKhoaHoc
+                            </span>
+                            <h3 class="font-bold text-sm text-[#27272a] mt-1 line-clamp-2 leading-snug">
+                                @item.TenKhoaHoc
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- Progress -->
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center text-xs mb-1">
+                            <span class="text-[#808089]">Tiến độ học tập</span>
+                            <span class="font-bold @(item.TienDoPhanTram == 100 ? "text-[#00ab56]" : "text-[#1a94ff]")">
+                                @item.TienDoPhanTram% (@item.SoBaiDaHoc/@item.TongSoBaiHoc bài)
+                            </span>
+                        </div>
+                        <div class="w-full bg-[#f5f5fa] rounded-full h-2 overflow-hidden border border-[#ebebf0]">
+                            <div class="@(item.TienDoPhanTram == 100 ? "bg-[#00ab56]" : "bg-[#1a94ff]") h-2 rounded-full" style="width: @item.TienDoPhanTram%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Score Highlight Card -->
+                    <div class="p-4 rounded-xl @(item.Diem.HasValue ? (item.Diem >= 8.0m ? "bg-emerald-50 border border-emerald-200" : "bg-blue-50 border border-blue-200") : "bg-gray-50 border border-gray-200") mb-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-gray-600">Điểm tổng kết:</span>
+                            @if (item.Diem.HasValue)
+                            {
+                                <span class="text-xl font-black @(item.Diem >= 8.0m ? "text-emerald-700" : "text-blue-700")">
+                                    @item.Diem.Value.ToString("0.##") <span class="text-xs font-normal text-gray-500">/ 10</span>
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-xs font-semibold text-gray-400 italic">
+                                    Chưa có điểm
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Teacher Comments -->
+                    <div>
+                        <span class="text-[11px] font-bold text-[#808089] uppercase tracking-wider block mb-1">
+                            <i class="fas fa-comment-dots text-blue-500 mr-1"></i>Nhận xét giảng viên:
+                        </span>
+                        @if (!string.IsNullOrEmpty(item.NhanXet))
+                        {
+                            <div>
+                                <p class="text-xs text-[#27272a] bg-gray-50 p-2.5 rounded-lg border border-gray-100 leading-relaxed">
+                                    "@item.NhanXet"
+                                </p>
+                                @if (item.NgayCapNhat.HasValue)
+                                {
+                                    <span class="text-[10px] text-gray-400 block mt-1">
+                                        Ngày đánh giá: @item.NgayCapNhat.Value.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-xs text-gray-400 italic bg-gray-50/50 p-2 rounded border border-gray-100">
+                                Giảng viên chưa cập nhật nhận xét cho khóa này.
+                            </p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="p-4 pt-0">
+                    <a href="@Url.Action("VaoHoc", "HocTap", new { id = item.IDKhoaHoc })"
+                       class="w-full block text-center py-2.5 rounded-lg bg-[#e5f2ff] hover:bg-[#1a94ff] text-[#0b74e5] hover:text-white font-bold text-xs transition">
+                        <i class="fas fa-play mr-1"></i> Vào phòng học khóa này
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}

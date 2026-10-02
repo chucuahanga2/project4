@@ -343,7 +343,24 @@ BEGIN
 END
 GO
 
--- 2.16 Bảng DiemIELTS & DiemTOEIC (Đồng bộ 100% với EDMX & C# Models)
+-- 2.16 Bảng DiemKhoaHoc (Điểm đánh giá khóa học trực tuyến theo thang điểm 0 - 10)
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DiemKhoaHoc')
+BEGIN
+    CREATE TABLE DiemKhoaHoc (
+        IDDiem INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+        IDDangKy INT NOT NULL,
+        Diem DECIMAL(4,2) NULL,
+        NhanXet NVARCHAR(500) NULL,
+        NgayCapNhat DATETIME NULL,
+        CONSTRAINT FK_DiemKhoaHoc_DangKy FOREIGN KEY (IDDangKy) REFERENCES DangKyKhoaHoc(IDDangKy) ON DELETE CASCADE,
+        CONSTRAINT UQ_DiemKhoaHoc_DangKy UNIQUE (IDDangKy),
+        CONSTRAINT CK_DiemKhoaHoc_Diem CHECK (Diem IS NULL OR (Diem >= 0 AND Diem <= 10))
+    );
+    PRINT N'[OK] Đã tạo bảng DiemKhoaHoc.';
+END
+GO
+
+-- Bảng điểm legacy (DiemIELTS, DiemTOEIC) lưu trữ nếu có
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DiemIELTS')
 BEGIN
     CREATE TABLE DiemIELTS (
@@ -547,6 +564,21 @@ GO
 -- 3.8 Đồng bộ dữ liệu hiện có
 UPDATE KhoaHoc SET TrangThai = N'Hiển thị' WHERE TrangThai IS NULL OR TrangThai NOT LIKE N'%Ẩn%';
 UPDATE TaiKhoan SET TrangThai = N'Hoạt động' WHERE TrangThai IS NULL OR TrangThai = '';
+UPDATE DangKyKhoaHoc SET TrangThai = N'Đã kích hoạt' WHERE TrangThai IS NULL OR TrangThai NOT LIKE N'%hoàn thành%' AND TrangThai NOT LIKE N'%Hủy%';
+GO
+
+-- 3.9 Khởi tạo điểm mẫu cho học viên trực tuyến
+IF EXISTS (SELECT * FROM DangKyKhoaHoc WHERE IDKhoaHoc = 'MVC2026') 
+   AND NOT EXISTS (SELECT * FROM DiemKhoaHoc WHERE IDDangKy IN (SELECT IDDangKy FROM DangKyKhoaHoc WHERE IDKhoaHoc = 'MVC2026'))
+BEGIN
+    DECLARE @idDangKyMVC INT = (SELECT TOP 1 IDDangKy FROM DangKyKhoaHoc WHERE IDKhoaHoc = 'MVC2026');
+    IF @idDangKyMVC IS NOT NULL
+    BEGIN
+        INSERT INTO DiemKhoaHoc (IDDangKy, Diem, NhanXet, NgayCapNhat)
+        VALUES (@idDangKyMVC, 8.5, N'Hoàn thành xuất sắc toàn bộ bài giảng và thực hành dự án ASP.NET MVC 5 & EF 6.', GETDATE());
+        PRINT N'[OK] Đã tạo điểm mẫu cho khóa MVC2026.';
+    END
+END
 GO
 
 PRINT N'==============================================================================';

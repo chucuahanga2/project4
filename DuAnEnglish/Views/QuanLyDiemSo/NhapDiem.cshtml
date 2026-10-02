@@ -1,0 +1,114 @@
+@model DuAnEnglish.ViewModels.NhapDiemViewModel
+@{
+    ViewBag.Title = "Chấm Điểm Khóa Học - " + Model.TenKhoaHoc;
+    Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
+}
+
+<div class="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Back Navigation -->
+        <div class="mb-5">
+            <a href="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition font-medium">
+                <i class="fas fa-arrow-left"></i> Quay lại danh sách quản lý điểm
+            </a>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <i class="fas fa-award"></i> Chấm Điểm Khóa Học
+                </h1>
+                <p class="text-xs text-blue-100 mt-1">Đánh giá kết quả học tập và ghi nhận xét cho học viên (thang điểm 0 - 10).</p>
+            </div>
+
+            <!-- Student & Course Details -->
+            <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Học viên</span>
+                        <div class="font-bold text-gray-900 text-base mt-0.5">@Model.TenHocVien</div>
+                        <div class="text-xs text-gray-500">Tài khoản: @@@Model.TenDangNhap (ID: #@Model.IDHocVien)</div>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Khóa học</span>
+                        <div class="font-bold text-gray-900 text-base mt-0.5">@Model.TenKhoaHoc</div>
+                        <div class="text-xs text-gray-500">Mã khóa: @Model.IDKhoaHoc</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-200/60 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-gray-500">Tiến độ bài học:</span>
+                        <span class="font-bold text-sm @(Model.TienDoPhanTram == 100 ? "text-emerald-600" : "text-blue-600") ml-1">
+                            @Model.TienDoPhanTram% (@Model.SoBaiDaHoc/@Model.TongSoBaiHoc bài)
+                        </span>
+                    </div>
+                    <div class="w-36 bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div class="@(Model.TienDoPhanTram == 100 ? "bg-emerald-500" : "bg-blue-600") h-2 rounded-full" style="width: @Model.TienDoPhanTram%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            @if (ViewBag.ThongBao != null)
+            {
+                <div class="mx-6 mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-red-500"></i>
+                    <span>@ViewBag.ThongBao</span>
+                </div>
+            }
+
+            <!-- Form Chấm Điểm -->
+            <form method="post" action="@Url.Action("NhapDiem", "QuanLyDiemSo")" class="p-6 space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idDangKy" value="@Model.IDDangKy" />
+
+                <!-- Điểm số -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1.5">
+                        Điểm cuối khóa <span class="text-red-500">*</span>
+                        <span class="text-xs font-normal text-gray-500 ml-1">(Thang điểm từ 0.0 đến 10.0, lẻ đến 0.1)</span>
+                    </label>
+                    <div class="relative max-w-xs">
+                        <input type="number" name="diem" step="0.1" min="0" max="10" required
+                               value="@(Model.Diem.HasValue ? Model.Diem.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) : "")"
+                               placeholder="Ví dụ: 8.5"
+                               class="w-full pl-4 pr-16 py-2.5 text-lg font-bold border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" />
+                        <span class="absolute right-4 top-3 text-sm font-bold text-gray-400">/ 10</span>
+                    </div>
+                </div>
+
+                <!-- Nhận xét của Giảng viên -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-800 mb-1.5">
+                        Nhận xét / Đánh giá của giảng viên:
+                        <span class="text-xs font-normal text-gray-500 ml-1">(Học viên sẽ nhìn thấy nhận xét này)</span>
+                    </label>
+                    <textarea name="nhanXet" rows="4" maxlength="500"
+                              placeholder="Nhập đánh giá về mức độ hoàn thành bài tập, tinh thần học tập và kỹ năng thực hành của học viên..."
+                              class="w-full px-4 py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">@Model.NhanXet</textarea>
+                    <span class="text-[11px] text-gray-400 block text-right mt-1">Tối đa 500 ký tự</span>
+                </div>
+
+                @if (Model.NgayCapNhat.HasValue)
+                {
+                    <div class="text-xs text-gray-400 italic">
+                        <i class="fas fa-history mr-1"></i> Lần cập nhật điểm gần nhất: @Model.NgayCapNhat.Value.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
+                    <a href="@Url.Action("QuanLyDiemSo", "QuanLyDiemSo")"
+                       class="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition">
+                        Hủy
+                    </a>
+                    <button type="submit"
+                            class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-sm hover:shadow transition flex items-center gap-2">
+                        <i class="fas fa-save"></i> Lưu điểm khóa học
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
