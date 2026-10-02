@@ -40,6 +40,7 @@ namespace DuAnEnglish.Controllers
 
         // POST: Xử lý thêm lớp học
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Them(LopHoc lop)
         {
             ViewBag.IDPhongHoc = new SelectList(db.PhongHocs, "IDPhongHoc", "IDPhongHoc", lop.IDPhongHoc);
@@ -116,6 +117,7 @@ namespace DuAnEnglish.Controllers
             return View(lop);
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Sua(LopHoc lop)
         {
             // Đổ lại dữ liệu cho dropdown
@@ -182,6 +184,8 @@ namespace DuAnEnglish.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Xoa(string id)
         {
             var lop = db.LopHocs.Find(id);

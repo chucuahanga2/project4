@@ -1,4 +1,4 @@
-﻿@model DuAnEnglish.Models.DiemIELT
+@model DuAnEnglish.Models.DiemIELT
 @{
     ViewBag.Title = "Nhập Điểm IELTS";
     Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
@@ -10,6 +10,7 @@
 
         <!-- Form nhập điểm -->
         <form method="post" action="@Url.Action("LuuDiemIelts", "QuanLyDiemSo")" class="space-y-4">
+            @Html.AntiForgeryToken()
             <!-- Mã Học Viên -->
             <div class="flex items-center gap-5">
                 <label class="block text-black text-sm font-bold">Mã Học Viên</label>

@@ -1,4 +1,4 @@
-﻿@model PagedList.IPagedList<DuAnEnglish.Models.ThongBao>
+@model PagedList.IPagedList<DuAnEnglish.Models.ThongBao>
 @using PagedList.Mvc;
 
 @{
@@ -114,12 +114,23 @@
                                 </a>
                             </td>
                             <td class="py-3 px-4 border">
-                                <a href="@Url.Action("Xoa", "QuanLyThongBaoGV", new { id = tb.IDThongBao })"
-                                   class="btn-xoa inline-block py-2 px-4 text-sm font-medium rounded-lg bg-gradient-to-r from-red-600 via-red-500 to-red-600
-                                          bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
-                                          text-white shadow">
-                                    Xóa
-                                </a>
+                                @if (Session["User"] != null && tb.IDNguoiGui == Session["User"].ToString())
+                                {
+                                    using (Html.BeginForm("xoa", "QuanLyThongBaoGV", new { id = tb.IDThongBao }, FormMethod.Post, new { style = "display:inline;", onsubmit = "return confirm('Bạn có chắc chắn muốn xóa thông báo này?');" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="py-2 px-4 text-sm font-medium rounded-lg bg-gradient-to-r from-red-600 via-red-500 to-red-600
+                                                       bg-[length:200%_auto] bg-left hover:bg-right transition-all duration-1000 ease-out
+                                                       text-white shadow">
+                                            Xóa
+                                        </button>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-xs text-gray-400">Không có quyền</span>
+                                }
                             </td>
                         </tr>
                     }

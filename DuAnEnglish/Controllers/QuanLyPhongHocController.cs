@@ -85,6 +85,7 @@ namespace DuAnEnglish.Controllers
             return View(phonghoc); // Truyền model vào view
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult CapNhat(PhongHoc phongHoc)
         {
             if (string.IsNullOrWhiteSpace(phongHoc.TenPhong))
@@ -120,6 +121,8 @@ namespace DuAnEnglish.Controllers
             return View("Xem", phongHoc);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult xoa(int id)
         {
             string tenDangNhap = Session["User"] as string;

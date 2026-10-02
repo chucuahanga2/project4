@@ -1,4 +1,4 @@
-﻿@model IEnumerable<DuAnEnglish.Models.ChatBotNoiDung>
+@model IEnumerable<DuAnEnglish.Models.ChatBotNoiDung>
 
 @{
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
@@ -50,8 +50,14 @@
                             <td class="py-2 px-4 border">
                                 <a href="@Url.Action("ChiTiet","QuanLyChatBot", new { id = item.MaChat })"
                                    class="inline-block bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-1 shadow my-0.5">Chi tiết</a>
-                                <a href="@Url.Action("Xoa","QuanLyChatBot", new { id = item.MaChat })"
-                                   class="btn-xoa inline-block bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded shadow my-0.5">Xóa</a>
+                                @using (Html.BeginForm("Xoa", "QuanLyChatBot", new { id = item.MaChat }, FormMethod.Post, new { style = "display:inline;", onsubmit = "return confirm('Bạn có chắc chắn muốn xóa câu trả lời chatbot này?');" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded shadow my-0.5">
+                                        Xóa
+                                    </button>
+                                }
                             </td>
                         </tr>
                     }

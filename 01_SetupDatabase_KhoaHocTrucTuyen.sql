@@ -121,7 +121,7 @@ BEGIN
         MoTa NVARCHAR(MAX) NULL,
         NoiDung NVARCHAR(MAX) NULL,
         HocPhi DECIMAL(18, 0) DEFAULT 0,
-        HinhAnhKH NVARCHAR(255) NULL,
+        HinhAnhKH NVARCHAR(50) NULL,
         TrangThai NVARCHAR(50) DEFAULT N'Hiển thị',
         NgayTao DATETIME DEFAULT GETDATE(),
         CONSTRAINT FK_KhoaHoc_DanhMuc FOREIGN KEY (IDDanhMuc) REFERENCES DanhMucKhoaHoc(IDDanhMuc),
@@ -178,7 +178,7 @@ BEGIN
     CREATE TABLE BaiHoc (
         IDBaiHoc INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
         IDChuong INT NOT NULL,
-        TenBaiHoc NVARCHAR(255) NOT NULL,
+        TenBaiHoc NVARCHAR(250) NOT NULL,
         MoTa NVARCHAR(MAX) NULL,
         NoiDung NVARCHAR(MAX) NULL,
         VideoUrl NVARCHAR(500) NULL,
@@ -316,12 +316,12 @@ BEGIN
     CREATE TABLE GiaoDichVNPAY (
         IDGiaoDich INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
         IDThanhToan INT NULL,
-        MaGiaoDich NVARCHAR(100) NULL,
+        MaGiaoDich VARCHAR(100) NULL,
         NgayGiaoDich DATETIME DEFAULT GETDATE(),
         SoTien DECIMAL(18, 0) NULL,
         TrangThai NVARCHAR(50) NULL,
-        NoiDung NVARCHAR(500) NULL,
-        PhanHoiVNPAY NVARCHAR(50) NULL,
+        NoiDung NVARCHAR(MAX) NULL,
+        PhanHoiVNPAY NVARCHAR(MAX) NULL,
         CONSTRAINT FK_GiaoDichVNPAY_ThanhToan FOREIGN KEY (IDThanhToan) REFERENCES ThanhToan(IDThanhToan)
     );
     PRINT N'[OK] Đã tạo bảng GiaoDichVNPAY.';
@@ -343,21 +343,21 @@ BEGIN
 END
 GO
 
--- 2.16 Bảng DiemIELT & DiemTOEIC
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DiemIELT')
+-- 2.16 Bảng DiemIELTS & DiemTOEIC (Đồng bộ 100% với EDMX & C# Models)
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DiemIELTS')
 BEGIN
-    CREATE TABLE DiemIELT (
+    CREATE TABLE DiemIELTS (
         IDHocVien INT NOT NULL,
         IDLopHoc NVARCHAR(50) NOT NULL,
-        Nghe FLOAT NULL,
-        Noi FLOAT NULL,
-        Doc FLOAT NULL,
-        Viet FLOAT NULL,
-        Overall FLOAT NULL,
+        DiemNghe DECIMAL(3, 1) NULL,
+        DiemNoi DECIMAL(3, 1) NULL,
+        DiemDoc DECIMAL(3, 1) NULL,
+        DiemViet DECIMAL(3, 1) NULL,
+        TongDiem DECIMAL(4, 2) NULL,
         PRIMARY KEY (IDHocVien, IDLopHoc),
-        CONSTRAINT FK_DiemIELT_HocVienLopHoc FOREIGN KEY (IDHocVien, IDLopHoc) REFERENCES HocVienLopHoc(IDHocVien, IDLopHoc)
+        CONSTRAINT FK_DiemIELTS_HocVienLopHoc FOREIGN KEY (IDHocVien, IDLopHoc) REFERENCES HocVienLopHoc(IDHocVien, IDLopHoc)
     );
-    PRINT N'[OK] Đã tạo bảng DiemIELT.';
+    PRINT N'[OK] Đã tạo bảng DiemIELTS.';
 END
 GO
 
@@ -366,8 +366,17 @@ BEGIN
     CREATE TABLE DiemTOEIC (
         IDHocVien INT NOT NULL,
         IDLopHoc NVARCHAR(50) NOT NULL,
-        Nghe INT NULL,
-        Doc INT NULL,
+        Part1 INT NULL,
+        Part2 INT NULL,
+        Part3 INT NULL,
+        Part4 INT NULL,
+        DiemNghe INT NULL,
+        Part5 INT NULL,
+        Part6 INT NULL,
+        Part7 INT NULL,
+        DiemDoc INT NULL,
+        DiemNoi INT NULL,
+        DiemViet INT NULL,
         TongDiem INT NULL,
         PRIMARY KEY (IDHocVien, IDLopHoc),
         CONSTRAINT FK_DiemTOEIC_HocVienLopHoc FOREIGN KEY (IDHocVien, IDLopHoc) REFERENCES HocVienLopHoc(IDHocVien, IDLopHoc)

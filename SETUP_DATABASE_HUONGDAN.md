@@ -52,8 +52,8 @@ Trong `Web.config`:
 <appSettings>
   <!-- Cấu hình VNPay Sandbox -->
   <add key="Vnp_Url" value="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html" />
-  <add key="Vnp_TmnCode" value="2QXUI4J4" />
-  <add key="Vnp_HashSecret" value="RAOICV25ENA20VTXBWD7KEUMFSOYSRS5" />
+  <add key="Vnp_TmnCode" value="YOUR_VNPAY_TMN_CODE" />
+  <add key="Vnp_HashSecret" value="YOUR_VNPAY_HASH_SECRET" />
   <add key="Vnp_ReturnUrl" value="http://localhost:52000/ThanhToan/ReturnVnpay" />
 </appSettings>
 ```

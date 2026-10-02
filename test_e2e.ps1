@@ -290,9 +290,59 @@ try {
     Report-Result "25. Password PBKDF2 Migration" $false $_.Exception.Message
 }
 
+# 16. Test GET Deletion Blocked (HttpNotFound 404 for GET on HttpPost-only actions)
+try {
+    $resGetDelLop = $admin.Client.GetAsync("$baseUrl/QuanLyLopHoc/Xoa?id=999999").Result
+    $status = [int]$resGetDelLop.StatusCode
+    Report-Result "26. Chan GET Xoa QuanLyLopHoc" ($status -eq 404) "GET Xoa blocked with 404 HttpNotFound ($status)"
+} catch {
+    Report-Result "26. Chan GET Xoa QuanLyLopHoc" $false $_.Exception.Message
+}
+
+try {
+    $resGetDelPhong = $admin.Client.GetAsync("$baseUrl/QuanLyPhongHoc/xoa?id=999999").Result
+    $status = [int]$resGetDelPhong.StatusCode
+    Report-Result "27. Chan GET xoa QuanLyPhongHoc" ($status -eq 404) "GET xoa blocked with 404 HttpNotFound ($status)"
+} catch {
+    Report-Result "27. Chan GET xoa QuanLyPhongHoc" $false $_.Exception.Message
+}
+
+try {
+    $resGetDelChat = $admin.Client.GetAsync("$baseUrl/QuanLyChatBot/Xoa?id=999999").Result
+    $status = [int]$resGetDelChat.StatusCode
+    Report-Result "28. Chan GET Xoa QuanLyChatBot" ($status -eq 404) "GET Xoa blocked with 404 HttpNotFound ($status)"
+} catch {
+    Report-Result "28. Chan GET Xoa QuanLyChatBot" $false $_.Exception.Message
+}
+
+try {
+    $resGetDelTb = $lecturer.Client.GetAsync("$baseUrl/QuanLyThongBaoGV/xoa?id=999999").Result
+    $status = [int]$resGetDelTb.StatusCode
+    Report-Result "29. Chan GET xoa QuanLyThongBaoGV" ($status -eq 404) "GET xoa blocked with 404 HttpNotFound ($status)"
+} catch {
+    Report-Result "29. Chan GET xoa QuanLyThongBaoGV" $false $_.Exception.Message
+}
+
+# 17. Test QuanLyDiemSo Role: Only Lecturer allowed, Admin blocked
+try {
+    $resAdminDiem = $admin.Client.GetAsync("$baseUrl/QuanLyDiemSo/QuanLyDiemSo").Result
+    $status = [int]$resAdminDiem.StatusCode
+    Report-Result "30. Admin bi chan khoi QuanLyDiemSo" ($status -eq 302) "Admin redirected away from lecturer score management ($status)"
+} catch {
+    Report-Result "30. Admin bi chan khoi QuanLyDiemSo" $false $_.Exception.Message
+}
+
+try {
+    $resGvDiem = $lecturer.Client.GetAsync("$baseUrl/QuanLyDiemSo/QuanLyDiemSo").Result
+    $status = [int]$resGvDiem.StatusCode
+    Report-Result "31. Giang Vien vao duoc QuanLyDiemSo" ($status -eq 200) "Lecturer can access score management (Status 200)"
+} catch {
+    Report-Result "31. Giang Vien vao duoc QuanLyDiemSo" $false $_.Exception.Message
+}
+
 Write-Host "========================================================================" -ForegroundColor Cyan
 if ($allPassed) {
-    Write-Host "ALL 25 END-TO-END TESTS PASSED PERFECTLY! SYSTEM IS 100% OPERATIONAL." -ForegroundColor Green
+    Write-Host "ALL 31 END-TO-END TESTS PASSED PERFECTLY! SYSTEM IS 100% OPERATIONAL." -ForegroundColor Green
 } else {
     Write-Host "SOME TESTS FAILED." -ForegroundColor Red
 }

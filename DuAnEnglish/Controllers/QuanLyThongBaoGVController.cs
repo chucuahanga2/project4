@@ -97,6 +97,8 @@ namespace DuAnEnglish.Controllers
             return View();
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult xoa(int id)
         {
             string tenDangNhap = Session["User"] as string;
@@ -107,11 +109,11 @@ namespace DuAnEnglish.Controllers
                 return RedirectToAction("DangNhap", "DangNhap");
             }
 
-            var thongBao = db.ThongBaos.FirstOrDefault(tb => tb.IDThongBao == id);
+            var thongBao = db.ThongBaos.FirstOrDefault(tb => tb.IDThongBao == id && tb.IDNguoiGui == tenDangNhap);
 
             if (thongBao == null)
             {
-                TempData["ThongBao"] = "Thông báo không tồn tại";
+                TempData["ThongBao"] = "Thông báo không tồn tại hoặc bạn không có quyền xóa.";
                 return RedirectToAction("QuanLyThongBaoGV");
             }
 
@@ -154,12 +156,19 @@ namespace DuAnEnglish.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Sua(ThongBao thongBao)
         {
-            var thongBaoCu = db.ThongBaos.FirstOrDefault(tb => tb.IDThongBao == thongBao.IDThongBao);
+            string tenDangNhap = Session["User"] as string;
+            if (string.IsNullOrEmpty(tenDangNhap))
+            {
+                TempData["ThongBaoDangNhap"] = "Bạn cần đăng nhập";
+                return RedirectToAction("DangNhap", "DangNhap");
+            }
+
+            var thongBaoCu = db.ThongBaos.FirstOrDefault(tb => tb.IDThongBao == thongBao.IDThongBao && tb.IDNguoiGui == tenDangNhap);
 
             if (thongBaoCu == null)
             {
-                ViewBag.ThongBao = "Thông báo không tồn tại"; // Thông báo lỗi nếu không tìm thấy thông báo
-                return View("Xem", thongBao); // Giữ lại trang chi tiết thông báo
+                ViewBag.ThongBao = "Thông báo không tồn tại hoặc bạn không có quyền chỉnh sửa.";
+                return View("Xem", thongBao);
             }
 
             thongBaoCu.TieuDe = thongBao.TieuDe;

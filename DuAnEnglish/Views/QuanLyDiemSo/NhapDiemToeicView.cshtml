@@ -1,4 +1,4 @@
-﻿@model DuAnEnglish.Models.DiemTOEIC
+@model DuAnEnglish.Models.DiemTOEIC
 @{
     ViewBag.Title = "Nhập Điểm TOEIC";
     Layout = "~/Views/Shared/_LayoutGiangVien.cshtml";
@@ -20,7 +20,8 @@
         <h2 class="text-2xl font-bold text-[#e5501e] mb-8 text-center uppercase tracking-wider">NHẬP ĐIỂM</h2>
 
         <form method="post" action="@Url.Action("LuuDiemToeic", "QuanLyDiemSo")" class="space-y-6">
-            <input type="hidden" name="IDHocVien" value="@idHocVien" />
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="IDHocVien" value="@Model.IDHocVien" />
 
             <div class="grid grid-cols-3 gap-8">
                 <!-- Cột 1: Nghe -->

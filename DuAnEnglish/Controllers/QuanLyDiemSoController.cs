@@ -8,7 +8,7 @@ using DuAnEnglish.Security;
 
 namespace DuAnEnglish.Controllers
 {
-    [AuthorizeRole("giangvien", "admin")]
+    [AuthorizeRole("giangvien")]
     public class QuanLyDiemSoController : Controller
     {
         private trungtamtienganhEntities db = new trungtamtienganhEntities();
@@ -153,6 +153,7 @@ namespace DuAnEnglish.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult LuuDiemIelts(DiemIELT model)
         {
             if (ModelState.IsValid)
@@ -213,6 +214,7 @@ namespace DuAnEnglish.Controllers
             return View(diemToeic);
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult LuuDiemToeic(DiemTOEIC model)
         {
             if (ModelState.IsValid)

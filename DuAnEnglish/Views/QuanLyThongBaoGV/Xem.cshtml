@@ -1,4 +1,4 @@
-﻿@model DuAnEnglish.Models.ThongBao
+@model DuAnEnglish.Models.ThongBao
 @{
     if (Session["Role"] != null)
     {
@@ -53,30 +53,66 @@
 
         <hr class="my-4" />
 
+        @{
+            bool isOwner = Session["User"] != null && Model.IDNguoiGui == Session["User"].ToString();
+        }
+
         <!-- Tiêu đề -->
         <div>
             <label class="block font-semibold mb-1">Tiêu đề:</label>
-            @Html.TextBoxFor(model => model.TieuDe, new
+            @if (isOwner)
             {
-                @class = "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            })
+                @Html.TextBoxFor(model => model.TieuDe, new
+                {
+                    @class = "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                })
+            }
+            else
+            {
+                @Html.TextBoxFor(model => model.TieuDe, new
+                {
+                    @class = "w-full px-4 py-2 border border-gray-200 bg-gray-100 rounded-md",
+                    @readonly = "readonly"
+                })
+            }
         </div>
 
         <!-- Nội dung -->
         <div>
             <label class="block font-semibold mb-1">Nội dung thông báo:</label>
-            @Html.TextAreaFor(model => model.NoiDung, new
+            @if (isOwner)
             {
-                @class = "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500",
-                rows = 5
-            })
+                @Html.TextAreaFor(model => model.NoiDung, new
+                {
+                    @class = "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500",
+                    rows = 5
+                })
+            }
+            else
+            {
+                @Html.TextAreaFor(model => model.NoiDung, new
+                {
+                    @class = "w-full px-4 py-2 border border-gray-200 bg-gray-100 rounded-md",
+                    rows = 5,
+                    @readonly = "readonly"
+                })
+            }
         </div>
 
-        <!-- Nút Sửa -->
+        <!-- Nút Sửa hoặc thông báo chỉ xem -->
         <div class="text-center">
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-300">
-                Sửa
-            </button>
+            @if (isOwner)
+            {
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+                    Sửa
+                </button>
+            }
+            else
+            {
+                <span class="inline-block py-2 px-4 text-sm text-gray-500 bg-gray-100 rounded-md italic">
+                    Chỉ người tạo thông báo mới có quyền chỉnh sửa.
+                </span>
+            }
         </div>
     }
 </div>

@@ -90,6 +90,8 @@ namespace DuAnEnglish.Controllers
         }
 
         // Xóa
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Xoa(int? id)
         {
             if (id == null)
